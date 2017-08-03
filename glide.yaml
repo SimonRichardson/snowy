@@ -1,0 +1,26 @@
+package: github.com/trussle/snowy
+import:
+  - package: github.com/pkg/errors
+  - package: github.com/go-kit/kit
+  - package: github.com/go-logfmt/logfmt
+  - package: github.com/go-stack/stack
+  - package: github.com/SimonRichardson/gexec
+  - package: github.com/aws/aws-sdk-go
+    subpackages:
+    - aws
+    - aws/credentials
+    - aws/awsutil
+    - aws/session
+    - service/s3
+  - package: github.com/armon/go-metrics
+  - package: github.com/prometheus/prometheus
+  - package: github.com/prometheus/client_golang
+  - package: github.com/beorn7/perks/quantile
+  - package: github.com/golang/protobuf/proto
+  - package: github.com/prometheus/client_model/go
+  - package: github.com/prometheus/common/expfmt
+  - package: github.com/prometheus/common/model
+  - package: github.com/prometheus/procfs
+  - package: github.com/lib/pq
+  - package: github.com/pborman/uuid
+  - package: github.com/golang/mock/gomock

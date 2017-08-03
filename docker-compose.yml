@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  store:
+    image: postgres:9.4
+    ports:
+      - 54321:54321
+    volumes:
+      - ./db/postgres/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+  documents:
+    image: golang:1.8-alpine
+    volumes:
+      - ./:/go/src/github.com/trussle/snowy
+    working_dir: /go/src/github.com/trussle/snowy
+    depends_on:
+      - store
