@@ -6,12 +6,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-kit/kit/log"
+	"github.com/golang/mock/gomock"
 	"github.com/trussle/snowy/pkg/document"
 	"github.com/trussle/snowy/pkg/metrics"
 	"github.com/trussle/snowy/pkg/repository"
 	"github.com/trussle/snowy/pkg/uuid"
-	"github.com/go-kit/kit/log"
-	"github.com/golang/mock/gomock"
 )
 
 func TestAPI(t *testing.T) {
@@ -40,6 +40,36 @@ func TestAPI(t *testing.T) {
 		_, err := http.Get(server.URL)
 		if err != nil {
 			t.Error(err)
+		}
+	})
+
+	t.Run("get with invalid resource_id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		var (
+			clients  = metrics.NewMockGauge(ctrl)
+			duration = metrics.NewMockHistogramVec(ctrl)
+			observer = metrics.NewMockObserver(ctrl)
+			repo     = repository.NewMockRepository(ctrl)
+
+			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			server = httptest.NewServer(api)
+		)
+
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("GET", "/", "400").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, "bad"))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+			t.Errorf("expected: %d, actual: %d", expected, actual)
 		}
 	})
 
@@ -76,7 +106,7 @@ func TestAPI(t *testing.T) {
 
 		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		if expected, actual := http.StatusOK, resp.StatusCode; expected != actual {

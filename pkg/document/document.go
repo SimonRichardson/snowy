@@ -1,8 +1,10 @@
 package document
 
 import (
-	"github.com/trussle/snowy/pkg/uuid"
+	"time"
+
 	"github.com/pkg/errors"
+	"github.com/trussle/snowy/pkg/uuid"
 )
 
 // Document encapsulates all values that are required to represent a document of
@@ -24,6 +26,10 @@ type Document interface {
 
 	// Tags returns the associated tags that categorize the document.
 	Tags() []string
+
+	CreatedOn() time.Time
+
+	DeletedOn() time.Time
 }
 
 // Option defines a option for generating a document
@@ -50,10 +56,50 @@ func WithID(id string) Option {
 	})
 }
 
+// WithName adds a Name to the document
+func WithName(name string) Option {
+	return real(func(doc *realDocument) error {
+		doc.name = name
+		return nil
+	})
+}
+
 // WithResourceID adds a ResourceID to the document
 func WithResourceID(resourceID uuid.UUID) Option {
 	return real(func(doc *realDocument) error {
 		doc.resourceID = resourceID
+		return nil
+	})
+}
+
+// WithAuthorID adds a AuthorID to the document
+func WithAuthorID(authorID uuid.UUID) Option {
+	return real(func(doc *realDocument) error {
+		doc.authorID = authorID
+		return nil
+	})
+}
+
+// WithTags adds a Tags to the document
+func WithTags(tags []string) Option {
+	return real(func(doc *realDocument) error {
+		doc.tags = tags
+		return nil
+	})
+}
+
+// WithCreatedOn adds a CreatedOn to the document
+func WithCreatedOn(createdOn time.Time) Option {
+	return real(func(doc *realDocument) error {
+		doc.createdOn = createdOn
+		return nil
+	})
+}
+
+// WithDeletedOn adds a DeletedOn to the document
+func WithDeletedOn(deletedOn time.Time) Option {
+	return real(func(doc *realDocument) error {
+		doc.deletedOn = deletedOn
 		return nil
 	})
 }

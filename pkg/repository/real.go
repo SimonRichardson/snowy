@@ -3,11 +3,11 @@ package repository
 import (
 	"fmt"
 
+	"github.com/go-kit/kit/log"
 	"github.com/trussle/snowy/pkg/document"
 	"github.com/trussle/snowy/pkg/fs"
 	"github.com/trussle/snowy/pkg/store"
 	"github.com/trussle/snowy/pkg/uuid"
-	"github.com/go-kit/kit/log"
 )
 
 type realRepository struct {
@@ -39,6 +39,12 @@ func (r *realRepository) GetDocument(resourceID uuid.UUID) (document.Document, e
 
 	return document.Build(
 		document.WithID(entity.ID),
+		document.WithName(entity.Name),
+		document.WithResourceID(entity.ResourceID),
+		document.WithAuthorID(entity.AuthorID),
+		document.WithTags(entity.Tags),
+		document.WithCreatedOn(entity.CreatedOn),
+		document.WithDeletedOn(entity.DeletedOn),
 	)
 }
 
@@ -47,7 +53,12 @@ func (r *realRepository) GetDocument(resourceID uuid.UUID) (document.Document, e
 func (r *realRepository) PutDocument(doc document.Document) (uuid.UUID, error) {
 	entity, err := store.BuildEntity(
 		store.BuildEntityWithID(doc.ID()),
+		store.BuildEntityWithName(doc.Name()),
 		store.BuildEntityWithResourceID(doc.ResourceID()),
+		store.BuildEntityWithAuthorID(doc.AuthorID()),
+		store.BuildEntityWithTags(doc.Tags()),
+		store.BuildEntityWithCreatedOn(doc.CreatedOn()),
+		store.BuildEntityWithDeletedOn(doc.DeletedOn()),
 	)
 	if err != nil {
 		return uuid.Empty, err
