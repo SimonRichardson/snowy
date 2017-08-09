@@ -1,7 +1,6 @@
 package store
 
 import (
-	reflect "reflect"
 	"time"
 
 	"github.com/trussle/snowy/pkg/uuid"
@@ -11,22 +10,12 @@ import (
 // formally understand the underlying model. Entity in this case represents a
 // document.Document without the file content.
 type Entity struct {
-	ID, Name             string
-	ResourceID, AuthorID uuid.UUID
+	ID                   uuid.UUID
+	Name                 string
+	ResourceID           uuid.UUID
+	AuthorID             string
 	Tags                 []string
 	CreatedOn, DeletedOn time.Time
-}
-
-// Equal validates if two entities are equal to each other.
-// Note: not all values are checked for total equality.
-func (e Entity) Equal(x Entity) bool {
-	return e.ID == x.ID &&
-		e.Name == x.Name &&
-		e.ResourceID.Equals(x.ResourceID) &&
-		e.AuthorID.Equals(x.AuthorID) &&
-		reflect.DeepEqual(e.Tags, x.Tags) &&
-		e.CreatedOn.Equal(x.CreatedOn) &&
-		e.DeletedOn.Equal(x.DeletedOn)
 }
 
 // EntityOption defines a option for generating a entity
@@ -46,7 +35,7 @@ func BuildEntity(opts ...EntityOption) (Entity, error) {
 }
 
 // BuildEntityWithID adds a type of id to the entity.
-func BuildEntityWithID(id string) EntityOption {
+func BuildEntityWithID(id uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ID = id
 		return nil
@@ -70,7 +59,7 @@ func BuildEntityWithResourceID(resourceID uuid.UUID) EntityOption {
 }
 
 // BuildEntityWithAuthorID adds a type of authorID to the entity.
-func BuildEntityWithAuthorID(authorID uuid.UUID) EntityOption {
+func BuildEntityWithAuthorID(authorID string) EntityOption {
 	return func(entity *Entity) error {
 		entity.AuthorID = authorID
 		return nil

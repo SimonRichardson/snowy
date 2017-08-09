@@ -5,17 +5,30 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
+// Query allows you to specify different qualifiers when querying the
+// repository
+type Query struct {
+	Tags []string
+}
+
 // Repository is an abstraction over the underlying persistence storage, that
 // provides a highlevel interface for simple interaction.
 type Repository interface {
 
 	// GetDocument returns a Document corresponding to resourceID. If no document
 	// exists it will return an error.
-	GetDocument(resourceID uuid.UUID) (document.Document, error)
+	GetDocument(resourceID uuid.UUID, options Query) (document.Document, error)
 
-	// PutDocument inserts documents into the repository. If there is an error
-	// putting documents into the repository then it will return an error.
-	PutDocument(doc document.Document) (uuid.UUID, error)
+	// InsertDocument inserts documents into the repository. If there is an
+	// error inserting documents into the repository then it will return an
+	// error.
+	InsertDocument(doc document.Document) (document.Document, error)
+
+	// GetDocuments returns a set of Documents corresponding to a resourceID,
+	// with some additional qualifiers. If no documents are found it will return
+	// an empty slice. If there is an error parsing the documents then it will
+	// return an error.
+	GetDocuments(resourceID uuid.UUID, options Query) ([]document.Document, error)
 
 	// GetContent returns a content corresponding to the resourceID. If no
 	// document or content exists, it will return an error.
@@ -27,6 +40,30 @@ type Repository interface {
 
 	// Close the underlying document store and returns an error if it fails.
 	Close() error
+}
+
+// QueryOption defines a option for generating a filesystem Query
+type QueryOption func(*Query) error
+
+// BuildQuery ingests configuration options to then yield a Query and return an
+// error if it fails during setup.
+func BuildQuery(opts ...QueryOption) (Query, error) {
+	var config Query
+	for _, opt := range opts {
+		err := opt(&config)
+		if err != nil {
+			return Query{}, err
+		}
+	}
+	return config, nil
+}
+
+// WithQueryTags adds tags to the Query to use for the configuration.
+func WithQueryTags(tags []string) QueryOption {
+	return func(query *Query) error {
+		query.Tags = tags
+		return nil
+	}
 }
 
 type notFound interface {

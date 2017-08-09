@@ -110,4 +110,13 @@ func TestConfig(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("invalid config", func(t *testing.T) {
+		_, err := BuildConfig(
+			WithSSLMode("bad"),
+		)
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %t, actual: %t", expected, actual)
+		}
+	})
 }

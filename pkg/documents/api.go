@@ -1,21 +1,26 @@
 package documents
 
 import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/go-kit/kit/log"
+	"github.com/trussle/snowy/pkg/document"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
 	"github.com/trussle/snowy/pkg/repository"
-	"github.com/go-kit/kit/log"
 )
 
 // These are the query API URL paths.
 const (
-	APIPathGetQuery  = "/"
-	APIPathPostQuery = "/"
+	APIPathGetQuery         = "/"
+	APIPathPostQuery        = "/"
+	APIPathGetMultipleQuery = "/multiple"
 )
 
 // API serves the query API
@@ -61,13 +66,10 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case method == "GET" && path == APIPathGetQuery:
 		a.handleGet(w, r)
 	case method == "POST" && path == APIPathPostQuery:
-		a.handlePut(w, r)
+		a.handlePost(w, r)
+	case method == "GET" && path == APIPathGetMultipleQuery:
+		a.handleGetMultiple(w, r)
 	default:
-		// Make sure we send a permanent redirect if it ends with a `/`
-		if strings.HasSuffix(path, "/") {
-			http.Redirect(w, r, strings.TrimRight(path, "/"), http.StatusPermanentRedirect)
-			return
-		}
 		// Nothing found
 		errs.NotFound(w, r)
 	}
@@ -82,11 +84,19 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.Error(w, err.Error(), http.StatusBadRequest)
+		errs.BadRequest(w, r, err.Error())
 		return
 	}
 
-	doc, err := a.repository.GetDocument(qp.ResourceID)
+	options, err := repository.BuildQuery(
+		repository.WithQueryTags(qp.Tags),
+	)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	doc, err := a.repository.GetDocument(qp.ResourceID, options)
 	if err != nil {
 		if repository.ErrNotFound(err) {
 			errs.NotFound(w, r)
@@ -105,7 +115,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	qr.EncodeTo(w)
 }
 
-func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
+func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -118,14 +128,84 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resourceID, err := a.repository.PutDocument(nil)
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	if len(bytes) < 1 {
+		errs.BadRequest(w, r, "no body content")
+		return
+	}
+
+	var input documentInput
+	if err = json.Unmarshal(bytes, &input); err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+	if err = validateInput(input); err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	doc, err := document.Build(
+		document.WithNewResourceID(),
+		document.WithName(input.Name),
+		document.WithAuthorID(input.AuthorID),
+		document.WithTags(input.Tags),
+		document.WithCreatedOn(time.Now()),
+	)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	resource, err := a.repository.InsertDocument(doc)
 	if err != nil {
 		errs.InternalServerError(w, r, err.Error())
 		return
 	}
+
 	// Make sure we collect the document for the result.
 	qr := InsertQueryResult{Params: qp}
-	qr.ResourceID = resourceID
+	qr.ResourceID = resource.ID()
+
+	// Finish
+	qr.Duration = time.Since(begin).String()
+	qr.EncodeTo(w)
+}
+
+func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp SelectQueryParams
+	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	options, err := repository.BuildQuery(
+		repository.WithQueryTags(qp.Tags),
+	)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	docs, err := a.repository.GetDocuments(qp.ResourceID, options)
+	if err != nil {
+		errs.InternalServerError(w, r, err.Error())
+		return
+	}
+
+	// Make sure we collect the documents for the result.
+	qr := SelectMultipleQueryResult{Params: qp}
+	qr.Documents = docs
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
@@ -140,4 +220,22 @@ type interceptingWriter struct {
 func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.code = code
 	iw.ResponseWriter.WriteHeader(code)
+}
+
+type documentInput struct {
+	Name     string   `json:"name"`
+	AuthorID string   `json:"author_id"`
+	Tags     []string `json:"tags"`
+}
+
+func validateInput(input documentInput) error {
+	if len(strings.TrimSpace(input.Name)) == 0 {
+		return errors.New("input.name is empty")
+	}
+
+	if len(strings.TrimSpace(input.AuthorID)) == 0 {
+		return errors.New("input.author_id is empty")
+	}
+
+	return nil
 }

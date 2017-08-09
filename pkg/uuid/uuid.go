@@ -14,7 +14,8 @@ var (
 	// Empty UUID is a UUID that is considered empty.
 	Empty = UUID([36]byte{})
 
-	layout = regexp.MustCompile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+	emptyUUID = "00000000-0000-0000-0000-000000000000"
+	layout    = regexp.MustCompile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 )
 
 // UUID represents identifiers for content, resources and users
@@ -56,7 +57,21 @@ func (u UUID) Bytes() []byte {
 	return u[:]
 }
 
+// Zero returns if the the UUID is zero or not
+func (u UUID) Zero() bool {
+	var amount int
+	for _, v := range u {
+		if v == 0 {
+			amount++
+		}
+	}
+	return amount == 36
+}
+
 func (u UUID) String() string {
+	if u.Zero() {
+		return emptyUUID
+	}
 	return string(u[:])
 }
 

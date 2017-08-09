@@ -3,23 +3,22 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/lib/pq"
-
-	"github.com/trussle/snowy/pkg/uuid"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	// pq is required here, even though it's not used, so that it gets injected
-	// into database/sql - magic!
-	_ "github.com/lib/pq"
+	"github.com/trussle/snowy/pkg/uuid"
 )
 
 const (
-	getSelectQuery = "SELECT id, name, resource_id, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1;"
-	getInsertQuery = "INSERT INTO documents (name, resource_id, author_id, tags, created_on, deleted_on) VALUES ($1, $2, $3, $4, $5, $6);"
+	defaultSelectQuery         = "SELECT id, name, resource_id, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 ORDER BY created_on DESC, id DESC;"
+	defaultInsertQuery         = "INSERT INTO documents (name, resource_id, author_id, tags, created_on, deleted_on) VALUES ($1, $2, $3, $4, $5, $6);"
+	defaultMultipleSelectQuery = "SELECT id, name, resource_id, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 AND tags && $2 ORDER BY created_on DESC, id DESC;"
+	defaultDropQuery           = "TRUNCATE TABLE documents;"
 )
 
 // RealConfig holds the options for connecting to the DB
@@ -42,22 +41,24 @@ type realStore struct {
 func NewRealStore(config *RealConfig, logger log.Logger) Store {
 	return &realStore{
 		config: config,
+		stop:   make(chan chan struct{}),
 		logger: logger,
 	}
 }
 
-func (r *realStore) Get(resource uuid.UUID) (Entity, error) {
+func (r *realStore) Get(resource uuid.UUID, query Query) (Entity, error) {
 	var (
-		entity Entity
-		row    = r.db.QueryRow(getSelectQuery, resource.String())
+		entity          Entity
+		statement, args = buildSQLFromQuery(resource, query)
+		row             = r.db.QueryRow(statement, args...)
 
-		resourceID, authorID string
+		id, resourceID string
 	)
 	err := row.Scan(
-		&entity.ID,
+		&id,
 		&entity.Name,
 		&resourceID,
-		&authorID,
+		&entity.AuthorID,
 		pq.Array(&entity.Tags),
 		&entity.CreatedOn,
 		&entity.DeletedOn,
@@ -71,29 +72,32 @@ func (r *realStore) Get(resource uuid.UUID) (Entity, error) {
 
 	// We have to manually extract the UUID, as database/sql doesn't provide this
 	// for us.
-	if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {
+	if entity.ID, err = uuid.Parse(id); err != nil {
 		return entity, err
 	}
-	if entity.AuthorID, err = uuid.Parse(authorID); err != nil {
+	if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {
 		return entity, err
 	}
 
 	return entity, nil
 }
 
-func (r *realStore) Put(entity Entity) error {
+func (r *realStore) Insert(entity Entity) error {
 	return r.Transaction(func(txn *sql.Tx) error {
-		stmt, err := txn.Prepare(getInsertQuery)
+		stmt, err := txn.Prepare(defaultInsertQuery)
 		if err != nil {
 			return err
 		}
 		defer stmt.Close()
 
+		// Normalize the tags of the entity
+		tags := sortTags(entity.Tags)
+
 		if _, err = stmt.Exec(
 			entity.Name,
 			entity.ResourceID.String(),
-			entity.AuthorID.String(),
-			pq.Array(entity.Tags),
+			entity.AuthorID,
+			pq.Array(tags),
 			entity.CreatedOn,
 			entity.DeletedOn,
 		); err != nil {
@@ -102,6 +106,55 @@ func (r *realStore) Put(entity Entity) error {
 
 		return nil
 	})
+}
+
+func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, error) {
+	var (
+		statement, args = buildSQLFromQuery(resource, query)
+		rows, err       = r.db.Query(statement, args...)
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var res []Entity
+	for rows.Next() {
+		var (
+			entity Entity
+
+			id, resourceID string
+		)
+		err := rows.Scan(
+			&id,
+			&entity.Name,
+			&resourceID,
+			&entity.AuthorID,
+			pq.Array(&entity.Tags),
+			&entity.CreatedOn,
+			&entity.DeletedOn,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, errNotFound{err}
+			}
+			return nil, err
+		}
+
+		// We have to manually extract the UUID, as database/sql doesn't provide this
+		// for us.
+		if entity.ID, err = uuid.Parse(id); err != nil {
+			return nil, err
+		}
+		if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {
+			return nil, err
+		}
+
+		res = append(res, entity)
+	}
+
+	return res, rows.Err()
 }
 
 func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
@@ -123,6 +176,13 @@ func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
 
 	err = fn(txn)
 	return
+}
+
+// Drop removes all of the stored documents
+func (r *realStore) Drop() error {
+	_, err := r.db.Exec(defaultDropQuery)
+	level.Error(r.logger).Log("err", err)
+	return err
 }
 
 // Run the store
@@ -155,6 +215,23 @@ func (r *realStore) Stop() {
 	c := make(chan struct{})
 	r.stop <- c
 	<-c
+}
+
+func buildSQLFromQuery(resourceID uuid.UUID, query Query) (string, []interface{}) {
+	if len(query.Tags) == 0 {
+		return defaultSelectQuery, []interface{}{resourceID.String()}
+	}
+	return defaultMultipleSelectQuery, []interface{}{
+		resourceID.String(),
+		pq.Array(query.Tags),
+	}
+}
+
+func sortTags(tags []string) []string {
+	res := make([]string, len(tags))
+	copy(res, tags)
+	sort.Strings(res)
+	return res
 }
 
 // RealOption defines a option for generating a RealConfig

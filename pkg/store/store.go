@@ -3,18 +3,32 @@ package store
 import (
 	"strings"
 
-	"github.com/trussle/snowy/pkg/uuid"
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
+	"github.com/trussle/snowy/pkg/uuid"
 )
+
+// Query allows you to specify different qualifiers when querying the store
+type Query struct {
+	Tags []string
+}
 
 // Store represents a API over a persistent store.
 type Store interface {
 
-	// Get returns a stored document from the datastore, minus the actual content
-	Get(resourceID uuid.UUID) (Entity, error)
+	// Get returns a stored document from the datastore based on the
+	// query options as qualifiers, minus the actual content
+	Get(resourceID uuid.UUID, options Query) (Entity, error)
 
-	// Put inserts a entity with in the datastore.
-	Put(Entity) error
+	// Insert inserts a entity with in the datastore.
+	Insert(Entity) error
+
+	// GetMultiple returns a set of stored documents from the datastore based
+	// on the query options as qualifiers, minus the actual content.
+	GetMultiple(resourceID uuid.UUID, options Query) ([]Entity, error)
+
+	// Drop removes all of the stored documents
+	Drop() error
 
 	// Run manages the store, keeping the store reliable.
 	Run() error
@@ -71,8 +85,34 @@ func New(config *Config, logger log.Logger) (store Store, err error) {
 		store = NewVirtualStore()
 	case "nop":
 		store = NewNopStore()
+	default:
+		err = errors.Errorf("unexpected store type %q", config.name)
 	}
 	return
+}
+
+// QueryOption defines a option for generating a filesystem Query
+type QueryOption func(*Query) error
+
+// BuildQuery ingests configuration options to then yield a Query and return an
+// error if it fails during setup.
+func BuildQuery(opts ...QueryOption) (Query, error) {
+	var config Query
+	for _, opt := range opts {
+		err := opt(&config)
+		if err != nil {
+			return Query{}, err
+		}
+	}
+	return config, nil
+}
+
+// WithQueryTags adds tags to the Query to use for the configuration.
+func WithQueryTags(tags []string) QueryOption {
+	return func(query *Query) error {
+		query.Tags = tags
+		return nil
+	}
 }
 
 type notFound interface {

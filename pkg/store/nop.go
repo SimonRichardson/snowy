@@ -12,7 +12,11 @@ func NewNopStore() Store {
 	return nop{}
 }
 
-func (nop) Get(resourceID uuid.UUID) (Entity, error) { return Entity{}, nil }
-func (nop) Put(Entity) error                         { return nil }
-func (nop) Run() error                               { return nil }
-func (nop) Stop()                                    {}
+func (nop) Get(resourceID uuid.UUID, query Query) (Entity, error) { return Entity{}, nil }
+func (nop) Insert(entity Entity) error                            { return nil }
+func (nop) GetMultiple(resourceID uuid.UUID, query Query) ([]Entity, error) {
+	return make([]Entity, 0), nil
+}
+func (nop) Run() error  { return nil }
+func (nop) Stop()       {}
+func (nop) Drop() error { return nil }
