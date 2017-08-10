@@ -87,6 +87,19 @@ func (r *realRepository) InsertDocument(doc document.Document) (document.Documen
 	)
 }
 
+// AppendDocument adds a new document as a revision. If there is no head
+// document, it will return an error. If there is an error appending
+// documents into the repository then it will return an error.
+func (r *realRepository) AppendDocument(resourceID uuid.UUID, doc document.Document) (document.Document, error) {
+	// We don't care what we get back, just that it exists.
+	_, err := r.GetDocument(resourceID, Query{})
+	if err != nil {
+		return document.Document{}, err
+	}
+
+	return r.InsertDocument(doc)
+}
+
 // GetDocuments returns a set of Documents corresponding to a resourceID,
 // with some additional qualifiers. If no documents are found it will return
 // an empty slice. If there is an error parsing the documents then it will

@@ -3,6 +3,7 @@ package documents
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 const (
 	APIPathGetQuery         = "/"
 	APIPathPostQuery        = "/"
+	APIPathPutQuery         = "/"
 	APIPathGetMultipleQuery = "/multiple"
 )
 
@@ -67,6 +69,8 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleGet(w, r)
 	case method == "POST" && path == APIPathPostQuery:
 		a.handlePost(w, r)
+	case method == "PUT" && path == APIPathPutQuery:
+		a.handlePut(w, r)
 	case method == "GET" && path == APIPathGetMultipleQuery:
 		a.handleGetMultiple(w, r)
 	default:
@@ -128,34 +132,9 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		errs.BadRequest(w, r, err.Error())
-		return
-	}
-
-	if len(bytes) < 1 {
-		errs.BadRequest(w, r, "no body content")
-		return
-	}
-
-	var input documentInput
-	if err = json.Unmarshal(bytes, &input); err != nil {
-		errs.BadRequest(w, r, err.Error())
-		return
-	}
-	if err = validateInput(input); err != nil {
-		errs.BadRequest(w, r, err.Error())
-		return
-	}
-
-	doc, err := document.Build(
-		document.WithNewResourceID(),
-		document.WithName(input.Name),
-		document.WithAuthorID(input.AuthorID),
-		document.WithTags(input.Tags),
-		document.WithCreatedOn(time.Now()),
-	)
+	doc, err := ingestRequest(r.Body, func() document.Option {
+		return document.WithNewResourceID()
+	})
 	if err != nil {
 		errs.BadRequest(w, r, err.Error())
 		return
@@ -169,6 +148,42 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we collect the document for the result.
 	qr := InsertQueryResult{Params: qp}
+	qr.ResourceID = resource.ID()
+
+	// Finish
+	qr.Duration = time.Since(begin).String()
+	qr.EncodeTo(w)
+}
+
+func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp AppendQueryParams
+	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	doc, err := ingestRequest(r.Body, func() document.Option {
+		return document.WithResourceID(qp.ResourceID)
+	})
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	resource, err := a.repository.AppendDocument(qp.ResourceID, doc)
+	if err != nil {
+		errs.InternalServerError(w, r, err.Error())
+		return
+	}
+
+	// Make sure we collect the document for the result.
+	qr := AppendQueryResult{Params: qp}
 	qr.ResourceID = resource.ID()
 
 	// Finish
@@ -220,6 +235,33 @@ type interceptingWriter struct {
 func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.code = code
 	iw.ResponseWriter.WriteHeader(code)
+}
+
+func ingestRequest(reader io.ReadCloser, fn func() document.Option) (document.Document, error) {
+	bytes, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return document.Document{}, err
+	}
+
+	if len(bytes) < 1 {
+		return document.Document{}, errors.New("no body content")
+	}
+
+	var input documentInput
+	if err = json.Unmarshal(bytes, &input); err != nil {
+		return document.Document{}, err
+	}
+	if err = validateInput(input); err != nil {
+		return document.Document{}, err
+	}
+
+	return document.Build(
+		fn(),
+		document.WithName(input.Name),
+		document.WithAuthorID(input.AuthorID),
+		document.WithTags(input.Tags),
+		document.WithCreatedOn(time.Now()),
+	)
 }
 
 type documentInput struct {

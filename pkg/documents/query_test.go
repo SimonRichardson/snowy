@@ -432,6 +432,85 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 	})
 }
 
+func TestAppendQueryParams(t *testing.T) {
+	t.Parallel()
+
+	t.Run("DecodeFrom with required empty url", func(t *testing.T) {
+		var (
+			qp AppendQueryParams
+
+			u, err = url.Parse("")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with optional empty url", func(t *testing.T) {
+		var (
+			qp AppendQueryParams
+
+			u, err = url.Parse("")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryOptional)
+
+		if expected, actual := true, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid resource_id", func(t *testing.T) {
+		var (
+			qp AppendQueryParams
+
+			u, err = url.Parse("/?resource_id=123asd")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with valid resource_id", func(t *testing.T) {
+		fn := func(uid uuid.UUID) bool {
+			var (
+				qp AppendQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = qp.DecodeFrom(u, queryRequired)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+			return uid.Equals(qp.ResourceID)
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
 // Tags creates a series of tags that are ascii compliant.
 type Tags []string
 

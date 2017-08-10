@@ -205,6 +205,147 @@ func TestInsertDocument(t *testing.T) {
 	})
 }
 
+func TestAppendDocument(t *testing.T) {
+	t.Parallel()
+
+	t.Run("append document with exists store failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn = time.Now()
+				doc, _    = document.Build(
+					document.WithName(name),
+					document.WithResourceID(resourceID),
+					document.WithAuthorID(authorID),
+					document.WithTags(tags),
+					document.WithCreatedOn(createdOn),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Get(resourceID, store.Query{}).
+				Return(store.Entity{}, errNotFound{errors.New("not found")})
+
+			_, err := repo.AppendDocument(resourceID, doc)
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("append document with insert store failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn = time.Now()
+				entity    = store.Entity{
+					Name:       name,
+					ResourceID: resourceID,
+					AuthorID:   authorID,
+					Tags:       tags,
+					CreatedOn:  createdOn,
+					DeletedOn:  time.Time{},
+				}
+				doc, _ = document.Build(
+					document.WithName(name),
+					document.WithResourceID(resourceID),
+					document.WithAuthorID(authorID),
+					document.WithTags(tags),
+					document.WithCreatedOn(createdOn),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Get(resourceID, store.Query{}).
+				Return(entity, nil)
+			mock.EXPECT().
+				Insert(entity).
+				Return(errNotFound{errors.New("not found")})
+
+			_, err := repo.AppendDocument(resourceID, doc)
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("append document", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn = time.Now()
+				entity    = store.Entity{
+					Name:       name,
+					ResourceID: resourceID,
+					AuthorID:   authorID,
+					Tags:       tags,
+					CreatedOn:  createdOn,
+					DeletedOn:  time.Time{},
+				}
+				doc, _ = document.Build(
+					document.WithResourceID(resourceID),
+					document.WithName(name),
+					document.WithAuthorID(authorID),
+					document.WithTags(tags),
+					document.WithCreatedOn(createdOn),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Get(resourceID, store.Query{}).
+				Return(entity, nil)
+			mock.EXPECT().
+				Insert(entity).
+				Return(nil)
+
+			res, err := repo.AppendDocument(resourceID, doc)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := resourceID.String(), res.ResourceID().String(); expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
 func TestGetDocuments(t *testing.T) {
 	t.Parallel()
 

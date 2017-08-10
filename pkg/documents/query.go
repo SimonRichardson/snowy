@@ -116,6 +116,51 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	}
 }
 
+// AppendQueryParams defines all the dimensions of a query.
+type AppendQueryParams struct {
+	ResourceID uuid.UUID `json:"resource_id"`
+}
+
+// DecodeFrom populates a AppendQueryParams from a URL.
+func (qp *AppendQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
+	// Required depending on the query behavior
+	var (
+		err        error
+		resourceID = u.Query().Get("resource_id")
+	)
+	if rb == queryRequired && resourceID == "" {
+		return errors.New("error reading 'resource_id' (required) query")
+	}
+	if resourceID != "" {
+		if qp.ResourceID, err = uuid.Parse(resourceID); err != nil {
+			return errors.Wrap(err, "error parsing 'resource_id' (required) query")
+		}
+	}
+
+	return nil
+}
+
+// AppendQueryResult contains statistics about the query.
+type AppendQueryResult struct {
+	Params     AppendQueryParams `json:"query"`
+	Duration   string            `json:"duration"`
+	ResourceID uuid.UUID         `json:"resource_id"`
+}
+
+// EncodeTo encodes the AppendQueryResult to the HTTP response writer.
+func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderDuration, qr.Duration)
+	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
+
+	if err := json.NewEncoder(w).Encode(struct {
+		ResourceID uuid.UUID `json:"resource_id"`
+	}{
+		ResourceID: qr.ResourceID,
+	}); err != nil {
+		errs.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 const (
 	httpHeaderDuration   = "X-Duration"
 	httpHeaderResourceID = "X-ResourceID"

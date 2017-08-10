@@ -33,6 +33,19 @@ func (_m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return _m.recorder
 }
 
+// AppendDocument mocks base method
+func (_m *MockRepository) AppendDocument(_param0 uuid.UUID, _param1 document.Document) (document.Document, error) {
+	ret := _m.ctrl.Call(_m, "AppendDocument", _param0, _param1)
+	ret0, _ := ret[0].(document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AppendDocument indicates an expected call of AppendDocument
+func (_mr *MockRepositoryMockRecorder) AppendDocument(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "AppendDocument", arg0, arg1)
+}
+
 // Close mocks base method
 func (_m *MockRepository) Close() error {
 	ret := _m.ctrl.Call(_m, "Close")

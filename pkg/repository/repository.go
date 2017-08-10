@@ -24,6 +24,11 @@ type Repository interface {
 	// error.
 	InsertDocument(doc document.Document) (document.Document, error)
 
+	// AppendDocument adds a new document as a revision. If there is no head
+	// document, it will return an error. If there is an error appending
+	// documents into the repository then it will return an error.
+	AppendDocument(resourceID uuid.UUID, doc document.Document) (document.Document, error)
+
 	// GetDocuments returns a set of Documents corresponding to a resourceID,
 	// with some additional qualifiers. If no documents are found it will return
 	// an empty slice. If there is an error parsing the documents then it will
