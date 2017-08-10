@@ -12,6 +12,10 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
+const (
+	defaultContentType = "application/json"
+)
+
 // SelectQueryParams defines all the dimensions of a query.
 type SelectQueryParams struct {
 	ResourceID uuid.UUID `json:"resource_id"`
@@ -52,6 +56,7 @@ type SelectQueryResult struct {
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
 func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
@@ -80,6 +85,7 @@ type InsertQueryResult struct {
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
 func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 
 	if err := json.NewEncoder(w).Encode(struct {
@@ -100,6 +106,7 @@ type SelectMultipleQueryResult struct {
 
 // EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
 func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
@@ -149,6 +156,7 @@ type AppendQueryResult struct {
 
 // EncodeTo encodes the AppendQueryResult to the HTTP response writer.
 func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 
@@ -162,9 +170,10 @@ func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
 }
 
 const (
-	httpHeaderDuration   = "X-Duration"
-	httpHeaderResourceID = "X-ResourceID"
-	httpHeaderQueryTags  = "X-Query-Tags"
+	httpHeaderContentType = "Content-Type"
+	httpHeaderDuration    = "X-Duration"
+	httpHeaderResourceID  = "X-ResourceID"
+	httpHeaderQueryTags   = "X-Query-Tags"
 )
 
 type queryBehavior int

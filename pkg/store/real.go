@@ -180,6 +180,10 @@ func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
 
 // Drop removes all of the stored documents
 func (r *realStore) Drop() error {
+	if r.db == nil {
+		return nil
+	}
+
 	_, err := r.db.Exec(defaultDropQuery)
 	level.Error(r.logger).Log("err", err)
 	return err

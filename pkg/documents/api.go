@@ -148,7 +148,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we collect the document for the result.
 	qr := InsertQueryResult{Params: qp}
-	qr.ResourceID = resource.ID()
+	qr.ResourceID = resource.ResourceID()
 
 	// Finish
 	qr.Duration = time.Since(begin).String()

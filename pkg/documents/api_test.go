@@ -579,15 +579,6 @@ func TestPostAPI(t *testing.T) {
 	})
 }
 
-func Put(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
-	req, err := http.NewRequest("PUT", url, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", contentType)
-	return http.DefaultClient.Do(req)
-}
-
 func TestPutAPI(t *testing.T) {
 	t.Parallel()
 
@@ -1214,6 +1205,15 @@ func TestNotFoundAPI(t *testing.T) {
 			t.Error(err)
 		}
 	})
+}
+
+func Put(url string, contentType string, body io.Reader) (resp *http.Response, err error) {
+	req, err := http.NewRequest("PUT", url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	return http.DefaultClient.Do(req)
 }
 
 type float64Matcher struct{}

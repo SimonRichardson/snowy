@@ -1,5 +1,5 @@
-hash: f4ccc6b75ce3d0bf950f1a6e6e04b94743076c5856b4a6666af52f0781c0391a
-updated: 2017-08-03T12:19:22.086281835+01:00
+hash: 0e55b68fa606e57190baf1f090f9f86f4fc19dfbc02df704934fd2bc1917a3ce
+updated: 2017-08-10T11:57:32.051268266+01:00
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -91,6 +91,11 @@ imports:
   - xfs
 - name: github.com/prometheus/prometheus
   version: bc2e9459d817afb763199929e615ac9ea5928cb1
+- name: github.com/SimonRichardson/betwixt
+  version: 6bf309fe8d963cc635eeabbf73d82430c72761e5
+  subpackages:
+  - pkg/entry
+  - pkg/output
 - name: github.com/SimonRichardson/gexec
   version: 51d581347cd0cbd0df9c2787c91af8a16af0d74e
 testImports: []

@@ -47,6 +47,10 @@ FORCE:
 integration-tests:
 	docker-compose run documents go test -v -tags=integration ./cmd/... ./pkg/...
 
+.PHONY: documentation
+documentation:
+	go test -v -tags=documentation ./pkg/... -run=TestDocumentation_
+
 .PHONY: coverage-tests
 coverage-tests:
 	docker-compose run documents go test -covermode=count -coverprofile=bin/coverage.out -v -tags=integration ${COVER_PKG}
