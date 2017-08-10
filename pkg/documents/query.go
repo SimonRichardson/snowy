@@ -72,7 +72,11 @@ type InsertQueryParams struct {
 }
 
 // DecodeFrom populates a InsertQueryParams from a URL.
-func (qp *InsertQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
+func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
+		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	}
+
 	return nil
 }
 
@@ -129,8 +133,12 @@ type AppendQueryParams struct {
 }
 
 // DecodeFrom populates a AppendQueryParams from a URL.
-func (qp *AppendQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
+func (qp *AppendQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
 	// Required depending on the query behavior
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
+		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	}
+
 	var (
 		err        error
 		resourceID = u.Query().Get("resource_id")

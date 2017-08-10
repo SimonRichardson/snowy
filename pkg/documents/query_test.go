@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
@@ -432,6 +433,66 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 	})
 }
 
+func TestInsertQueryParams(t *testing.T) {
+	t.Parallel()
+
+	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
+		fn := func(uid uuid.UUID, contentType ASCII) bool {
+			var (
+				qp InsertQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			h.Set("Content-Type", contentType.String())
+
+			err = qp.DecodeFrom(u, h, queryRequired)
+
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
+		fn := func(uid uuid.UUID) bool {
+			var (
+				qp InsertQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			h.Set("Content-Type", "application/json")
+
+			err = qp.DecodeFrom(u, h, queryRequired)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
 func TestAppendQueryParams(t *testing.T) {
 	t.Parallel()
 
@@ -440,12 +501,15 @@ func TestAppendQueryParams(t *testing.T) {
 			qp AppendQueryParams
 
 			u, err = url.Parse("")
+			h      = make(http.Header, 0)
 		)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = qp.DecodeFrom(u, queryRequired)
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryRequired)
 
 		if expected, actual := false, err == nil; expected != actual {
 			t.Errorf("expected: %v, actual: %v", expected, actual)
@@ -457,12 +521,15 @@ func TestAppendQueryParams(t *testing.T) {
 			qp AppendQueryParams
 
 			u, err = url.Parse("")
+			h      = make(http.Header, 0)
 		)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = qp.DecodeFrom(u, queryOptional)
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryOptional)
 
 		if expected, actual := true, err == nil; expected != actual {
 			t.Errorf("expected: %v, actual: %v", expected, actual)
@@ -474,15 +541,46 @@ func TestAppendQueryParams(t *testing.T) {
 			qp AppendQueryParams
 
 			u, err = url.Parse("/?resource_id=123asd")
+			h      = make(http.Header, 0)
 		)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = qp.DecodeFrom(u, queryRequired)
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryRequired)
 
 		if expected, actual := false, err == nil; expected != actual {
 			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
+		fn := func(uid uuid.UUID, contentType ASCII) bool {
+			var (
+				qp AppendQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			h.Set("Content-Type", contentType.String())
+
+			err = qp.DecodeFrom(u, h, queryRequired)
+
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
 		}
 	})
 
@@ -492,12 +590,15 @@ func TestAppendQueryParams(t *testing.T) {
 				qp AppendQueryParams
 
 				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
 			)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = qp.DecodeFrom(u, queryRequired)
+			h.Set("Content-Type", "application/json")
+
+			err = qp.DecodeFrom(u, h, queryRequired)
 
 			if expected, actual := true, err == nil; expected != actual {
 				t.Errorf("expected: %v, actual: %v", expected, actual)

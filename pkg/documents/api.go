@@ -127,7 +127,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// Validate user input.
 	var qp InsertQueryParams
-	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
 		errs.BadRequest(w, r, err.Error())
 		return
 	}
@@ -163,7 +163,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 
 	// Validate user input.
 	var qp AppendQueryParams
-	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
 		errs.BadRequest(w, r, err.Error())
 		return
 	}

@@ -434,6 +434,62 @@ func TestPostAPI(t *testing.T) {
 		}
 	})
 
+	t.Run("post with body invalid content-type", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		var (
+			clients  = metricMocks.NewMockGauge(ctrl)
+			duration = metricMocks.NewMockHistogramVec(ctrl)
+			observer = metricMocks.NewMockObserver(ctrl)
+			repo     = repoMocks.NewMockRepository(ctrl)
+
+			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			server = httptest.NewServer(api)
+		)
+
+		fn := func(name, authorID, contentType string, tags Tags) bool {
+			if len(name) == 0 || len(authorID) == 0 {
+				return true
+			}
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			b, err := json.Marshal(struct {
+				Name     string   `json:"name"`
+				AuthorID string   `json:"author_id"`
+				Tags     []string `json:"tags"`
+			}{
+				Name:     name,
+				AuthorID: authorID,
+				Tags:     tags,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			resp, err := http.Post(server.URL, contentType, bytes.NewReader(b))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+				t.Fatalf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
 	t.Run("post with body", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
