@@ -145,7 +145,7 @@ type virtualFileInfo struct {
 
 func (fi virtualFileInfo) Name() string       { return fi.name }
 func (fi virtualFileInfo) Size() int64        { return fi.size }
-func (fi virtualFileInfo) Mode() os.FileMode  { return os.FileMode(0666) }
+func (fi virtualFileInfo) Mode() os.FileMode  { return os.FileMode(0644) }
 func (fi virtualFileInfo) ModTime() time.Time { return fi.mtime }
 func (fi virtualFileInfo) IsDir() bool        { return false }
 func (fi virtualFileInfo) Sys() interface{}   { return nil }

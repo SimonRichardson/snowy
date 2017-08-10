@@ -18,6 +18,7 @@ before_install:
 
 install:
   - make
+  - go get github.com/mattn/goveralls
 
 before_script:
   - docker-compose up --build -d
@@ -26,3 +27,4 @@ before_script:
 script:
   - make integration-tests
   - make documentation
+  - goveralls -package=./pkg/... -service=travis-ci

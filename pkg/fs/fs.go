@@ -59,6 +59,10 @@ type File interface {
 	Sync() error
 }
 
+type notFound interface {
+	NotFound() bool
+}
+
 type errNotFound struct {
 	err error
 }
@@ -67,10 +71,14 @@ func (e errNotFound) Error() string {
 	return e.err.Error()
 }
 
+func (e errNotFound) NotFound() bool {
+	return true
+}
+
 // ErrNotFound tests to see if the error passed is a not found error or not.
 func ErrNotFound(err error) bool {
 	if err != nil {
-		if _, ok := err.(errNotFound); ok {
+		if _, ok := err.(notFound); ok {
 			return true
 		}
 	}
@@ -130,6 +138,8 @@ func New(config *Config) (fsys Filesystem, err error) {
 		fsys = NewVirtualFilesystem()
 	case "nop":
 		fsys = NewNopFilesystem()
+	default:
+		err = errors.Errorf("unexpected fs type %q", config.name)
 	}
 	return
 }

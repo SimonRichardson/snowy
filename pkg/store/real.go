@@ -158,6 +158,11 @@ func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, erro
 }
 
 func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
+	if r.db == nil {
+		err = errors.New("db not found")
+		return
+	}
+
 	var txn *sql.Tx
 	txn, err = r.db.Begin()
 	if err != nil {
@@ -181,7 +186,7 @@ func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
 // Drop removes all of the stored documents
 func (r *realStore) Drop() error {
 	if r.db == nil {
-		return nil
+		return errors.New("db not found")
 	}
 
 	_, err := r.db.Exec(defaultDropQuery)

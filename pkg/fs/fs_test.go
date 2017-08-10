@@ -9,7 +9,176 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"testing/quick"
+
+	"github.com/pkg/errors"
 )
+
+func TestBuildingFilesystem(t *testing.T) {
+	t.Parallel()
+
+	t.Run("build", func(t *testing.T) {
+		fn := func(name string) bool {
+			config, err := Build(
+				With(name),
+				WithConfig(nil),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := name, config.name; expected != actual {
+				t.Errorf("expected: %s, actual: %s", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("invalid build", func(t *testing.T) {
+		_, err := Build(
+			func(config *Config) error {
+				return errors.Errorf("bad")
+			},
+		)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %t, actual: %t", expected, actual)
+		}
+	})
+}
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	t.Run("local", func(t *testing.T) {
+		config, err := Build(
+			With("local"),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = New(config)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("virtual", func(t *testing.T) {
+		config, err := Build(
+			With("virtual"),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = New(config)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("nop", func(t *testing.T) {
+		config, err := Build(
+			With("nop"),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = New(config)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		config, err := Build(
+			With("invalid"),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = New(config)
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %t, actual: %t", expected, actual)
+		}
+	})
+}
+
+func TestNotFound(t *testing.T) {
+	t.Parallel()
+
+	t.Run("source", func(t *testing.T) {
+		fn := func(source string) bool {
+			err := errNotFound{errors.New(source)}
+
+			if expected, actual := source, err.Error(); expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		fn := func(source string) bool {
+			err := errNotFound{errors.New(source)}
+
+			if expected, actual := true, err.NotFound(); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("valid", func(t *testing.T) {
+		fn := func(source string) bool {
+			err := errNotFound{errors.New(source)}
+
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		fn := func(source string) bool {
+			err := errors.New(source)
+
+			if expected, actual := false, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
 
 func testFilesystemCreate(fsys Filesystem, dir string, t *testing.T) {
 	path := filepath.Join(dir, "tmpfile")
@@ -36,18 +205,18 @@ func testFilesystemOpen(fsys Filesystem, dir string, t *testing.T) {
 	}
 
 	content := make([]byte, rand.Intn(1000)+100)
-	if _, err := rand.Read(content); err != nil {
+	if _, err = rand.Read(content); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := tmpfile.Write(content); err != nil {
+	if _, err = tmpfile.Write(content); err != nil {
 		t.Fatal(err)
 	}
 
 	defer fsys.Remove(tmpfile.Name())
-	if _, err := tmpfile.Write(content); err != nil {
+	if _, err = tmpfile.Write(content); err != nil {
 		t.Fatal(err)
 	}
-	if err := tmpfile.Close(); err != nil {
+	if err = tmpfile.Close(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -177,6 +346,10 @@ func testFilesystemWalk(fsys Filesystem, dir string, t *testing.T) {
 			t.Errorf("expected: %q to exist", filepath)
 		}
 
+		if expected, actual := int64(0), info.Size(); expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+
 		return err
 	}); err != nil {
 		t.Error(err)
@@ -252,26 +425,29 @@ func testFileReadWrite(fsys Filesystem, dir string, t *testing.T) {
 		t.Errorf("expected: %q to exist", path)
 	}
 
-	var bytes []byte
-	if n, err := file.Read(bytes); err != nil {
+	var (
+		n     int
+		bytes []byte
+	)
+	if n, err = file.Read(bytes); err != nil {
 		t.Error(err)
 	} else if n != 0 {
 		t.Errorf("expected: %q to be 0", n)
 	}
 
 	content := make([]byte, rand.Intn(1000)+100)
-	if _, err := rand.Read(content); err != nil {
+	if _, err = rand.Read(content); err != nil {
 		t.Error(err)
 	}
-	if n, err := file.Write(content); err != nil {
+	if n, err = file.Write(content); err != nil {
 		t.Error(err)
 	} else if n == 0 || n != len(content) {
 		t.Errorf("expected: %q to be %d", n, len(content))
 	}
-	if err := file.Sync(); err != nil {
+	if err = file.Sync(); err != nil {
 		t.Error(err)
 	}
-	if err := file.Close(); err != nil {
+	if err = file.Close(); err != nil {
 		t.Error(err)
 	}
 

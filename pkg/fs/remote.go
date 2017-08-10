@@ -68,12 +68,14 @@ func (fs *remoteFilesystem) Open(path string) (File, error) {
 }
 
 func (fs *remoteFilesystem) Rename(oldname, newname string) error {
-	_, err := fs.service.CopyObject(&s3.CopyObjectInput{
+	if _, err := fs.service.CopyObject(&s3.CopyObjectInput{
 		Bucket:     fs.bucket,
 		Key:        aws.String(newname),
 		CopySource: aws.String(oldname),
-	})
-	return err
+	}); err != nil {
+		return err
+	}
+	return fs.Remove(oldname)
 }
 
 func (fs *remoteFilesystem) Exists(path string) bool {

@@ -156,24 +156,27 @@ func TestNopFile(t *testing.T) {
 			t.Error(err)
 		}
 
-		var bytes []byte
-		if n, err := file.Read(bytes); err != nil {
+		var (
+			n     int
+			bytes []byte
+		)
+		if n, err = file.Read(bytes); err != nil {
 			t.Error(err)
 		} else if n != 0 {
 			t.Errorf("expected: %q to be 0", n)
 		}
 
 		content := make([]byte, rand.Intn(1000)+100)
-		if _, err := rand.Read(content); err != nil {
+		if _, err = rand.Read(content); err != nil {
 			t.Error(err)
 		}
-		if n, err := file.Write(content); err != nil {
+		if n, err = file.Write(content); err != nil {
 			t.Error(err)
 		} else if n == 0 || n != len(content) {
 			t.Errorf("expected: %q to be %d", n, len(content))
 		}
 
-		if err := file.Close(); err != nil {
+		if err = file.Close(); err != nil {
 			t.Error(err)
 		}
 
@@ -194,6 +197,44 @@ func TestNopFile(t *testing.T) {
 
 		if expected, actual := make([]byte, len(content)), contentBytes; !reflect.DeepEqual(expected, actual) {
 			t.Errorf("expected: %q, actual: %q", expected, actual)
+		}
+	})
+
+	t.Run("sync", func(t *testing.T) {
+		var (
+			fsys = NewNopFilesystem()
+			dir  = fmt.Sprintf("tmpdir-%d", rand.Intn(1000))
+			path = filepath.Join(dir, "tmpfile")
+		)
+		file, err := fsys.Create(path)
+		if err != nil {
+			t.Error(err)
+		}
+
+		var (
+			n     int
+			bytes []byte
+		)
+		if n, err = file.Read(bytes); err != nil {
+			t.Error(err)
+		} else if n != 0 {
+			t.Errorf("expected: %q to be 0", n)
+		}
+
+		content := make([]byte, rand.Intn(1000)+100)
+		if _, err = rand.Read(content); err != nil {
+			t.Error(err)
+		}
+		if n, err = file.Write(content); err != nil {
+			t.Error(err)
+		} else if n == 0 || n != len(content) {
+			t.Errorf("expected: %q to be %d", n, len(content))
+		}
+		if err = file.Sync(); err != nil {
+			t.Error(err)
+		}
+		if err = file.Close(); err != nil {
+			t.Error(err)
 		}
 	})
 }
