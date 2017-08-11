@@ -111,9 +111,9 @@ func (_mr *MockRepositoryMockRecorder) InsertDocument(arg0 interface{}) *gomock.
 }
 
 // PutContent mocks base method
-func (_m *MockRepository) PutContent(_param0 document.Content) (uuid.UUID, error) {
+func (_m *MockRepository) PutContent(_param0 document.Content) (document.Content, error) {
 	ret := _m.ctrl.Call(_m, "PutContent", _param0)
-	ret0, _ := ret[0].(uuid.UUID)
+	ret0, _ := ret[0].(document.Content)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

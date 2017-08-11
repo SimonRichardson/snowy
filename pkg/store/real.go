@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	defaultSelectQuery         = "SELECT id, name, resource_id, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 ORDER BY created_on DESC, id DESC;"
-	defaultInsertQuery         = "INSERT INTO documents (name, resource_id, author_id, tags, created_on, deleted_on) VALUES ($1, $2, $3, $4, $5, $6);"
-	defaultMultipleSelectQuery = "SELECT id, name, resource_id, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 AND tags && $2 ORDER BY created_on DESC, id DESC;"
+	defaultSelectQuery         = "SELECT id, name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 ORDER BY created_on DESC, resource_address DESC;"
+	defaultInsertQuery         = "INSERT INTO documents (name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);"
+	defaultMultipleSelectQuery = "SELECT id, name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 AND tags && $2 ORDER BY created_on DESC, resource_address DESC;"
 	defaultDropQuery           = "TRUNCATE TABLE documents;"
 )
 
@@ -58,6 +58,9 @@ func (r *realStore) Get(resource uuid.UUID, query Query) (Entity, error) {
 		&id,
 		&entity.Name,
 		&resourceID,
+		&entity.ResourceAddress,
+		&entity.ResourceSize,
+		&entity.ResourceContentType,
 		&entity.AuthorID,
 		pq.Array(&entity.Tags),
 		&entity.CreatedOn,
@@ -96,6 +99,9 @@ func (r *realStore) Insert(entity Entity) error {
 		if _, err = stmt.Exec(
 			entity.Name,
 			entity.ResourceID.String(),
+			entity.ResourceAddress,
+			entity.ResourceSize,
+			entity.ResourceContentType,
 			entity.AuthorID,
 			pq.Array(tags),
 			entity.CreatedOn,
@@ -130,6 +136,9 @@ func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, erro
 			&id,
 			&entity.Name,
 			&resourceID,
+			&entity.ResourceAddress,
+			&entity.ResourceSize,
+			&entity.ResourceContentType,
 			&entity.AuthorID,
 			pq.Array(&entity.Tags),
 			&entity.CreatedOn,

@@ -1,13 +1,19 @@
 package contents
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
 
-	"github.com/trussle/snowy/pkg/document"
-	"github.com/trussle/snowy/pkg/uuid"
 	"github.com/pkg/errors"
+	"github.com/trussle/snowy/pkg/document"
+	errs "github.com/trussle/snowy/pkg/http"
+	"github.com/trussle/snowy/pkg/uuid"
+)
+
+const (
+	defaultContentType = "application/json"
 )
 
 const (
@@ -52,27 +58,50 @@ type SelectQueryResult struct {
 func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
+	w.Header().Set(httpHeaderContentType, qr.Content.ContentType())
+	w.Header().Set(httpHeaderContentLength, strconv.FormatInt(qr.Content.Size(), 10))
+
+	bytes, err := qr.Content.Bytes()
+	if err != nil {
+		errs.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	if _, err := w.Write(bytes); err != nil {
+		errs.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // InsertQueryParams defines all the dimensions of a query.
 type InsertQueryParams struct {
+	ContentType   string
+	ContentLength int64
 }
 
 // DecodeFrom populates a InsertQueryParams from a URL.
 func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
 	// Required depending on the query behavior
 	if rb == queryRequired {
+		// Get the content-type
+		if qp.ContentType = h.Get("Content-Type"); qp.ContentType == "" {
+			return errors.New("error reading 'content-type' (required) query")
+		}
+
 		// Get the content-length
 		contentLength := h.Get("Content-Length")
-		if contentLength != "" {
+		if contentLength == "" {
 			return errors.New("error reading 'content-length' (required) query")
 		}
 
-		if size, err := strconv.ParseInt(contentLength, 10, 64); err != nil {
+		size, err := strconv.ParseInt(contentLength, 10, 64)
+		if err != nil {
 			return errors.New("error parsing 'content-length' (required) query")
 		} else if size > defaultMaxContentLength {
 			return errors.Errorf("error request body too large")
+		} else if size < 1 {
+			return errors.Errorf("error request body is empty")
 		}
+
+		qp.ContentLength = size
 	}
 
 	return nil
@@ -80,19 +109,26 @@ func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 
 // InsertQueryResult contains statistics about the query.
 type InsertQueryResult struct {
-	Params     InsertQueryParams `json:"query"`
-	Duration   string            `json:"duration"`
-	ResourceID uuid.UUID         `json:"resource_id"`
+	Params   InsertQueryParams `json:"query"`
+	Duration string            `json:"duration"`
+	Content  document.Content  `json:"content"`
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
 func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
+	w.Header().Set(httpHeaderContentType, defaultContentType)
+
+	if err := json.NewEncoder(w).Encode(qr.Content); err != nil {
+		errs.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 const (
-	httpHeaderDuration   = "X-Duration"
-	httpHeaderResourceID = "X-ResourceID"
+	httpHeaderDuration      = "X-Duration"
+	httpHeaderResourceID    = "X-ResourceID"
+	httpHeaderContentType   = "Content-Type"
+	httpHeaderContentLength = "Content-Length"
 )
 
 type queryBehavior int

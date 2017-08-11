@@ -266,7 +266,7 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.Document, err = document.Build(
+			res.Document, err = document.BuildDocument(
 				document.WithResourceID(uid),
 			)
 			if err != nil {
@@ -404,7 +404,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			docs := make([]document.Document, 1)
-			docs[0], err = document.Build(
+			docs[0], err = document.BuildDocument(
 				document.WithResourceID(uid),
 			)
 			if err != nil {

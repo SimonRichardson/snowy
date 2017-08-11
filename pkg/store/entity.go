@@ -13,6 +13,9 @@ type Entity struct {
 	ID                   uuid.UUID
 	Name                 string
 	ResourceID           uuid.UUID
+	ResourceAddress      string
+	ResourceSize         int64
+	ResourceContentType  string
 	AuthorID             string
 	Tags                 []string
 	CreatedOn, DeletedOn time.Time
@@ -54,6 +57,30 @@ func BuildEntityWithName(name string) EntityOption {
 func BuildEntityWithResourceID(resourceID uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ResourceID = resourceID
+		return nil
+	}
+}
+
+// BuildEntityWithResourceAddress adds a type of resourceAddress to the entity.
+func BuildEntityWithResourceAddress(resourceAddress string) EntityOption {
+	return func(entity *Entity) error {
+		entity.ResourceAddress = resourceAddress
+		return nil
+	}
+}
+
+// BuildEntityWithResourceSize adds a type of resourceSize to the entity.
+func BuildEntityWithResourceSize(resourceSize int64) EntityOption {
+	return func(entity *Entity) error {
+		entity.ResourceSize = resourceSize
+		return nil
+	}
+}
+
+// BuildEntityWithResourceContentType adds a type of resourceContentType to the entity.
+func BuildEntityWithResourceContentType(resourceContentType string) EntityOption {
+	return func(entity *Entity) error {
+		entity.ResourceContentType = resourceContentType
 		return nil
 	}
 }

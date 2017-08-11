@@ -14,12 +14,22 @@ func TestBuildingEntity(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(id uuid.UUID, name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(id uuid.UUID,
+			name string,
+			resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID string,
+			tags Tags,
+		) bool {
 			now := time.Now()
 			entity, err := BuildEntity(
 				BuildEntityWithID(id),
 				BuildEntityWithName(name),
 				BuildEntityWithResourceID(resourceID),
+				BuildEntityWithResourceAddress(resourceAddress),
+				BuildEntityWithResourceSize(resourceSize),
+				BuildEntityWithResourceContentType(resourceContentType),
 				BuildEntityWithAuthorID(authorID),
 				BuildEntityWithTags(tags),
 				BuildEntityWithCreatedOn(now),
@@ -30,13 +40,16 @@ func TestBuildingEntity(t *testing.T) {
 			}
 
 			want := Entity{
-				ID:         id,
-				Name:       name,
-				ResourceID: resourceID,
-				AuthorID:   authorID,
-				Tags:       tags,
-				CreatedOn:  now,
-				DeletedOn:  time.Time{},
+				ID:                  id,
+				Name:                name,
+				ResourceID:          resourceID,
+				ResourceAddress:     resourceAddress,
+				ResourceSize:        resourceSize,
+				ResourceContentType: resourceContentType,
+				AuthorID:            authorID,
+				Tags:                tags,
+				CreatedOn:           now,
+				DeletedOn:           time.Time{},
 			}
 
 			if expected, actual := want, entity; !entityEquals(expected, actual) {

@@ -114,7 +114,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 			)
@@ -162,7 +162,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 			)
@@ -212,7 +212,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 			)
@@ -260,7 +260,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 			)
@@ -509,7 +509,7 @@ func TestPostAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.Build(
+			doc, err := document.BuildDocument(
 				document.WithName(name),
 				document.WithAuthorID(authorID),
 				document.WithTags(tags),
@@ -587,7 +587,7 @@ func TestPostAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.Build(
+			doc, err := document.BuildDocument(
 				document.WithName(name),
 				document.WithAuthorID(authorID),
 				document.WithTags(tags),
@@ -871,7 +871,7 @@ func TestPutAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.Build(
+			doc, err := document.BuildDocument(
 				document.WithName(name),
 				document.WithAuthorID(authorID),
 				document.WithTags(tags),
@@ -949,7 +949,7 @@ func TestPutAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.Build(
+			doc, err := document.BuildDocument(
 				document.WithName(name),
 				document.WithAuthorID(authorID),
 				document.WithTags(tags),
@@ -1088,7 +1088,7 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 				docs = []document.Document{doc}
@@ -1137,7 +1137,7 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 				docs = []document.Document{doc}
@@ -1188,7 +1188,7 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.Build(
+				doc, err = document.BuildDocument(
 					document.WithResourceID(uid),
 				)
 				docs = []document.Document{doc}

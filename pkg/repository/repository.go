@@ -41,7 +41,7 @@ type Repository interface {
 
 	// PutContent inserts content into the repository. If there is an error
 	// putting content into the repository then it will return an error.
-	PutContent(content document.Content) (uuid.UUID, error)
+	PutContent(content document.Content) (document.Content, error)
 
 	// Close the underlying document store and returns an error if it fails.
 	Close() error

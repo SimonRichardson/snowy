@@ -53,13 +53,19 @@ func TestDocumentation_Flow(t *testing.T) {
 
 		uid         = uuid.New()
 		tags        = []string{"abc", "def", "g"}
-		inputDoc, _ = document.Build(
+		inputDoc, _ = document.BuildDocument(
 			document.WithAuthorID(uid.String()),
+			document.WithResourceAddress("abcdefghij"),
+			document.WithResourceSize(10),
+			document.WithResourceContentType("application/octet-stream"),
 			document.WithName("document-name"),
 			document.WithTags(tags),
 		)
-		outputDoc, _ = document.Build(
+		outputDoc, _ = document.BuildDocument(
 			document.WithResourceID(uid),
+						document.WithResourceAddress("abcdefghij"),
+			document.WithResourceSize(10),
+			document.WithResourceContentType("application/octet-stream"),
 			document.WithAuthorID(uuid.New().String()),
 			document.WithName("document-name"),
 			document.WithTags(tags),

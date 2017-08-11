@@ -84,16 +84,24 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			err := store.Insert(Entity{
-				ResourceID: resourceID,
-				AuthorID:   authorID,
-				Name:       name,
-				Tags:       tags.Slice(),
-				CreatedOn:  time.Now(),
-				DeletedOn:  time.Time{},
+				ResourceID:          resourceID,
+				ResourceAddress:     resourceAddress,
+				ResourceSize:        resourceSize,
+				ResourceContentType: resourceContentType,
+				AuthorID:            authorID,
+				Name:                name,
+				Tags:                tags.Slice(),
+				CreatedOn:           time.Now(),
+				DeletedOn:           time.Time{},
 			})
 			return err == nil
 		}
@@ -107,16 +115,24 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			if err := store.Insert(Entity{
-				ResourceID: resourceID,
-				AuthorID:   authorID,
-				Name:       name,
-				Tags:       tags.Slice(),
-				CreatedOn:  time.Now(),
-				DeletedOn:  time.Time{},
+				ResourceID:          resourceID,
+				ResourceAddress:     resourceAddress,
+				ResourceSize:        resourceSize,
+				ResourceContentType: resourceContentType,
+				AuthorID:            authorID,
+				Name:                name,
+				Tags:                tags.Slice(),
+				CreatedOn:           time.Now(),
+				DeletedOn:           time.Time{},
 			}); err != nil {
 				t.Fatal(err)
 			}
@@ -125,7 +141,11 @@ func TestRealStore_Integration(t *testing.T) {
 			if err != nil {
 				return false
 			}
-			return entity.ResourceID.Equals(resourceID)
+			return entity.ResourceID.Equals(resourceID) &&
+				entity.ResourceAddress == resourceAddress &&
+				entity.ResourceSize == resourceSize &&
+				entity.ResourceContentType == resourceContentType &&
+				entity.AuthorID == authorID
 		}
 
 		if err := quick.Check(fn, nil); err != nil {
@@ -137,16 +157,24 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			if err := store.Insert(Entity{
-				ResourceID: resourceID,
-				AuthorID:   authorID,
-				Name:       name,
-				Tags:       tags.Slice(),
-				CreatedOn:  time.Now(),
-				DeletedOn:  time.Time{},
+				ResourceID:          resourceID,
+				ResourceAddress:     resourceAddress,
+				ResourceSize:        resourceSize,
+				ResourceContentType: resourceContentType,
+				AuthorID:            authorID,
+				Name:                name,
+				Tags:                tags.Slice(),
+				CreatedOn:           time.Now(),
+				DeletedOn:           time.Time{},
 			}); err != nil {
 				t.Fatal(err)
 			}
@@ -168,16 +196,24 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			entity := Entity{
-				ResourceID: resourceID,
-				AuthorID:   authorID,
-				Name:       name,
-				Tags:       tags.Slice(),
-				CreatedOn:  time.Now().Round(time.Millisecond),
-				DeletedOn:  time.Time{},
+				ResourceID:          resourceID,
+				ResourceAddress:     resourceAddress,
+				ResourceSize:        resourceSize,
+				ResourceContentType: resourceContentType,
+				AuthorID:            authorID,
+				Name:                name,
+				Tags:                tags.Slice(),
+				CreatedOn:           time.Now().Round(time.Millisecond),
+				DeletedOn:           time.Time{},
 			}
 			if err := store.Insert(entity); err != nil {
 				t.Fatal(err)
@@ -203,18 +239,26 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
-					ResourceID: resourceID,
-					AuthorID:   fmt.Sprintf("%s%d", authorID, k),
-					Name:       name,
-					Tags:       tags.Slice(),
-					CreatedOn:  time.Now().Round(time.Millisecond),
-					DeletedOn:  time.Time{},
+					ResourceID:          resourceID,
+					ResourceAddress:     resourceAddress,
+					ResourceSize:        resourceSize,
+					ResourceContentType: resourceContentType,
+					AuthorID:            fmt.Sprintf("%s%d", authorID, k),
+					Name:                name,
+					Tags:                tags.Slice(),
+					CreatedOn:           time.Now().Round(time.Millisecond),
+					DeletedOn:           time.Time{},
 				}
 				if err := store.Insert(entity); err != nil {
 					t.Fatal(err)
@@ -241,18 +285,26 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore()
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID, authorID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID, name string,
+			tags Tags,
+		) bool {
 			defer store.Drop()
 
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
-					ResourceID: resourceID,
-					AuthorID:   fmt.Sprintf("%s%d", authorID, k),
-					Name:       name,
-					Tags:       tags.Slice(),
-					CreatedOn:  time.Now().Round(time.Millisecond),
-					DeletedOn:  time.Time{},
+					ResourceID:          resourceID,
+					ResourceAddress:     resourceAddress,
+					ResourceSize:        resourceSize,
+					ResourceContentType: resourceContentType,
+					AuthorID:            fmt.Sprintf("%s%d", authorID, k),
+					Name:                name,
+					Tags:                tags.Slice(),
+					CreatedOn:           time.Now().Round(time.Millisecond),
+					DeletedOn:           time.Time{},
 				}
 				if err := store.Insert(entity); err != nil {
 					t.Fatal(err)

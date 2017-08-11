@@ -28,3 +28,6 @@ script:
   - make integration-tests
   - make documentation
   - goveralls -package=./pkg/... -service=travis-ci
+
+after_script:
+  - docker-compose down

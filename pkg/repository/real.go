@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -45,10 +44,13 @@ func (r *realRepository) GetDocument(resourceID uuid.UUID, options Query) (docum
 		return document.Document{}, err
 	}
 
-	return document.Build(
+	return document.BuildDocument(
 		document.WithID(entity.ID),
 		document.WithName(entity.Name),
 		document.WithResourceID(entity.ResourceID),
+		document.WithResourceAddress(entity.ResourceAddress),
+		document.WithResourceSize(entity.ResourceSize),
+		document.WithResourceContentType(entity.ResourceContentType),
 		document.WithAuthorID(entity.AuthorID),
 		document.WithTags(entity.Tags),
 		document.WithCreatedOn(entity.CreatedOn),
@@ -62,6 +64,9 @@ func (r *realRepository) InsertDocument(doc document.Document) (document.Documen
 	entity, err := store.BuildEntity(
 		store.BuildEntityWithName(doc.Name()),
 		store.BuildEntityWithResourceID(doc.ResourceID()),
+		store.BuildEntityWithResourceAddress(doc.ResourceAddress()),
+		store.BuildEntityWithResourceSize(doc.ResourceSize()),
+		store.BuildEntityWithResourceContentType(doc.ResourceContentType()),
 		store.BuildEntityWithAuthorID(doc.AuthorID()),
 		store.BuildEntityWithTags(doc.Tags()),
 		store.BuildEntityWithCreatedOn(doc.CreatedOn()),
@@ -76,10 +81,13 @@ func (r *realRepository) InsertDocument(doc document.Document) (document.Documen
 	}
 
 	// Reconstruct the document.
-	return document.Build(
+	return document.BuildDocument(
 		document.WithID(entity.ID),
 		document.WithName(entity.Name),
 		document.WithResourceID(entity.ResourceID),
+		document.WithResourceAddress(entity.ResourceAddress),
+		document.WithResourceSize(entity.ResourceSize),
+		document.WithResourceContentType(entity.ResourceContentType),
 		document.WithAuthorID(entity.AuthorID),
 		document.WithTags(entity.Tags),
 		document.WithCreatedOn(entity.CreatedOn),
@@ -119,10 +127,13 @@ func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]do
 
 	res := make([]document.Document, len(entities))
 	for k, entity := range entities {
-		doc, err := document.Build(
+		doc, err := document.BuildDocument(
 			document.WithID(entity.ID),
 			document.WithName(entity.Name),
 			document.WithResourceID(entity.ResourceID),
+			document.WithResourceAddress(entity.ResourceAddress),
+			document.WithResourceSize(entity.ResourceSize),
+			document.WithResourceContentType(entity.ResourceContentType),
 			document.WithAuthorID(entity.AuthorID),
 			document.WithTags(entity.Tags),
 			document.WithCreatedOn(entity.CreatedOn),
@@ -142,21 +153,35 @@ func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]do
 // links to the content is managed by the document storage. If there is an error
 // during the saving of the content to the underlying storage it will then
 // return an error.
-func (r *realRepository) GetContent(resourceID uuid.UUID) (document.Content, error) {
-	document, err := r.GetDocument(resourceID, Query{})
+func (r *realRepository) GetContent(resourceID uuid.UUID) (content document.Content, err error) {
+	var doc document.Document
+	doc, err = r.GetDocument(resourceID, Query{})
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	fmt.Println(document)
+	var file fs.File
+	file, err = r.fs.Open(doc.ResourceAddress())
+	if err != nil {
+		if fs.ErrNotFound(err) {
+			err = errNotFound{err}
+			return
+		}
+		return
+	}
 
-	return nil, nil
+	return document.BuildContent(
+		document.WithAddress(doc.ResourceAddress()),
+		document.WithSize(file.Size()),
+		document.WithContentType(doc.ResourceContentType()),
+		document.WithReader(file),
+	)
 }
 
 // PutContent inserts content into the repository. If there is an error
 // putting content into the repository then it will return an error.
-func (r *realRepository) PutContent(content document.Content) (uuid.UUID, error) {
-	return uuid.Empty, nil
+func (r *realRepository) PutContent(content document.Content) (document.Content, error) {
+	return document.Content{}, nil
 }
 
 // Close the underlying document store and returns an error if it fails.

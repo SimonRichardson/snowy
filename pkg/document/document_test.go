@@ -17,25 +17,38 @@ func TestDocument(t *testing.T) {
 	t.Parallel()
 
 	t.Run("fields", func(t *testing.T) {
-		fn := func(id uuid.UUID, name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(id uuid.UUID,
+			name string,
+			resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID string,
+			tags Tags,
+		) bool {
 			now := time.Now()
-			doc := Document{
-				id:         id,
-				name:       name,
-				resourceID: resourceID,
-				authorID:   authorID,
-				tags:       tags,
-				createdOn:  now,
-				deletedOn:  now,
+			output := Document{
+				id:                  id,
+				name:                name,
+				resourceID:          resourceID,
+				resourceAddress:     resourceAddress,
+				resourceSize:        resourceSize,
+				resourceContentType: resourceContentType,
+				authorID:            authorID,
+				tags:                tags,
+				createdOn:           now,
+				deletedOn:           now,
 			}
 
-			return doc.ID().Equals(id) &&
-				doc.Name() == name &&
-				doc.ResourceID().Equals(resourceID) &&
-				doc.AuthorID() == authorID &&
-				reflect.DeepEqual(doc.Tags(), tags.Slice()) &&
-				doc.CreatedOn().Equal(now) &&
-				doc.DeletedOn().Equal(now)
+			return output.ID().Equals(id) &&
+				output.Name() == name &&
+				output.ResourceID().Equals(resourceID) &&
+				output.ResourceAddress() == resourceAddress &&
+				output.ResourceSize() == resourceSize &&
+				output.ResourceContentType() == resourceContentType &&
+				output.AuthorID() == authorID &&
+				reflect.DeepEqual(output.Tags(), tags.Slice()) &&
+				output.CreatedOn().Equal(now) &&
+				output.DeletedOn().Equal(now)
 		}
 
 		if err := quick.Check(fn, nil); err != nil {
@@ -44,16 +57,26 @@ func TestDocument(t *testing.T) {
 	})
 
 	t.Run("json marshal", func(t *testing.T) {
-		fn := func(id uuid.UUID, name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(id uuid.UUID,
+			name string,
+			resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID string,
+			tags Tags,
+		) bool {
 			now := time.Now().Round(time.Second)
 			input := Document{
-				id:         id,
-				name:       name,
-				resourceID: resourceID,
-				authorID:   authorID,
-				tags:       tags,
-				createdOn:  now,
-				deletedOn:  now,
+				id:                  id,
+				name:                name,
+				resourceID:          resourceID,
+				resourceAddress:     resourceAddress,
+				resourceSize:        resourceSize,
+				resourceContentType: resourceContentType,
+				authorID:            authorID,
+				tags:                tags,
+				createdOn:           now,
+				deletedOn:           now,
 			}
 
 			bytes, err := json.Marshal(input)
@@ -68,6 +91,9 @@ func TestDocument(t *testing.T) {
 
 			return output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
+				output.ResourceAddress() == resourceAddress &&
+				output.ResourceSize() == resourceSize &&
+				output.ResourceContentType() == resourceContentType &&
 				output.AuthorID() == authorID &&
 				reflect.DeepEqual(output.Tags(), tags.Slice()) &&
 				output.CreatedOn().Equal(now) &&
@@ -80,15 +106,24 @@ func TestDocument(t *testing.T) {
 	})
 
 	t.Run("json marshal with empty tags", func(t *testing.T) {
-		fn := func(id uuid.UUID, name string, resourceID uuid.UUID, authorID string) bool {
+		fn := func(id uuid.UUID,
+			name string,
+			resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID string,
+		) bool {
 			now := time.Now().Round(time.Second)
 			input := Document{
-				id:         id,
-				name:       name,
-				resourceID: resourceID,
-				authorID:   authorID,
-				createdOn:  now,
-				deletedOn:  now,
+				id:                  id,
+				name:                name,
+				resourceID:          resourceID,
+				resourceAddress:     resourceAddress,
+				resourceSize:        resourceSize,
+				resourceContentType: resourceContentType,
+				authorID:            authorID,
+				createdOn:           now,
+				deletedOn:           now,
 			}
 
 			bytes, err := json.Marshal(input)
@@ -103,6 +138,9 @@ func TestDocument(t *testing.T) {
 
 			return output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
+				output.ResourceAddress() == resourceAddress &&
+				output.ResourceSize() == resourceSize &&
+				output.ResourceContentType() == resourceContentType &&
 				output.AuthorID() == authorID &&
 				reflect.DeepEqual(output.Tags(), make([]string, 0)) &&
 				output.CreatedOn().Equal(now) &&
@@ -213,12 +251,22 @@ func TestDocumentBuild(t *testing.T) {
 	t.Parallel()
 
 	t.Run("build", func(t *testing.T) {
-		fn := func(id uuid.UUID, name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(id uuid.UUID,
+			name string,
+			resourceID uuid.UUID,
+			resourceAddress string,
+			resourceSize int64,
+			resourceContentType, authorID string,
+			tags Tags,
+		) bool {
 			now := time.Now()
-			doc, err := Build(
+			doc, err := BuildDocument(
 				WithID(id),
 				WithName(name),
 				WithResourceID(resourceID),
+				WithResourceAddress(resourceAddress),
+				WithResourceSize(resourceSize),
+				WithResourceContentType(resourceContentType),
 				WithAuthorID(authorID),
 				WithTags(tags),
 				WithCreatedOn(now),
@@ -230,6 +278,9 @@ func TestDocumentBuild(t *testing.T) {
 			return doc.ID().Equals(id) &&
 				doc.Name() == name &&
 				doc.ResourceID().Equals(resourceID) &&
+				doc.ResourceAddress() == resourceAddress &&
+				doc.ResourceSize() == resourceSize &&
+				doc.ResourceContentType() == resourceContentType &&
 				doc.AuthorID() == authorID &&
 				reflect.DeepEqual(doc.Tags(), tags.Slice()) &&
 				doc.CreatedOn().Equal(now) &&
@@ -243,7 +294,7 @@ func TestDocumentBuild(t *testing.T) {
 
 	t.Run("build with new resource_id", func(t *testing.T) {
 		fn := func() bool {
-			doc, err := Build(
+			doc, err := BuildDocument(
 				WithNewResourceID(),
 			)
 			if err != nil {
@@ -258,7 +309,7 @@ func TestDocumentBuild(t *testing.T) {
 	})
 
 	t.Run("invalid build", func(t *testing.T) {
-		_, err := Build(
+		_, err := BuildDocument(
 			func(doc *Document) error {
 				return errors.Errorf("bad")
 			},

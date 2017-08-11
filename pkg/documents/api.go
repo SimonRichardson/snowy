@@ -132,7 +132,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() document.Option {
+	doc, err := ingestRequest(r.Body, func() document.DocOption {
 		return document.WithNewResourceID()
 	})
 	if err != nil {
@@ -168,7 +168,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() document.Option {
+	doc, err := ingestRequest(r.Body, func() document.DocOption {
 		return document.WithResourceID(qp.ResourceID)
 	})
 	if err != nil {
@@ -237,7 +237,7 @@ func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.ResponseWriter.WriteHeader(code)
 }
 
-func ingestRequest(reader io.ReadCloser, fn func() document.Option) (document.Document, error) {
+func ingestRequest(reader io.ReadCloser, fn func() document.DocOption) (document.Document, error) {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return document.Document{}, err
@@ -255,9 +255,12 @@ func ingestRequest(reader io.ReadCloser, fn func() document.Option) (document.Do
 		return document.Document{}, err
 	}
 
-	return document.Build(
+	return document.BuildDocument(
 		fn(),
 		document.WithName(input.Name),
+		document.WithResourceAddress(input.ResourceAddress),
+		document.WithResourceSize(input.ResourceSize),
+		document.WithResourceContentType(input.ResourceContentType),
 		document.WithAuthorID(input.AuthorID),
 		document.WithTags(input.Tags),
 		document.WithCreatedOn(time.Now()),
@@ -265,9 +268,12 @@ func ingestRequest(reader io.ReadCloser, fn func() document.Option) (document.Do
 }
 
 type documentInput struct {
-	Name     string   `json:"name"`
-	AuthorID string   `json:"author_id"`
-	Tags     []string `json:"tags"`
+	Name                string   `json:"name"`
+	ResourceAddress     string   `json:"resource_address"`
+	ResourceSize        int64    `json:"resource_size"`
+	ResourceContentType string   `json:"resource_content_type"`
+	AuthorID            string   `json:"author_id"`
+	Tags                []string `json:"tags"`
 }
 
 func validateInput(input documentInput) error {
