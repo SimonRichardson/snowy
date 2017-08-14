@@ -5,10 +5,15 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
+var (
+	emptyAuthID = ""
+)
+
 // Query allows you to specify different qualifiers when querying the
 // repository
 type Query struct {
-	Tags []string
+	Tags     []string
+	AuthorID *string
 }
 
 // Repository is an abstraction over the underlying persistence storage, that
@@ -68,6 +73,25 @@ func WithQueryTags(tags []string) QueryOption {
 	return func(query *Query) error {
 		query.Tags = tags
 		return nil
+	}
+}
+
+// WithQueryAuthorID adds authorID to the Query to use for the configuration.
+func WithQueryAuthorID(authorID string) QueryOption {
+	return func(query *Query) error {
+		if authorID == "" {
+			query.AuthorID = &emptyAuthID
+		} else {
+			query.AuthorID = &authorID
+		}
+		return nil
+	}
+}
+
+// BuildEmptyQuery creates a Query with empty values.
+func BuildEmptyQuery() Query {
+	return Query{
+		AuthorID: &emptyAuthID,
 	}
 }
 

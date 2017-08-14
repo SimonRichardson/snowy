@@ -18,7 +18,7 @@ pkg/repository/mocks/repository.go:
 
 pkg/metrics/mocks/metrics.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go github.com/trussle/snowy/pkg/metrics Gauge,HistogramVec
-	sed -i -- 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
+	sed -i '' -- 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
 
 pkg/metrics/mocks/observer.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/observer.go github.com/prometheus/client_golang/prometheus Observer

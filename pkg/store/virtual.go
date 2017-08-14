@@ -41,6 +41,24 @@ func (r *virtualStore) Insert(entity Entity) error {
 
 func (r *virtualStore) GetMultiple(resourceID uuid.UUID, query Query) ([]Entity, error) {
 	if entities, ok := r.entities[resourceID.String()]; ok {
+
+		// Filter by authorID before filtering by tags
+		if query.AuthorID != nil {
+			var (
+				filtered []Entity
+				authorID = *query.AuthorID
+			)
+
+			for _, v := range entities {
+				if v.AuthorID == authorID {
+					filtered = append(filtered, v)
+				}
+			}
+
+			entities = filtered
+		}
+
+		// Filter by tags
 		if len(query.Tags) == 0 {
 			return entities, nil
 		}

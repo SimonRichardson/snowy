@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -113,9 +114,10 @@ func TestBuildingQuery(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(tags Tags) bool {
+		fn := func(tags Tags, authorID string) bool {
 			query, err := BuildQuery(
 				WithQueryTags(tags.Slice()),
+				WithQueryAuthorID(&authorID),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -123,6 +125,10 @@ func TestBuildingQuery(t *testing.T) {
 
 			if expected, actual := tags.Slice(), query.Tags; !reflect.DeepEqual(sortTags(expected), sortTags(actual)) {
 				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			if expected, actual := authorID, *query.AuthorID; expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
 			}
 
 			return true
@@ -252,12 +258,31 @@ func equals(a, b []Entity) bool {
 }
 
 func entityEquals(a, b Entity) bool {
-	return a.Name == b.Name &&
-		a.ResourceID.Equals(b.ResourceID) &&
-		reflect.DeepEqual([]byte(a.AuthorID), []byte(b.AuthorID)) &&
-		reflect.DeepEqual(sortTags(a.Tags), sortTags(b.Tags)) &&
-		a.CreatedOn.Equal(b.CreatedOn) &&
-		a.DeletedOn.Equal(b.DeletedOn)
+	if expected, actual := a.Name, b.Name; expected != actual {
+		fmt.Printf("name - expected: %q, actual: %q\n", expected, actual)
+		return false
+	}
+	if expected, actual := a.ResourceID, b.ResourceID; !expected.Equals(actual) {
+		fmt.Printf("resource_id - expected: %v, actual: %v\n", expected, actual)
+		return false
+	}
+	if expected, actual := a.AuthorID, b.AuthorID; expected != actual {
+		fmt.Printf("author_id - expected: %q, actual: %q\n", expected, actual)
+		//	return false
+	}
+	if expected, actual := sortTags(a.Tags), sortTags(b.Tags); !reflect.DeepEqual(expected, actual) {
+		fmt.Printf("tags - expected: %v, actual: %v\n", expected, actual)
+		return false
+	}
+	if expected, actual := a.CreatedOn, b.CreatedOn; !expected.Equal(actual) {
+		fmt.Printf("created_on - expected: %v, actual: %v\n", expected, actual)
+		return false
+	}
+	if expected, actual := a.DeletedOn, b.DeletedOn; !expected.Equal(actual) {
+		fmt.Printf("deleted_on - expected: %v, actual: %v\n", expected, actual)
+		return false
+	}
+	return true
 }
 
 func randomizeTags(a []string) []string {
@@ -277,7 +302,7 @@ func randomizeTags(a []string) []string {
 }
 
 func splitTags(a []string) []string {
-	if len(a) <= 1 {
+	if len(a) < 2 {
 		return a
 	}
 	return a[:len(a)/2]

@@ -6,6 +6,7 @@ package mocks
 import (
 	gomock "github.com/golang/mock/gomock"
 	prometheus "github.com/prometheus/client_golang/prometheus"
+	reflect "reflect"
 )
 
 // MockGauge is a mock of Gauge interface
@@ -38,7 +39,7 @@ func (_m *MockGauge) Dec() {
 
 // Dec indicates an expected call of Dec
 func (_mr *MockGaugeMockRecorder) Dec() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Dec")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Dec", reflect.TypeOf((*MockGauge)(nil).Dec))
 }
 
 // Inc mocks base method
@@ -48,7 +49,7 @@ func (_m *MockGauge) Inc() {
 
 // Inc indicates an expected call of Inc
 func (_mr *MockGaugeMockRecorder) Inc() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Inc")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Inc", reflect.TypeOf((*MockGauge)(nil).Inc))
 }
 
 // MockHistogramVec is a mock of HistogramVec interface
@@ -87,5 +88,5 @@ func (_m *MockHistogramVec) WithLabelValues(_param0 ...string) prometheus.Observ
 
 // WithLabelValues indicates an expected call of WithLabelValues
 func (_mr *MockHistogramVecMockRecorder) WithLabelValues(arg0 ...interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "WithLabelValues", arg0...)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "WithLabelValues", reflect.TypeOf((*MockHistogramVec)(nil).WithLabelValues), arg0...)
 }

@@ -32,6 +32,7 @@ func NewRealRepository(fs fs.Filesystem, store store.Store, logger log.Logger) R
 func (r *realRepository) GetDocument(resourceID uuid.UUID, options Query) (document.Document, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
+		store.WithQueryAuthorID(options.AuthorID),
 	)
 	if err != nil {
 		return document.Document{}, err
@@ -116,6 +117,7 @@ func (r *realRepository) AppendDocument(resourceID uuid.UUID, doc document.Docum
 func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]document.Document, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
+		store.WithQueryAuthorID(options.AuthorID),
 	)
 	if err != nil {
 		return nil, err

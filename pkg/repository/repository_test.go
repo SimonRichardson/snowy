@@ -15,9 +15,10 @@ func TestBuildingQuery(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(tags Tags) bool {
+		fn := func(tags Tags, authorID string) bool {
 			query, err := BuildQuery(
 				WithQueryTags(tags.Slice()),
+				WithQueryAuthorID(authorID),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -25,6 +26,10 @@ func TestBuildingQuery(t *testing.T) {
 
 			if expected, actual := tags.Slice(), query.Tags; !reflect.DeepEqual(sortTags(expected), sortTags(actual)) {
 				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			if expected, actual := authorID, *query.AuthorID; expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
 			}
 
 			return true

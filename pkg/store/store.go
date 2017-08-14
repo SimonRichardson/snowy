@@ -10,7 +10,8 @@ import (
 
 // Query allows you to specify different qualifiers when querying the store
 type Query struct {
-	Tags []string
+	Tags     []string
+	AuthorID *string
 }
 
 // Store represents a API over a persistent store.
@@ -111,6 +112,14 @@ func BuildQuery(opts ...QueryOption) (Query, error) {
 func WithQueryTags(tags []string) QueryOption {
 	return func(query *Query) error {
 		query.Tags = tags
+		return nil
+	}
+}
+
+// WithQueryAuthorID adds author ID to the Query to use for the configuration.
+func WithQueryAuthorID(authorID *string) QueryOption {
+	return func(query *Query) error {
+		query.AuthorID = authorID
 		return nil
 	}
 }

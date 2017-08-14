@@ -128,7 +128,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.Query{}).Times(1).Return(doc, nil)
+			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -176,9 +176,12 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.Query{
-				Tags: tags.Slice(),
-			}).Times(1).Return(doc, nil)
+			query, _ := repository.BuildQuery(
+				repository.WithQueryTags(tags.Slice()),
+				repository.WithQueryAuthorID(""),
+			)
+
+			repo.EXPECT().GetDocument(uid, query).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
@@ -226,7 +229,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.Query{}).Times(1).Return(doc, errNotFound{errors.New("failure")})
+			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -274,7 +277,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.Query{}).Times(1).Return(doc, errors.New("failure"))
+			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errors.New("failure"))
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -1103,7 +1106,7 @@ func TestGetMultipleAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/multiple", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocuments(uid, repository.Query{}).Times(1).Return(docs, nil)
+			repo.EXPECT().GetDocuments(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -1152,9 +1155,12 @@ func TestGetMultipleAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/multiple", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocuments(uid, repository.Query{
-				Tags: tags.Slice(),
-			}).Times(1).Return(docs, nil)
+			query, _ := repository.BuildQuery(
+				repository.WithQueryTags(tags.Slice()),
+				repository.WithQueryAuthorID(""),
+			)
+
+			repo.EXPECT().GetDocuments(uid, query).Times(1).Return(docs, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
@@ -1203,7 +1209,7 @@ func TestGetMultipleAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/multiple", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocuments(uid, repository.Query{}).Times(1).Return(docs, errors.New("bad"))
+			repo.EXPECT().GetDocuments(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, errors.New("bad"))
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple?resource_id=%s", server.URL, uid))
 			if err != nil {

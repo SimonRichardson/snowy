@@ -20,6 +20,7 @@ const (
 type SelectQueryParams struct {
 	ResourceID uuid.UUID `json:"resource_id"`
 	Tags       []string  `json:"query.tags"`
+	AuthorID   string    `json:"query.author_id"`
 }
 
 // DecodeFrom populates a SelectQueryParams from a URL.
@@ -44,6 +45,11 @@ func (qp *SelectQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
 		qp.Tags = strings.Split(tags, ",")
 	}
 
+	// Author ID is optional here.
+	if authorID := u.Query().Get("query.author_id"); authorID != "" {
+		qp.AuthorID = authorID
+	}
+
 	return nil
 }
 
@@ -60,6 +66,7 @@ func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
+	w.Header().Set(httpHeaderQueryAuthorID, qr.Params.AuthorID)
 
 	// Handle empty documents
 	if err := json.NewEncoder(w).Encode(qr.Document); err != nil {
@@ -114,6 +121,7 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
+	w.Header().Set(httpHeaderQueryAuthorID, qr.Params.AuthorID)
 
 	// Make sure that we encode empty documents correctly (i.e. they're not
 	// null in the json output)
@@ -178,10 +186,11 @@ func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
 }
 
 const (
-	httpHeaderContentType = "Content-Type"
-	httpHeaderDuration    = "X-Duration"
-	httpHeaderResourceID  = "X-ResourceID"
-	httpHeaderQueryTags   = "X-Query-Tags"
+	httpHeaderContentType   = "Content-Type"
+	httpHeaderDuration      = "X-Duration"
+	httpHeaderResourceID    = "X-Resource-ID"
+	httpHeaderQueryTags     = "X-Query-Tags"
+	httpHeaderQueryAuthorID = "X-Query-Author-ID"
 )
 
 type queryBehavior int

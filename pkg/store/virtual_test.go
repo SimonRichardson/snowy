@@ -82,6 +82,53 @@ func TestVirtualStore(t *testing.T) {
 		}
 	})
 
+	t.Run("drop", func(t *testing.T) {
+		store := NewVirtualStore()
+
+		fn := func(res uuid.UUID) bool {
+			if err := store.Insert(Entity{ResourceID: res}); err != nil {
+				t.Fatal(err)
+			}
+
+			entity, err := store.Get(res, Query{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := res, entity.ResourceID; !expected.Equals(actual) {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			if err = store.Drop(); err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := false, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("run and stop", func(t *testing.T) {
+		store := NewVirtualStore()
+
+		if err := store.Run(); err != nil {
+			t.Error(err)
+		}
+
+		store.Stop()
+	})
+}
+
+func TestVirtualStoreWithQuery(t *testing.T) {
+	t.Parallel()
+
 	t.Run("put then query with no id", func(t *testing.T) {
 		store := NewVirtualStore()
 
@@ -244,32 +291,29 @@ func TestVirtualStore(t *testing.T) {
 		}
 	})
 
-	t.Run("drop", func(t *testing.T) {
+	t.Run("put then query exact match with author ID", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID) bool {
-			if err := store.Insert(Entity{ResourceID: res}); err != nil {
+		fn := func(res uuid.UUID, authorID string, tags Tags) bool {
+			entity := Entity{
+				ResourceID: res,
+				AuthorID:   authorID,
+				Tags:       tags.Slice(),
+			}
+			if err := store.Insert(entity); err != nil {
 				t.Fatal(err)
 			}
 
-			entity, err := store.Get(res, Query{})
+			got, err := store.GetMultiple(res, Query{
+				Tags:     tags,
+				AuthorID: &authorID,
+			})
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if expected, actual := res, entity.ResourceID; !expected.Equals(actual) {
-				t.Errorf("expected: %v, actual: %v", expected, actual)
-			}
-
-			if err = store.Drop(); err != nil {
-				t.Fatal(err)
-			}
-
-			if expected, actual := false, ErrNotFound(err); expected != actual {
-				t.Errorf("expected: %t, actual: %t", expected, actual)
-			}
-
-			return true
+			want := []Entity{entity}
+			return equals(want, got)
 		}
 
 		if err := quick.Check(fn, nil); err != nil {
@@ -277,13 +321,36 @@ func TestVirtualStore(t *testing.T) {
 		}
 	})
 
-	t.Run("run and stop", func(t *testing.T) {
+	t.Run("puts then query partial match with authorID", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		if err := store.Run(); err != nil {
-			t.Error(err)
+		fn := func(res uuid.UUID, authorID string, tags Tags) bool {
+			want := make([]Entity, 10)
+			for k := range want {
+				entity := Entity{
+					ResourceID: res,
+					AuthorID:   authorID,
+					Tags:       tags.Slice(),
+				}
+				if err := store.Insert(entity); err != nil {
+					t.Fatal(err)
+				}
+				want[k] = entity
+			}
+
+			got, err := store.GetMultiple(res, Query{
+				Tags:     splitTags(tags.Slice()),
+				AuthorID: &authorID,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return equals(want, got)
 		}
 
-		store.Stop()
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
 	})
 }

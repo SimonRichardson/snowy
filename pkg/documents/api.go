@@ -94,6 +94,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	options, err := repository.BuildQuery(
 		repository.WithQueryTags(qp.Tags),
+		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
 		errs.BadRequest(w, r, err.Error())
@@ -206,6 +207,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 
 	options, err := repository.BuildQuery(
 		repository.WithQueryTags(qp.Tags),
+		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
 		errs.BadRequest(w, r, err.Error())

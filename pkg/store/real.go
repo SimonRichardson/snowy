@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -15,10 +16,71 @@ import (
 )
 
 const (
-	defaultSelectQuery         = "SELECT id, name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 ORDER BY created_on DESC, resource_address DESC;"
-	defaultInsertQuery         = "INSERT INTO documents (name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);"
-	defaultMultipleSelectQuery = "SELECT id, name, resource_id, resource_address, resource_size, resource_content_type, author_id, tags, created_on, deleted_on FROM documents WHERE resource_id = $1 AND tags && $2 ORDER BY created_on DESC, resource_address DESC;"
-	defaultDropQuery           = "TRUNCATE TABLE documents;"
+	defaultSelectQuery = `SELECT id, 
+	name, 
+	resource_id, 
+	resource_address, 
+	resource_size, 
+	resource_content_type, 
+	author_id, 
+	tags, 
+	created_on, 
+	deleted_on 
+FROM   documents 
+WHERE  resource_id = $1 
+ORDER  BY created_on DESC, 
+		 resource_address DESC;`
+	defaultInsertQuery = `INSERT INTO documents 
+	(name, 
+	 resource_id, 
+	 resource_address, 
+	 resource_size, 
+	 resource_content_type, 
+	 author_id, 
+	 tags, 
+	 created_on, 
+	 deleted_on) 
+VALUES      ($1, 
+	 $2, 
+	 $3, 
+	 $4, 
+	 $5, 
+	 $6, 
+	 $7, 
+	 $8, 
+	 $9);`
+	defaultSelectQueryTags = `SELECT id, 
+	name, 
+	resource_id, 
+	resource_address, 
+	resource_size, 
+	resource_content_type, 
+	author_id, 
+	tags, 
+	created_on, 
+	deleted_on 
+FROM   documents 
+WHERE  resource_id = $1 
+	AND tags && $2 
+ORDER  BY created_on DESC, 
+		 resource_address DESC;`
+	defaultSelectQueryTagsAuthorID = `SELECT id, 
+		 name, 
+		 resource_id, 
+		 resource_address, 
+		 resource_size, 
+		 resource_content_type, 
+		 author_id, 
+		 tags, 
+		 created_on, 
+		 deleted_on 
+	 FROM   documents 
+	 WHERE  resource_id = $1 
+	 	 AND author_id = $2
+		 AND tags && $3 
+	 ORDER  BY created_on DESC, 
+				resource_address DESC;`
+	defaultDropQuery = `TRUNCATE TABLE documents;`
 )
 
 // RealConfig holds the options for connecting to the DB
@@ -35,6 +97,7 @@ type realStore struct {
 	db     *sql.DB
 	stop   chan chan struct{}
 	logger log.Logger
+	ticker *time.Ticker
 }
 
 // NewRealStore yields a real data store.
@@ -43,6 +106,7 @@ func NewRealStore(config *RealConfig, logger log.Logger) Store {
 		config: config,
 		stop:   make(chan chan struct{}),
 		logger: logger,
+		ticker: time.NewTicker(time.Minute),
 	}
 }
 
@@ -218,9 +282,20 @@ func (r *realStore) Run() error {
 		return err
 	}
 
+	// Make sure that we spin and ping the db, to make sure we're still current.
 	for {
 		select {
+		case <-r.ticker.C:
+			if err = r.db.Ping(); err != nil {
+				level.Error(r.logger).Log("err", err)
+				// TODO: reconnect to the db...
+			}
+
 		case c := <-r.stop:
+			// First stop the ticker
+			r.ticker.Stop()
+
+			// Shut the db down.
 			err := r.db.Close()
 			close(c)
 			return err
@@ -236,12 +311,21 @@ func (r *realStore) Stop() {
 }
 
 func buildSQLFromQuery(resourceID uuid.UUID, query Query) (string, []interface{}) {
-	if len(query.Tags) == 0 {
+	numTags, authorID := len(query.Tags), query.AuthorID
+	switch {
+	case numTags == 0 && authorID == nil:
 		return defaultSelectQuery, []interface{}{resourceID.String()}
-	}
-	return defaultMultipleSelectQuery, []interface{}{
-		resourceID.String(),
-		pq.Array(query.Tags),
+	case numTags > 0 && authorID == nil:
+		return defaultSelectQueryTags, []interface{}{
+			resourceID.String(),
+			pq.Array(query.Tags),
+		}
+	default:
+		return defaultSelectQueryTagsAuthorID, []interface{}{
+			resourceID.String(),
+			*authorID,
+			pq.Array(query.Tags),
+		}
 	}
 }
 

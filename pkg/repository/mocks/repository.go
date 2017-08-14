@@ -8,6 +8,7 @@ import (
 	document "github.com/trussle/snowy/pkg/document"
 	repository "github.com/trussle/snowy/pkg/repository"
 	uuid "github.com/trussle/snowy/pkg/uuid"
+	reflect "reflect"
 )
 
 // MockRepository is a mock of Repository interface
@@ -43,7 +44,7 @@ func (_m *MockRepository) AppendDocument(_param0 uuid.UUID, _param1 document.Doc
 
 // AppendDocument indicates an expected call of AppendDocument
 func (_mr *MockRepositoryMockRecorder) AppendDocument(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "AppendDocument", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "AppendDocument", reflect.TypeOf((*MockRepository)(nil).AppendDocument), arg0, arg1)
 }
 
 // Close mocks base method
@@ -55,7 +56,7 @@ func (_m *MockRepository) Close() error {
 
 // Close indicates an expected call of Close
 func (_mr *MockRepositoryMockRecorder) Close() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Close")
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Close", reflect.TypeOf((*MockRepository)(nil).Close))
 }
 
 // GetContent mocks base method
@@ -68,7 +69,7 @@ func (_m *MockRepository) GetContent(_param0 uuid.UUID) (document.Content, error
 
 // GetContent indicates an expected call of GetContent
 func (_mr *MockRepositoryMockRecorder) GetContent(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetContent", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetContent", reflect.TypeOf((*MockRepository)(nil).GetContent), arg0)
 }
 
 // GetDocument mocks base method
@@ -81,7 +82,7 @@ func (_m *MockRepository) GetDocument(_param0 uuid.UUID, _param1 repository.Quer
 
 // GetDocument indicates an expected call of GetDocument
 func (_mr *MockRepositoryMockRecorder) GetDocument(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetDocument", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetDocument", reflect.TypeOf((*MockRepository)(nil).GetDocument), arg0, arg1)
 }
 
 // GetDocuments mocks base method
@@ -94,7 +95,7 @@ func (_m *MockRepository) GetDocuments(_param0 uuid.UUID, _param1 repository.Que
 
 // GetDocuments indicates an expected call of GetDocuments
 func (_mr *MockRepositoryMockRecorder) GetDocuments(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetDocuments", arg0, arg1)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetDocuments", reflect.TypeOf((*MockRepository)(nil).GetDocuments), arg0, arg1)
 }
 
 // InsertDocument mocks base method
@@ -107,7 +108,7 @@ func (_m *MockRepository) InsertDocument(_param0 document.Document) (document.Do
 
 // InsertDocument indicates an expected call of InsertDocument
 func (_mr *MockRepositoryMockRecorder) InsertDocument(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "InsertDocument", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "InsertDocument", reflect.TypeOf((*MockRepository)(nil).InsertDocument), arg0)
 }
 
 // PutContent mocks base method
@@ -120,5 +121,5 @@ func (_m *MockRepository) PutContent(_param0 document.Content) (document.Content
 
 // PutContent indicates an expected call of PutContent
 func (_mr *MockRepositoryMockRecorder) PutContent(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutContent", arg0)
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "PutContent", reflect.TypeOf((*MockRepository)(nil).PutContent), arg0)
 }

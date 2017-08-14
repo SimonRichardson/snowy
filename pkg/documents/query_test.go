@@ -148,6 +148,31 @@ func TestSelectQueryParams(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("DecodeFrom with authorID", func(t *testing.T) {
+		fn := func(uid uuid.UUID, authorID ASCII) bool {
+			var (
+				qp SelectQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s&query.author_id=%s", uid.String(), authorID))
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = qp.DecodeFrom(u, queryRequired)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			return qp.AuthorID == authorID.String()
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
 }
 
 func TestSelectQueryResult(t *testing.T) {

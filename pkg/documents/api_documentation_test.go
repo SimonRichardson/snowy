@@ -63,7 +63,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		)
 		outputDoc, _ = document.BuildDocument(
 			document.WithResourceID(uid),
-						document.WithResourceAddress("abcdefghij"),
+			document.WithResourceAddress("abcdefghij"),
 			document.WithResourceSize(10),
 			document.WithResourceContentType("application/octet-stream"),
 			document.WithAuthorID(uuid.New().String()),
@@ -90,9 +90,12 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().GetDocument(uid, repository.Query{
-			Tags: tags,
-		}).Times(1).Return(outputDoc, nil)
+		query, _ := repository.BuildQuery(
+			repository.WithQueryTags(tags),
+			repository.WithQueryAuthorID(""),
+		)
+
+		repo.EXPECT().GetDocument(uid, query).Times(1).Return(outputDoc, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
@@ -108,9 +111,12 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("GET", "/multiple", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().GetDocuments(uid, repository.Query{
-			Tags: tags,
-		}).Times(1).Return([]document.Document{
+		query, _ := repository.BuildQuery(
+			repository.WithQueryTags(tags),
+			repository.WithQueryAuthorID(""),
+		)
+
+		repo.EXPECT().GetDocuments(uid, query).Times(1).Return([]document.Document{
 			outputDoc,
 		}, nil)
 
@@ -177,6 +183,5 @@ func TestDocumentation_Flow(t *testing.T) {
 			t.Fatal(err)
 		}
 		defer resp.Body.Close()
-
 	})
 }
