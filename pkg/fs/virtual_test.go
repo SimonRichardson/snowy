@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/quick"
 )
 
 func TestVirtualFilesystem(t *testing.T) {
@@ -204,6 +205,36 @@ func TestVirtualFile(t *testing.T) {
 		res := file.Sync()
 		if expected, actual := true, res == nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
+		}
+	})
+
+	t.Run("write contentType", func(t *testing.T) {
+		var (
+			fsys = NewVirtualFilesystem()
+			dir  = fmt.Sprintf("tmpdir-%d", rand.Intn(1000))
+		)
+
+		fn := func(contentType string) bool {
+			var (
+				fileName = fmt.Sprintf("tmpfile-%d", rand.Intn(1000))
+				path     = filepath.Join(dir, fileName)
+			)
+			file, err := fsys.Create(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer file.Close()
+
+			if err = file.WriteContentType(contentType); err != nil {
+				t.Fatal(err)
+			}
+
+			return file.ContentType() == contentType
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
 		}
 	})
 }

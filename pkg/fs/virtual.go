@@ -104,11 +104,11 @@ func (fs *virtualFilesystem) Walk(root string, walkFn filepath.WalkFunc) error {
 }
 
 type virtualFile struct {
-	name  string
-	mutex sync.Mutex
-	buf   bytes.Buffer
-	atime time.Time
-	mtime time.Time
+	name, contentType string
+	mutex             sync.Mutex
+	buf               bytes.Buffer
+	atime             time.Time
+	mtime             time.Time
 }
 
 func (f *virtualFile) Read(p []byte) (int, error) {
@@ -136,6 +136,13 @@ func (f *virtualFile) Size() int64 {
 }
 
 func (f *virtualFile) Sync() error { return nil }
+func (f *virtualFile) WriteContentType(t string) error {
+	f.contentType = t
+	return nil
+}
+func (f *virtualFile) ContentType() string {
+	return f.contentType
+}
 
 type virtualFileInfo struct {
 	name  string

@@ -580,3 +580,80 @@ func TestGetContent(t *testing.T) {
 		}
 	})
 }
+
+func TestPutContent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("put without content", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID, address string) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			content, err := document.BuildContent(
+				document.WithAddress(address),
+				document.WithContentType("application/octet-stream"),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			_, err = repo.PutContent(content)
+
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("put content", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID, body []byte, contentType string) bool {
+			if len(body) < 1 {
+				return true
+			}
+
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			content, err := document.BuildContent(
+				document.WithContentBytes(body),
+				document.WithSize(int64(len(body))),
+				document.WithContentType(contentType),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			res, err := repo.PutContent(content)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return content.Address() == res.Address() &&
+				content.ContentType() == res.ContentType()
+
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}

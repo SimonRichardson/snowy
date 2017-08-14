@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	"github.com/trussle/snowy/pkg/document"
 	"github.com/trussle/snowy/pkg/fs"
 	"github.com/trussle/snowy/pkg/store"
@@ -180,8 +181,37 @@ func (r *realRepository) GetContent(resourceID uuid.UUID) (content document.Cont
 
 // PutContent inserts content into the repository. If there is an error
 // putting content into the repository then it will return an error.
-func (r *realRepository) PutContent(content document.Content) (document.Content, error) {
-	return document.Content{}, nil
+func (r *realRepository) PutContent(content document.Content) (res document.Content, err error) {
+	var bytes []byte
+	bytes, err = content.Bytes()
+	if err != nil {
+		return
+	}
+
+	if len(bytes) < 1 {
+		err = errors.Errorf("no content")
+		return
+	}
+
+	var file fs.File
+	file, err = r.fs.Create(content.Address())
+	if err != nil {
+		return
+	}
+
+	if err = file.WriteContentType(content.ContentType()); err != nil {
+		return
+	}
+
+	if _, err = file.Write(bytes); err != nil {
+		return
+	}
+
+	if err = file.Sync(); err != nil {
+		return
+	}
+
+	return content, nil
 }
 
 // Close the underlying document store and returns an error if it fails.

@@ -3,6 +3,7 @@
 package contents
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"math/rand"
@@ -56,19 +57,24 @@ func TestDocumentation_Flow(t *testing.T) {
 
 	var (
 		base64Source = base64.URLEncoding.EncodeToString(source)
-		bytes        = []byte(base64Source)
+		b            = []byte(base64Source)
 	)
-	address, err := document.ContentAddress(bytes)
+	address, err := document.ContentAddress(b)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var (
+		inputContent, _ = document.BuildContent(
+			document.WithSize(int64(len(b))),
+			document.WithContentBytes(b),
+			document.WithContentType("application/octet-stream"),
+		)
 		outputContent, _ = document.BuildContent(
 			document.WithAddress(address),
 			document.WithContentType("application/octet-stream"),
-			document.WithSize(int64(len(bytes))),
-			document.WithBytes(bytes),
+			document.WithSize(int64(len(b))),
+			document.WithBytes(b),
 		)
 	)
 
@@ -91,6 +97,23 @@ func TestDocumentation_Flow(t *testing.T) {
 		repo.EXPECT().GetContent(uid).Times(1).Return(outputContent, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+	})
+
+	t.Run("put", func(t *testing.T) {
+
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		repo.EXPECT().PutContent(inputContent).Return(outputContent, nil).Times(1)
+
+		resp, err := http.Post(server.URL, "application/octet-stream", bytes.NewBuffer(b))
 		if err != nil {
 			t.Fatal(err)
 		}

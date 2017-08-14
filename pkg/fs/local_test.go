@@ -1,9 +1,13 @@
 package fs
 
 import (
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"path/filepath"
 	"testing"
+	"testing/quick"
 )
 
 func TestLocalFilesystem(t *testing.T) {
@@ -110,5 +114,39 @@ func TestLocalFile(t *testing.T) {
 
 		fsys := NewLocalFilesystem()
 		testFileReadWrite(fsys, dir, t)
+	})
+
+	t.Run("write contentType", func(t *testing.T) {
+		var (
+			fsys     = NewLocalFilesystem()
+			dir, err = ioutil.TempDir("", "tmpdir")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(dir)
+
+		fn := func(contentType string) bool {
+			var (
+				fileName = fmt.Sprintf("tmpfile-%d", rand.Intn(1000))
+				path     = filepath.Join(dir, fileName)
+			)
+			file, err := fsys.Create(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer file.Close()
+
+			if err = file.WriteContentType(contentType); err != nil {
+				t.Fatal(err)
+			}
+
+			return file.ContentType() == defaultContentType
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
 	})
 }

@@ -1,8 +1,7 @@
 package contents
 
 import (
-	"io"
-	"io/ioutil"
+	"bytes"
 	"net/http"
 	"strconv"
 	"time"
@@ -75,7 +74,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case method == "GET" && path == APIPathGetQuery:
 		a.handleGet(w, r)
-	case method == "POST" && path == APIPathPostQuery:
+	case (method == "PUT" || method == "POST") && path == APIPathPostQuery:
 		a.handlePost(w, r)
 	default:
 		// Nothing found
@@ -134,6 +133,8 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
+	// This shouldn't mutate the state :(
+	r.Body = http.MaxBytesReader(w, r.Body, defaultMaxContentLength)
 	defer r.Body.Close()
 
 	// Validate user input.
@@ -144,30 +145,22 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		notFound        = make(chan struct{})
 		internalError   = make(chan error)
 		badRequestError = make(chan error)
 		result          = make(chan document.Content)
 	)
 	a.action <- func() {
-		body := io.LimitReader(r.Body, defaultMaxContentLength)
-		bytes, err := ioutil.ReadAll(body)
-		if err != nil {
+		buffer := bytes.NewBuffer(make([]byte, 0, defaultMaxContentLength))
+		if _, err := buffer.ReadFrom(r.Body); err != nil {
 			badRequestError <- err
 			return
 		}
 
-		address, err := document.ContentAddress(bytes)
-		if err != nil {
-			internalError <- err
-			return
-		}
-
+		bytes := buffer.Bytes()
 		content, err := document.BuildContent(
-			document.WithAddress(address),
+			document.WithContentBytes(bytes),
 			document.WithSize(int64(len(bytes))),
 			document.WithContentType(qp.ContentType),
-			document.WithBytes(bytes),
 		)
 		if err != nil {
 			badRequestError <- err
@@ -176,10 +169,6 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 		res, err := a.repository.PutContent(content)
 		if err != nil {
-			if repository.ErrNotFound(err) {
-				notFound <- struct{}{}
-				return
-			}
 			internalError <- err
 			return
 		}
@@ -199,8 +188,6 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		// Finish
 		qr.Duration = time.Since(begin).String()
 		qr.EncodeTo(w)
-	default:
-		errs.Error(w, "unknown error", http.StatusInternalServerError)
 	}
 }
 

@@ -1,10 +1,12 @@
 package contents
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"testing/quick"
 
@@ -249,6 +251,199 @@ func TestGetAPI(t *testing.T) {
 	})
 }
 
+func TestPutAPI(t *testing.T) {
+	t.Parallel()
+
+	guard := func(fn func([]byte) bool) func([]byte) bool {
+		return func(b []byte) bool {
+			if len(b) < 1 {
+				return true
+			}
+			return fn(b)
+		}
+	}
+
+	t.Run("put with content too large", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		var (
+			clients  = metricMocks.NewMockGauge(ctrl)
+			duration = metricMocks.NewMockHistogramVec(ctrl)
+			observer = metricMocks.NewMockObserver(ctrl)
+			repo     = repoMocks.NewMockRepository(ctrl)
+
+			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			server = httptest.NewServer(api)
+
+			b = make([]byte, defaultMaxContentLength+1)
+		)
+		defer api.Close()
+
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		resp, err := http.Post(server.URL, "plain/text", bytes.NewBuffer(b))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+
+		if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+			t.Errorf("expected: %d, actual: %d", expected, actual)
+		}
+	})
+
+	t.Run("put with content too large, with content-length", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		var (
+			clients  = metricMocks.NewMockGauge(ctrl)
+			duration = metricMocks.NewMockHistogramVec(ctrl)
+			observer = metricMocks.NewMockObserver(ctrl)
+			repo     = repoMocks.NewMockRepository(ctrl)
+
+			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			server = httptest.NewServer(api)
+
+			b = make([]byte, defaultMaxContentLength+1)
+		)
+		defer api.Close()
+
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		req, err := http.NewRequest("POST", server.URL, bytes.NewBuffer(b))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Header.Set("Content-Length", strconv.FormatInt(defaultMaxContentLength-10, 10))
+		req.Header.Set("Content-Type", "plain/text")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+
+		if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+			t.Errorf("expected: %d, actual: %d", expected, actual)
+		}
+	})
+
+	t.Run("put with repo failure", func(t *testing.T) {
+		fn := guard(func(b []byte) bool {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+
+				content, err = document.BuildContent(
+					document.WithSize(int64(len(b))),
+					document.WithContentBytes(b),
+					document.WithContentType("plain/text"),
+				)
+			)
+			defer api.Close()
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			repo.EXPECT().PutContent(Content(content)).Return(document.Content{}, errors.New("failure")).Times(1)
+
+			resp, err := http.Post(server.URL, "plain/text", bytes.NewBuffer(b))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusInternalServerError, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		})
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("put", func(t *testing.T) {
+		fn := guard(func(b []byte) bool {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+
+				content, err = document.BuildContent(
+					document.WithSize(int64(len(b))),
+					document.WithContentBytes(b),
+					document.WithContentType("plain/text"),
+				)
+			)
+			defer api.Close()
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
+
+			resp, err := http.Post(server.URL, "plain/text", bytes.NewBuffer(b))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusOK, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		})
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
 func TestNotFoundAPI(t *testing.T) {
 	t.Parallel()
 
@@ -312,3 +507,26 @@ func (e errNotFound) Error() string {
 func (e errNotFound) NotFound() bool {
 	return true
 }
+
+type contentMatcher struct {
+	content document.Content
+}
+
+func (m contentMatcher) Matches(x interface{}) bool {
+	d, ok := x.(document.Content)
+	if !ok {
+		return false
+	}
+
+	res := m.content.Address() == d.Address() &&
+		m.content.ContentType() == d.ContentType() &&
+		m.content.Size() == d.Size()
+
+	return res
+}
+
+func (contentMatcher) String() string {
+	return "is content"
+}
+
+func Content(content document.Content) gomock.Matcher { return contentMatcher{content} }

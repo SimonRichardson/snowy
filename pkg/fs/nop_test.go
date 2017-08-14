@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"testing/quick"
 )
 
 func TestNopFilesystem(t *testing.T) {
@@ -234,6 +235,36 @@ func TestNopFile(t *testing.T) {
 			t.Error(err)
 		}
 		if err = file.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("write contentType", func(t *testing.T) {
+		var (
+			fsys = NewNopFilesystem()
+			dir  = fmt.Sprintf("tmpdir-%d", rand.Intn(1000))
+		)
+
+		fn := func(contentType string) bool {
+			var (
+				fileName = fmt.Sprintf("tmpfile-%d", rand.Intn(1000))
+				path     = filepath.Join(dir, fileName)
+			)
+			file, err := fsys.Create(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer file.Close()
+
+			if err = file.WriteContentType(contentType); err != nil {
+				t.Fatal(err)
+			}
+
+			return file.ContentType() == defaultContentType
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
 			t.Error(err)
 		}
 	})

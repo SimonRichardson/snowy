@@ -144,3 +144,18 @@ func WithReader(r io.ReadCloser) ContentOption {
 		return nil
 	}
 }
+
+// WithContentBytes adds a content and address in one step
+func WithContentBytes(b []byte) ContentOption {
+	return func(content *Content) error {
+		address, err := ContentAddress(b)
+		if err != nil {
+			return err
+		}
+
+		content.address = address
+		content.reader = ioutil.NopCloser(bytes.NewBuffer(b))
+		content.size = int64(len(b))
+		return nil
+	}
+}

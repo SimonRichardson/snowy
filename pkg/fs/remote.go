@@ -15,6 +15,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	defaultContentType = "application/octet-stream"
+)
+
 // RemoteConfig creates a configuration to create a RemoteFilesystem.
 type RemoteConfig struct {
 	ID, Secret, Token, Region, Bucket string
@@ -129,11 +133,11 @@ func (fs *remoteFilesystem) Walk(root string, walkFn filepath.WalkFunc) error {
 }
 
 type remoteFile struct {
-	sys          *remoteFilesystem
-	writeContent []byte
-	readContent  io.ReadCloser
-	path         string
-	size         int64
+	sys               *remoteFilesystem
+	writeContent      []byte
+	readContent       io.ReadCloser
+	path, contentType string
+	size              int64
 }
 
 func newRemoteFile(sys *remoteFilesystem, body io.ReadCloser, path string, size int64) *remoteFile {
@@ -142,6 +146,7 @@ func newRemoteFile(sys *remoteFilesystem, body io.ReadCloser, path string, size 
 		make([]byte, 0),
 		body,
 		path,
+		defaultContentType,
 		size,
 	}
 }
@@ -162,17 +167,24 @@ func (f *remoteFile) Close() error {
 func (f *remoteFile) Name() string { return f.path }
 func (f *remoteFile) Size() int64  { return f.size }
 
-const defaultFileType = "text/plain; charset=utf-8"
-
 func (f *remoteFile) Sync() error {
 	_, err := f.sys.service.PutObject(&s3.PutObjectInput{
 		Bucket:        f.sys.bucket,
 		Key:           aws.String(f.path),
 		Body:          bytes.NewReader(f.writeContent),
 		ContentLength: aws.Int64(int64(len(f.writeContent))),
-		ContentType:   aws.String(defaultFileType),
+		ContentType:   aws.String(f.contentType),
 	})
 	return err
+}
+
+func (f *remoteFile) WriteContentType(t string) error {
+	f.contentType = t
+	return nil
+}
+
+func (f *remoteFile) ContentType() string {
+	return f.contentType
 }
 
 // ConfigOption defines a option for generating a RemoteConfig

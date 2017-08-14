@@ -76,3 +76,6 @@ func (f localFile) Size() int64 {
 	}
 	return fi.Size()
 }
+
+func (f localFile) WriteContentType(t string) error { return nil }
+func (f localFile) ContentType() string             { return defaultContentType }
