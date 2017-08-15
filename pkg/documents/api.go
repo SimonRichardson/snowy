@@ -22,7 +22,7 @@ const (
 	APIPathGetQuery         = "/"
 	APIPathPostQuery        = "/"
 	APIPathPutQuery         = "/"
-	APIPathGetMultipleQuery = "/multiple"
+	APIPathGetMultipleQuery = "/multiple/"
 )
 
 // API serves the query API

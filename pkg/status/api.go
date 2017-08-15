@@ -2,8 +2,8 @@ package status
 
 import (
 	"net/http"
-	"strings"
 
+	"github.com/go-kit/kit/log"
 	errs "github.com/trussle/snowy/pkg/http"
 )
 
@@ -13,11 +13,15 @@ const (
 )
 
 // API serves the status API
-type API struct{}
+type API struct {
+	logger log.Logger
+}
 
 // NewAPI creates a API with the correct dependencies.
-func NewAPI() *API {
-	return &API{}
+func NewAPI(logger log.Logger) *API {
+	return &API{
+		logger: logger,
+	}
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -30,11 +34,6 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case method == "GET" && path == APIPathGetQuery:
 		w.WriteHeader(http.StatusOK)
 	default:
-		// Make sure we send a permanent redirect if it ends with a `/`
-		if strings.HasSuffix(path, "/") {
-			http.Redirect(w, r, strings.TrimRight(path, "/"), http.StatusPermanentRedirect)
-			return
-		}
 		// Nothing found
 		errs.NotFound(w, r)
 	}

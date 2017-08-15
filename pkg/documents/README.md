@@ -1,14 +1,14 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-08-14T13:06:39+01:00
+Date generated on: 2017-08-15T17:04:51+01:00
 # GET /
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('bb71fd48-62f2-42ba-9a23-567ebb30d80b')
+            resource_id ('63a0f8e8-20b6-4715-a9ea-52ef5dd4d047')
 
     + Headers
 
@@ -19,20 +19,21 @@ Date generated on: 2017-08-14T13:06:39+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 42.002µs
+            X-Duration: 66.805µs
+            X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resourceid: bb71fd48-62f2-42ba-9a23-567ebb30d80b
+            X-Resource-Id: 63a0f8e8-20b6-4715-a9ea-52ef5dd4d047
 
     + Body
 
             {
-                "author_id": "dd745b70-9ff9-4213-87a7-220ebf558034",
-                "created_on": "2017-08-14T13:06:39+01:00",
+                "author_id": "1a821d3c-1baf-4fcf-8720-4b0a13bed786",
+                "created_on": "2017-08-15T17:04:51+01:00",
                 "deleted_on": "0001-01-01T00:00:00Z",
                 "name": "document-name",
                 "resource_address": "abcdefghij",
                 "resource_content_type": "application/octet-stream",
-                "resource_id": "bb71fd48-62f2-42ba-9a23-567ebb30d80b",
+                "resource_id": "63a0f8e8-20b6-4715-a9ea-52ef5dd4d047",
                 "resource_size": 10,
                 "tags": [
                     "abc",
@@ -41,13 +42,13 @@ Date generated on: 2017-08-14T13:06:39+01:00
                 ]
             }
 
-# GET /multiple
+# GET /multiple/
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('bb71fd48-62f2-42ba-9a23-567ebb30d80b')
+            resource_id ('63a0f8e8-20b6-4715-a9ea-52ef5dd4d047')
 
     + Headers
 
@@ -58,21 +59,22 @@ Date generated on: 2017-08-14T13:06:39+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 33.488µs
+            X-Duration: 35.025µs
+            X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resourceid: bb71fd48-62f2-42ba-9a23-567ebb30d80b
+            X-Resource-Id: 63a0f8e8-20b6-4715-a9ea-52ef5dd4d047
 
     + Body
 
             [
                 {
-                    "author_id": "dd745b70-9ff9-4213-87a7-220ebf558034",
-                    "created_on": "2017-08-14T13:06:39+01:00",
+                    "author_id": "1a821d3c-1baf-4fcf-8720-4b0a13bed786",
+                    "created_on": "2017-08-15T17:04:51+01:00",
                     "deleted_on": "0001-01-01T00:00:00Z",
                     "name": "document-name",
                     "resource_address": "abcdefghij",
                     "resource_content_type": "application/octet-stream",
-                    "resource_id": "bb71fd48-62f2-42ba-9a23-567ebb30d80b",
+                    "resource_id": "63a0f8e8-20b6-4715-a9ea-52ef5dd4d047",
                     "resource_size": 10,
                     "tags": [
                         "abc",
@@ -99,12 +101,12 @@ Date generated on: 2017-08-14T13:06:39+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 71.226µs
+            X-Duration: 81.122µs
 
     + Body
 
             {
-                "resource_id": "bb71fd48-62f2-42ba-9a23-567ebb30d80b"
+                "resource_id": "63a0f8e8-20b6-4715-a9ea-52ef5dd4d047"
             }
 
 # PUT /
@@ -112,7 +114,7 @@ Date generated on: 2017-08-14T13:06:39+01:00
 + Request
     + Parameters
 
-            resource_id ('bb71fd48-62f2-42ba-9a23-567ebb30d80b')
+            resource_id ('63a0f8e8-20b6-4715-a9ea-52ef5dd4d047')
 
     + Headers
 
@@ -125,8 +127,8 @@ Date generated on: 2017-08-14T13:06:39+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 52.4µs
-            X-Resourceid: bb71fd48-62f2-42ba-9a23-567ebb30d80b
+            X-Duration: 62.453µs
+            X-Resource-Id: 63a0f8e8-20b6-4715-a9ea-52ef5dd4d047
 
     + Body
 

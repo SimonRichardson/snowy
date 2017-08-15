@@ -1,13 +1,13 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-08-14T13:06:39+01:00
+Date generated on: 2017-08-15T17:04:51+01:00
 # GET /
 
 + Request
     + Parameters
 
-            resource_id ('4a20fcfa-4ccc-4c65-b2eb-d71d8d4252ec')
+            resource_id ('e5444415-a1df-498c-94ff-f16fa5b5375e')
 
     + Headers
 
@@ -19,8 +19,8 @@ Date generated on: 2017-08-14T13:06:39+01:00
 
             Content-Length: 176
             Content-Type: application/octet-stream
-            X-Duration: 39.47µs
-            X-Resourceid: 4a20fcfa-4ccc-4c65-b2eb-d71d8d4252ec
+            X-Duration: 45.551µs
+            X-Resourceid: e5444415-a1df-498c-94ff-f16fa5b5375e
 
     + Body
 
@@ -43,7 +43,7 @@ Date generated on: 2017-08-14T13:06:39+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 391.622µs
+            X-Duration: 299.333µs
 
     + Body
 

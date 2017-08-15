@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-kit/kit/log"
 )
 
 func TestAPI(t *testing.T) {
@@ -11,7 +13,7 @@ func TestAPI(t *testing.T) {
 
 	t.Run("status", func(t *testing.T) {
 		var (
-			api    = NewAPI()
+			api    = NewAPI(log.NewNopLogger())
 			server = httptest.NewServer(api)
 		)
 		defer server.Close()

@@ -3,6 +3,7 @@ package store
 import (
 	"testing"
 	"testing/quick"
+	"time"
 
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -117,12 +118,14 @@ func TestVirtualStore(t *testing.T) {
 
 	t.Run("run and stop", func(t *testing.T) {
 		store := NewVirtualStore()
+		go func() {
+			time.Sleep(time.Millisecond * 2)
+			store.Stop()
+		}()
 
 		if err := store.Run(); err != nil {
 			t.Error(err)
 		}
-
-		store.Stop()
 	})
 }
 

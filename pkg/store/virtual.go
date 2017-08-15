@@ -10,12 +10,14 @@ import (
 // virtualStore keeps track of a entity objects.
 type virtualStore struct {
 	entities map[string][]Entity
+	stop     chan chan struct{}
 }
 
 // NewVirtualStore creates a new Store with the correct dependencies
 func NewVirtualStore() Store {
 	return &virtualStore{
 		entities: make(map[string][]Entity),
+		stop:     make(chan chan struct{}),
 	}
 }
 
@@ -41,9 +43,8 @@ func (r *virtualStore) Insert(entity Entity) error {
 
 func (r *virtualStore) GetMultiple(resourceID uuid.UUID, query Query) ([]Entity, error) {
 	if entities, ok := r.entities[resourceID.String()]; ok {
-
 		// Filter by authorID before filtering by tags
-		if query.AuthorID != nil {
+		if query.AuthorID != nil && *query.AuthorID != "" {
 			var (
 				filtered []Entity
 				authorID = *query.AuthorID
@@ -80,11 +81,23 @@ func (r *virtualStore) GetMultiple(resourceID uuid.UUID, query Query) ([]Entity,
 }
 
 // Run manages the store, keeping the store reliable.
-func (r *virtualStore) Run() error { return nil }
+func (r *virtualStore) Run() error {
+	for {
+		select {
+		case c := <-r.stop:
+			close(c)
+			return nil
+		}
+	}
+}
 
 // Stop closes the store and prevents any new actions running on the
 // underlying datastore.
-func (r *virtualStore) Stop() {}
+func (r *virtualStore) Stop() {
+	c := make(chan struct{})
+	r.stop <- c
+	<-c
+}
 
 // Drop removes all of the stored documents
 func (r *virtualStore) Drop() error {

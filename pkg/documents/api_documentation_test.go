@@ -97,7 +97,7 @@ func TestDocumentation_Flow(t *testing.T) {
 
 		repo.EXPECT().GetDocument(uid, query).Times(1).Return(outputDoc, nil)
 
-		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
+		resp, err := http.Get(fmt.Sprintf("%s/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -108,7 +108,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Inc().Times(1)
 		clients.EXPECT().Dec().Times(1)
 
-		duration.EXPECT().WithLabelValues("GET", "/multiple", "200").Return(observer).Times(1)
+		duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
 		query, _ := repository.BuildQuery(
@@ -120,7 +120,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			outputDoc,
 		}, nil)
 
-		resp, err := http.Get(fmt.Sprintf("%s/multiple?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
+		resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
 			t.Fatal(err)
 		}
