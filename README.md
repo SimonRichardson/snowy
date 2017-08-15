@@ -21,6 +21,43 @@ Modification of documents and contents is not possible, instead new entities are
 required to be inserted in an append only fashion, where a full revision and
 audit trail can be viewed for each document.
 
+## Setup
+
+### Local development
+
+Snowy expects that you have a `$GOPATH` configured correctly and that you've
+installed it using `go get ...`. Once these are done, it should be as simple as
+`make install`, which will get all the correct dependencies for you to start 
+working with the code.
+
+### Integration development
+
+Integration development (testing) requires both `docker` and `docker-compose` to
+be installed, if testing against the remote filesystem (`Amazon s3`), then 
+you'll need to set some environmental variables. There are two ways to do this:
+
+  1. Export the env vars, so they can be read
+  2. Put a `.env` file in the root of the snowy project with the following 
+  values filled in:
+
+```
+AWS_ID=
+AWS_SECRET=
+AWS_BUCKET=
+AWS_REGION=
+AWS_TOKEN=
+```
+
+Then it should be a case of running the following:
+
+```bash
+docker-compose up --build -d
+make integration-tests
+```
+
+This will fetch an instance of `postgresdb` for you and setup all the right 
+schema information, along with any other dependencies, before running the 
+integration tests.
 
 ## API Endpoints
 
