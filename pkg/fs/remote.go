@@ -2,10 +2,10 @@ package fs
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -45,11 +45,12 @@ func NewRemoteFilesystem(config *RemoteConfig) (Filesystem, error) {
 }
 
 func (fs *remoteFilesystem) Create(path string) (File, error) {
-	return newRemoteFile(fs,
+	file := newRemoteFile(fs,
 		ioutil.NopCloser(bytes.NewReader(make([]byte, 0))),
 		path,
 		0,
-	), nil
+	)
+	return file, file.Sync()
 }
 
 func (fs *remoteFilesystem) Open(path string) (File, error) {
@@ -64,18 +65,21 @@ func (fs *remoteFilesystem) Open(path string) (File, error) {
 		return nil, err
 	}
 
-	return newRemoteFile(fs,
+	rf := newRemoteFile(fs,
 		object.Body,
 		path,
 		*object.ContentLength,
-	), nil
+	)
+	rf.contentType = *object.ContentType
+	return rf, nil
 }
 
 func (fs *remoteFilesystem) Rename(oldname, newname string) error {
+	source := fmt.Sprintf("%s/%s", *fs.bucket, oldname)
 	if _, err := fs.service.CopyObject(&s3.CopyObjectInput{
 		Bucket:     fs.bucket,
 		Key:        aws.String(newname),
-		CopySource: aws.String(oldname),
+		CopySource: aws.String(source),
 	}); err != nil {
 		return err
 	}
@@ -114,10 +118,6 @@ func (fs *remoteFilesystem) Walk(root string, walkFn filepath.WalkFunc) error {
 
 	var loopErr error
 	for _, v := range objects.Contents {
-		if strings.HasPrefix(*v.Key, root) {
-			continue
-		}
-
 		info := virtualFileInfo{
 			name:  *v.Key,
 			mtime: *v.LastModified,
@@ -157,11 +157,17 @@ func (f *remoteFile) Write(p []byte) (int, error) {
 }
 
 func (f *remoteFile) Read(p []byte) (int, error) {
-	return f.readContent.Read(p)
+	if f.readContent != nil {
+		return f.readContent.Read(p)
+	}
+	return 0, nil
 }
 
 func (f *remoteFile) Close() error {
-	return f.readContent.Close()
+	if f.readContent != nil {
+		return f.readContent.Close()
+	}
+	return nil
 }
 
 func (f *remoteFile) Name() string { return f.path }
