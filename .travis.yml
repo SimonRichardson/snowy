@@ -29,5 +29,9 @@ script:
   - make documentation
   - goveralls -package=./pkg/... -service=travis-ci
 
+after_success:
+  - make build-docker
+  - make push-docker
+
 after_script:
   - docker-compose down

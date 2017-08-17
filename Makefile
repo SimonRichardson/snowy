@@ -1,3 +1,5 @@
+PATH_SNOWY = github.com/trussle/snowy
+
 .PHONY: all
 all:
 	go get github.com/Masterminds/glide
@@ -8,16 +10,16 @@ all:
 build: dist/documents
 
 dist/documents:
-	go build -o dist/documents github.com/trussle/snowy/cmd/documents
+	go build -o dist/documents ${PATH_SNOWY}/cmd/documents
 
 pkg/store/mocks/store.go:
-	mockgen -package=mocks -destination=pkg/store/mocks/store.go github.com/trussle/snowy/pkg/store Store
+	mockgen -package=mocks -destination=pkg/store/mocks/store.go ${PATH_SNOWY}/pkg/store Store
 
 pkg/repository/mocks/repository.go:
-	mockgen -package=mocks -destination=pkg/repository/mocks/repository.go github.com/trussle/snowy/pkg/repository Repository
+	mockgen -package=mocks -destination=pkg/repository/mocks/repository.go ${PATH_SNOWY}/pkg/repository Repository
 
 pkg/metrics/mocks/metrics.go:
-	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go github.com/trussle/snowy/pkg/metrics Gauge,HistogramVec
+	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go ${PATH_SNOWY}/pkg/metrics Gauge,HistogramVec
 	sed -i '' -- 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
 
 pkg/metrics/mocks/observer.go:
@@ -58,3 +60,25 @@ coverage-tests:
 .PHONY: coverage-view
 coverage-view:
 	go tool cover -html=bin/coverage.out
+
+PWD ?= ${GOPATH}/src/${PATH_SNOWY}
+TAG ?= dev
+TRAVIS_BRANCH ?= dev
+ifeq ($(TRAVIS_BRANCH),master)
+	TAG=latest
+endif
+
+.PHONY: build-docker
+build-docker:
+	docker run --rm -v ${PWD}:/go/src/${PATH_SNOWY} -w /go/src/${PATH_SNOWY} iron/go:dev go build -o documents ${PATH_SNOWY}/cmd/documents
+	docker build -t teamtrussle/snowy:${TAG} .
+
+.PHONY: push-docker
+ifeq ($(TAG),latest)
+push-docker: FORCE
+	docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+	docker push teamtrussle/snowy
+else
+push-docker: FORCE
+	@echo "Pushing requires branch '${TRAVIS_BRANCH}' to be master"
+endif

@@ -1,14 +1,8 @@
-FROM golang:1.8
+FROM iron/go
 
-EXPOSE 7650
+EXPOSE 8080
 
-COPY ./ /go/src/github.com/trussle/snowy
-WORKDIR /go/src/github.com/trussle/snowy
+WORKDIR /app
+ADD documents /app/
 
-ARG mode
-ENV MODE=${mode}
-
-RUN make
-RUN chmod +x ./dist/documents
-
-CMD ["sh", "-c", "./dist/documents ${MODE}"]
+ENTRYPOINT ["./documents"]
