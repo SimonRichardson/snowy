@@ -63,22 +63,24 @@ coverage-view:
 
 PWD ?= ${GOPATH}/src/${PATH_SNOWY}
 TAG ?= dev
-TRAVIS_BRANCH ?= dev
-ifeq ($(TRAVIS_BRANCH),master)
+BRANCH ?= dev
+ifeq ($(BRANCH),master)
 	TAG=latest
 endif
 
 .PHONY: build-docker
 build-docker:
+	@echo "Building '${TAG}' for '${BRANCH}'"
 	docker run --rm -v ${PWD}:/go/src/${PATH_SNOWY} -w /go/src/${PATH_SNOWY} iron/go:dev go build -o documents ${PATH_SNOWY}/cmd/documents
 	docker build -t teamtrussle/snowy:${TAG} .
 
 .PHONY: push-docker
 ifeq ($(TAG),latest)
 push-docker: FORCE
+	@echo "Pushing '${TAG}' for '${BRANCH}'"
 	docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
 	docker push teamtrussle/snowy
 else
 push-docker: FORCE
-	@echo "Pushing requires branch '${TRAVIS_BRANCH}' to be master"
+	@echo "Pushing requires branch '${BRANCH}' to be master"
 endif

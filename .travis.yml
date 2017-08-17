@@ -30,6 +30,7 @@ script:
   - goveralls -package=./pkg/... -service=travis-ci
 
 after_success:
+  - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
   - make build-docker
   - make push-docker
 
