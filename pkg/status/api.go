@@ -1,6 +1,7 @@
 package status
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
@@ -33,6 +34,11 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case method == "GET" && path == APIPathGetQuery:
 		w.WriteHeader(http.StatusOK)
+
+		// Handle empty documents
+		if err := json.NewEncoder(w).Encode(struct{}{}); err != nil {
+			errs.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	default:
 		// Nothing found
 		errs.NotFound(w, r)
