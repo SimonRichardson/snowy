@@ -13,8 +13,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/trussle/snowy/pkg/contents"
-	"github.com/trussle/snowy/pkg/documents"
 	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/snowy/pkg/ledgers"
 	"github.com/trussle/snowy/pkg/repository"
 	"github.com/trussle/snowy/pkg/status"
 	"github.com/trussle/snowy/pkg/store"
@@ -190,9 +190,9 @@ func runDocuments(args []string) error {
 			defer contentsAPI.Close()
 
 			mux := http.NewServeMux()
-			mux.Handle("/documents/", http.StripPrefix("/documents", documents.NewAPI(repository,
-				log.With(logger, "component", "documents_api"),
-				connectedClients.WithLabelValues("documents"),
+			mux.Handle("/ledgers/", http.StripPrefix("/ledgers", ledgers.NewAPI(repository,
+				log.With(logger, "component", "ledgers_api"),
+				connectedClients.WithLabelValues("ledgers"),
 				apiDuration,
 			)))
 			mux.Handle("/contents/", http.StripPrefix("/contents", contentsAPI))

@@ -14,12 +14,12 @@ Documents and contents repository
 
 Snowy is a append only ledger for document contents, that allow you to associate
 tags to a piece of content that can be queryable from the rest end point. The
-snowy application is split into two distinct parts, the documents (ledger) and
-the associated content for that ledger entry.
+snowy application is split into two distinct parts, the ledger and the 
+associated content for that ledger entry.
 
-Modification of documents and contents is not possible, instead new entities are
+Modification of ledgers and contents is not possible, instead new entities are
 required to be inserted in an append only fashion, where a full revision and
-audit trail can be viewed for each document.
+audit trail can be viewed for each ledger.
 
 ## Setup
 
@@ -71,12 +71,12 @@ files are immutable, so new copies of the file are always stored in the storage.
 
  - [API](pkg/contents/README.md)
 
-### Documents
+### Ledgers
 
-Documents API is for retrieving the ledgers of all the contents found with in
+Ledgers API is for retrieving the ledgers of all the contents found with in
 Snowy. Each new content is appended to a table, then added to the ledger so
-querying becomes possible. Modifying a document or content is not possible and
-to add new revision to the ledger a new document, content can be be appended
+querying becomes possible. Modifying a ledger or content is not possible and
+to add new revision to the ledger a new ledger, content can be be appended
 using the same resource_id.
 
- - [API](pkg/documents/README.md)
+ - [API](pkg/ledgers/README.md)

@@ -1,4 +1,4 @@
-package document
+package models
 
 import (
 	"bytes"
@@ -92,7 +92,7 @@ func ContentAddress(bytes []byte) (string, error) {
 // ContentOption defines a option for generating a content
 type ContentOption func(*Content) error
 
-// BuildContent ingests configuration options to then yield a Document and returns a
+// BuildContent ingests configuration options to then yield a Content and returns a
 // error if it fails during setup.
 func BuildContent(opts ...ContentOption) (Content, error) {
 	var content Content

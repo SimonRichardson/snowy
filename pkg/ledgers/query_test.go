@@ -1,4 +1,4 @@
-package documents
+package ledgers
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	"github.com/trussle/snowy/pkg/document"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -178,7 +178,7 @@ func TestSelectQueryParams(t *testing.T) {
 func TestSelectQueryResult(t *testing.T) {
 	t.Parallel()
 
-	emptyDoc, err := json.Marshal(document.Document{})
+	emptyDoc, err := json.Marshal(models.Ledger{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestSelectQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with no document has correct status code", func(t *testing.T) {
+	t.Run("EncodeTo with no ledger has correct status code", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -243,7 +243,7 @@ func TestSelectQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with no document has correct body", func(t *testing.T) {
+	t.Run("EncodeTo with no ledger has correct body", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -272,7 +272,7 @@ func TestSelectQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with a document has correct body", func(t *testing.T) {
+	t.Run("EncodeTo with a ledger has correct body", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -291,15 +291,15 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.Document, err = document.BuildDocument(
-				document.WithResourceID(uid),
+			res.Ledger, err = models.BuildLedger(
+				models.WithResourceID(uid),
 			)
 			if err != nil {
 				t.Fatal(err)
 			}
 			res.EncodeTo(recorder)
 
-			var doc document.Document
+			var doc models.Ledger
 			if err := json.Unmarshal(recorder.Body.Bytes(), &doc); err != nil {
 				t.Fatal(err)
 			}
@@ -316,7 +316,7 @@ func TestSelectQueryResult(t *testing.T) {
 func TestSelectMultipleQueryResult(t *testing.T) {
 	t.Parallel()
 
-	emptyDocs, err := json.Marshal(make([]document.Document, 0))
+	emptyDocs, err := json.Marshal(make([]models.Ledger, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -352,7 +352,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with no document has correct status code", func(t *testing.T) {
+	t.Run("EncodeTo with no ledger has correct status code", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -381,7 +381,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with no document has correct body", func(t *testing.T) {
+	t.Run("EncodeTo with no ledger has correct body", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -410,7 +410,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 		}
 	})
 
-	t.Run("EncodeTo with a document has correct body", func(t *testing.T) {
+	t.Run("EncodeTo with a ledger has correct body", func(t *testing.T) {
 		fn := func(uid uuid.UUID, tags Tags) bool {
 			var (
 				qp SelectQueryParams
@@ -428,19 +428,19 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			docs := make([]document.Document, 1)
-			docs[0], err = document.BuildDocument(
-				document.WithResourceID(uid),
+			docs := make([]models.Ledger, 1)
+			docs[0], err = models.BuildLedger(
+				models.WithResourceID(uid),
 			)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			res := SelectMultipleQueryResult{Params: qp}
-			res.Documents = docs
+			res.Ledgers = docs
 			res.EncodeTo(recorder)
 
-			var resDocs []document.Document
+			var resDocs []models.Ledger
 			if err := json.Unmarshal(recorder.Body.Bytes(), &resDocs); err != nil {
 				t.Fatal(err)
 			}

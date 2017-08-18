@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/trussle/snowy/pkg/document"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -20,35 +20,35 @@ type Query struct {
 // provides a highlevel interface for simple interaction.
 type Repository interface {
 
-	// GetDocument returns a Document corresponding to resourceID. If no document
+	// GetLedger returns a Ledger corresponding to resourceID. If no ledger
 	// exists it will return an error.
-	GetDocument(resourceID uuid.UUID, options Query) (document.Document, error)
+	GetLedger(resourceID uuid.UUID, options Query) (models.Ledger, error)
 
-	// InsertDocument inserts documents into the repository. If there is an
-	// error inserting documents into the repository then it will return an
+	// InsertLedger inserts ledgers into the repository. If there is an
+	// error inserting ledgers into the repository then it will return an
 	// error.
-	InsertDocument(doc document.Document) (document.Document, error)
+	InsertLedger(doc models.Ledger) (models.Ledger, error)
 
-	// AppendDocument adds a new document as a revision. If there is no head
-	// document, it will return an error. If there is an error appending
-	// documents into the repository then it will return an error.
-	AppendDocument(resourceID uuid.UUID, doc document.Document) (document.Document, error)
+	// AppendLedger adds a new ledger as a revision. If there is no head
+	// ledger, it will return an error. If there is an error appending
+	// ledgers into the repository then it will return an error.
+	AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error)
 
-	// GetDocuments returns a set of Documents corresponding to a resourceID,
-	// with some additional qualifiers. If no documents are found it will return
-	// an empty slice. If there is an error parsing the documents then it will
+	// GetLedgers returns a set of Ledgers corresponding to a resourceID,
+	// with some additional qualifiers. If no ledgers are found it will return
+	// an empty slice. If there is an error parsing the ledgers then it will
 	// return an error.
-	GetDocuments(resourceID uuid.UUID, options Query) ([]document.Document, error)
+	GetLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error)
 
 	// GetContent returns a content corresponding to the resourceID. If no
-	// document or content exists, it will return an error.
-	GetContent(resourceID uuid.UUID) (document.Content, error)
+	// ledger or content exists, it will return an error.
+	GetContent(resourceID uuid.UUID) (models.Content, error)
 
 	// PutContent inserts content into the repository. If there is an error
 	// putting content into the repository then it will return an error.
-	PutContent(content document.Content) (document.Content, error)
+	PutContent(content models.Content) (models.Content, error)
 
-	// Close the underlying document store and returns an error if it fails.
+	// Close the underlying ledger store and returns an error if it fails.
 	Close() error
 }
 

@@ -1,4 +1,4 @@
-package document
+package models
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
-func TestDocument(t *testing.T) {
+func TestLedger(t *testing.T) {
 	t.Parallel()
 
 	t.Run("fields", func(t *testing.T) {
@@ -26,7 +26,7 @@ func TestDocument(t *testing.T) {
 			tags Tags,
 		) bool {
 			now := time.Now()
-			output := Document{
+			output := Ledger{
 				id:                  id,
 				name:                name,
 				resourceID:          resourceID,
@@ -66,7 +66,7 @@ func TestDocument(t *testing.T) {
 			tags Tags,
 		) bool {
 			now := time.Now().Round(time.Second)
-			input := Document{
+			input := Ledger{
 				id:                  id,
 				name:                name,
 				resourceID:          resourceID,
@@ -84,7 +84,7 @@ func TestDocument(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var output Document
+			var output Ledger
 			if err = json.Unmarshal(bytes, &output); err != nil {
 				t.Fatal(err)
 			}
@@ -114,7 +114,7 @@ func TestDocument(t *testing.T) {
 			resourceContentType, authorID string,
 		) bool {
 			now := time.Now().Round(time.Second)
-			input := Document{
+			input := Ledger{
 				id:                  id,
 				name:                name,
 				resourceID:          resourceID,
@@ -131,7 +131,7 @@ func TestDocument(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var output Document
+			var output Ledger
 			if err = json.Unmarshal(bytes, &output); err != nil {
 				t.Fatal(err)
 			}
@@ -156,7 +156,7 @@ func TestDocument(t *testing.T) {
 		fn := func() bool {
 			bytes := []byte("{!}")
 
-			var output Document
+			var output Ledger
 			err := output.UnmarshalJSON(bytes)
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -194,7 +194,7 @@ func TestDocument(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var output Document
+			var output Ledger
 			err = output.UnmarshalJSON(bytes)
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -232,7 +232,7 @@ func TestDocument(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var output Document
+			var output Ledger
 			err = output.UnmarshalJSON(bytes)
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -247,7 +247,7 @@ func TestDocument(t *testing.T) {
 	})
 }
 
-func TestDocumentBuild(t *testing.T) {
+func TestLedgerBuild(t *testing.T) {
 	t.Parallel()
 
 	t.Run("build", func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestDocumentBuild(t *testing.T) {
 			tags Tags,
 		) bool {
 			now := time.Now()
-			doc, err := BuildDocument(
+			doc, err := BuildLedger(
 				WithID(id),
 				WithName(name),
 				WithResourceID(resourceID),
@@ -294,7 +294,7 @@ func TestDocumentBuild(t *testing.T) {
 
 	t.Run("build with new resource_id", func(t *testing.T) {
 		fn := func() bool {
-			doc, err := BuildDocument(
+			doc, err := BuildLedger(
 				WithNewResourceID(),
 			)
 			if err != nil {
@@ -309,8 +309,8 @@ func TestDocumentBuild(t *testing.T) {
 	})
 
 	t.Run("invalid build", func(t *testing.T) {
-		_, err := BuildDocument(
-			func(doc *Document) error {
+		_, err := BuildLedger(
+			func(doc *Ledger) error {
 				return errors.Errorf("bad")
 			},
 		)

@@ -1,4 +1,4 @@
-package documents
+package ledgers
 
 import (
 	"bytes"
@@ -16,8 +16,8 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/document"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
@@ -114,8 +114,8 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
 			)
 			if err != nil {
@@ -128,7 +128,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, nil)
+			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -162,8 +162,8 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
 			)
 			if err != nil {
@@ -181,7 +181,7 @@ func TestGetAPI(t *testing.T) {
 				repository.WithQueryAuthorID(""),
 			)
 
-			repo.EXPECT().GetDocument(uid, query).Times(1).Return(doc, nil)
+			repo.EXPECT().GetLedger(uid, query).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
@@ -215,8 +215,8 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
 			)
 			if err != nil {
@@ -229,7 +229,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errNotFound{errors.New("failure")})
+			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -263,8 +263,8 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
 			)
 			if err != nil {
@@ -277,7 +277,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocument(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errors.New("failure"))
+			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errors.New("failure"))
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -512,10 +512,10 @@ func TestPostAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.BuildDocument(
-				document.WithName(name),
-				document.WithAuthorID(authorID),
-				document.WithTags(tags),
+			doc, err := models.BuildLedger(
+				models.WithName(name),
+				models.WithAuthorID(authorID),
+				models.WithTags(tags),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -526,7 +526,7 @@ func TestPostAPI(t *testing.T) {
 
 			duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
-			repo.EXPECT().InsertDocument(Document(doc)).Return(doc, nil).Times(1)
+			repo.EXPECT().InsertLedger(Ledger(doc)).Return(doc, nil).Times(1)
 
 			b, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -590,10 +590,10 @@ func TestPostAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.BuildDocument(
-				document.WithName(name),
-				document.WithAuthorID(authorID),
-				document.WithTags(tags),
+			doc, err := models.BuildLedger(
+				models.WithName(name),
+				models.WithAuthorID(authorID),
+				models.WithTags(tags),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -604,7 +604,7 @@ func TestPostAPI(t *testing.T) {
 
 			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
-			repo.EXPECT().InsertDocument(Document(doc)).Return(doc, errors.New("bad")).Times(1)
+			repo.EXPECT().InsertLedger(Ledger(doc)).Return(doc, errors.New("bad")).Times(1)
 
 			b, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -874,10 +874,10 @@ func TestPutAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.BuildDocument(
-				document.WithName(name),
-				document.WithAuthorID(authorID),
-				document.WithTags(tags),
+			doc, err := models.BuildLedger(
+				models.WithName(name),
+				models.WithAuthorID(authorID),
+				models.WithTags(tags),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -888,7 +888,7 @@ func TestPutAPI(t *testing.T) {
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
-			repo.EXPECT().AppendDocument(resourceID, Document(doc)).Return(doc, nil).Times(1)
+			repo.EXPECT().AppendLedger(resourceID, Ledger(doc)).Return(doc, nil).Times(1)
 
 			b, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -952,10 +952,10 @@ func TestPutAPI(t *testing.T) {
 				return true
 			}
 
-			doc, err := document.BuildDocument(
-				document.WithName(name),
-				document.WithAuthorID(authorID),
-				document.WithTags(tags),
+			doc, err := models.BuildLedger(
+				models.WithName(name),
+				models.WithAuthorID(authorID),
+				models.WithTags(tags),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -966,7 +966,7 @@ func TestPutAPI(t *testing.T) {
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
-			repo.EXPECT().AppendDocument(resourceID, Document(doc)).Return(doc, errors.New("bad")).Times(1)
+			repo.EXPECT().AppendLedger(resourceID, Ledger(doc)).Return(doc, errors.New("bad")).Times(1)
 
 			b, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -1091,10 +1091,10 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
-				docs = []document.Document{doc}
+				docs = []models.Ledger{doc}
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -1106,7 +1106,7 @@ func TestGetMultipleAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocuments(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, nil)
+			repo.EXPECT().GetLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -1140,10 +1140,10 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
-				docs = []document.Document{doc}
+				docs = []models.Ledger{doc}
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -1160,7 +1160,7 @@ func TestGetMultipleAPI(t *testing.T) {
 				repository.WithQueryAuthorID(""),
 			)
 
-			repo.EXPECT().GetDocuments(uid, query).Times(1).Return(docs, nil)
+			repo.EXPECT().GetLedgers(uid, query).Times(1).Return(docs, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
@@ -1194,10 +1194,10 @@ func TestGetMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				doc, err = document.BuildDocument(
-					document.WithResourceID(uid),
+				doc, err = models.BuildLedger(
+					models.WithResourceID(uid),
 				)
-				docs = []document.Document{doc}
+				docs = []models.Ledger{doc}
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -1209,7 +1209,7 @@ func TestGetMultipleAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/multiple/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetDocuments(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, errors.New("bad"))
+			repo.EXPECT().GetLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, errors.New("bad"))
 
 			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -1291,12 +1291,12 @@ func (float64Matcher) String() string {
 
 func Float64() gomock.Matcher { return float64Matcher{} }
 
-type documentMatcher struct {
-	doc document.Document
+type ledgerMatcher struct {
+	doc models.Ledger
 }
 
-func (m documentMatcher) Matches(x interface{}) bool {
-	d, ok := x.(document.Document)
+func (m ledgerMatcher) Matches(x interface{}) bool {
+	d, ok := x.(models.Ledger)
 	if !ok {
 		return false
 	}
@@ -1306,11 +1306,11 @@ func (m documentMatcher) Matches(x interface{}) bool {
 		reflect.DeepEqual(m.doc.Tags(), d.Tags())
 }
 
-func (documentMatcher) String() string {
-	return "is document"
+func (ledgerMatcher) String() string {
+	return "is ledger"
 }
 
-func Document(doc document.Document) gomock.Matcher { return documentMatcher{doc} }
+func Ledger(doc models.Ledger) gomock.Matcher { return ledgerMatcher{doc} }
 
 type errNotFound struct {
 	err error

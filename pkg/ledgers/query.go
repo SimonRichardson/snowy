@@ -1,4 +1,4 @@
-package documents
+package ledgers
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/trussle/snowy/pkg/document"
 	errs "github.com/trussle/snowy/pkg/http"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -57,7 +57,7 @@ func (qp *SelectQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
 type SelectQueryResult struct {
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
-	Document document.Document `json:"document"`
+	Ledger   models.Ledger     `json:"ledger"`
 }
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
@@ -68,8 +68,8 @@ func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
 	w.Header().Set(httpHeaderQueryAuthorID, qr.Params.AuthorID)
 
-	// Handle empty documents
-	if err := json.NewEncoder(w).Encode(qr.Document); err != nil {
+	// Handle empty ledgers
+	if err := json.NewEncoder(w).Encode(qr.Ledger); err != nil {
 		errs.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -110,9 +110,9 @@ func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 
 // SelectMultipleQueryResult contains statistics about the query.
 type SelectMultipleQueryResult struct {
-	Params    SelectQueryParams   `json:"query"`
-	Duration  string              `json:"duration"`
-	Documents []document.Document `json:"document"`
+	Params   SelectQueryParams `json:"query"`
+	Duration string            `json:"duration"`
+	Ledgers  []models.Ledger   `json:"ledger"`
 }
 
 // EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
@@ -123,11 +123,11 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderQueryTags, strings.Join(qr.Params.Tags, ","))
 	w.Header().Set(httpHeaderQueryAuthorID, qr.Params.AuthorID)
 
-	// Make sure that we encode empty documents correctly (i.e. they're not
+	// Make sure that we encode empty ledgers correctly (i.e. they're not
 	// null in the json output)
-	docs := qr.Documents
-	if qr.Documents == nil {
-		docs = make([]document.Document, 0)
+	docs := qr.Ledgers
+	if qr.Ledgers == nil {
+		docs = make([]models.Ledger, 0)
 	}
 
 	if err := json.NewEncoder(w).Encode(docs); err != nil {

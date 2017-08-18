@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS documents (
+CREATE TABLE IF NOT EXISTS ledgers (
   id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   resource_id             UUID NOT NULL,
   resource_address        TEXT NOT NULL,

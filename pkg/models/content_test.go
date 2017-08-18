@@ -1,4 +1,4 @@
-package document
+package models
 
 import (
 	"encoding/json"

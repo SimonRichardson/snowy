@@ -12,8 +12,8 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/document"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
+	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -111,9 +111,9 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				content, err = document.BuildContent(
-					document.WithSize(int64(len(bytes))),
-					document.WithBytes(bytes),
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(bytes))),
+					models.WithBytes(bytes),
 				)
 			)
 			defer api.Close()
@@ -162,9 +162,9 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				content, err = document.BuildContent(
-					document.WithSize(int64(len(bytes))),
-					document.WithBytes(bytes),
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(bytes))),
+					models.WithBytes(bytes),
 				)
 			)
 			defer api.Close()
@@ -213,9 +213,9 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				content, err = document.BuildContent(
-					document.WithSize(int64(len(bytes))),
-					document.WithBytes(bytes),
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(bytes))),
+					models.WithBytes(bytes),
 				)
 			)
 			defer api.Close()
@@ -353,10 +353,10 @@ func TestPutAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				content, err = document.BuildContent(
-					document.WithSize(int64(len(b))),
-					document.WithContentBytes(b),
-					document.WithContentType("plain/text"),
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(b))),
+					models.WithContentBytes(b),
+					models.WithContentType("plain/text"),
 				)
 			)
 			defer api.Close()
@@ -371,7 +371,7 @@ func TestPutAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().PutContent(Content(content)).Return(document.Content{}, errors.New("failure")).Times(1)
+			repo.EXPECT().PutContent(Content(content)).Return(models.Content{}, errors.New("failure")).Times(1)
 
 			resp, err := http.Post(server.URL, "plain/text", bytes.NewBuffer(b))
 			if err != nil {
@@ -405,10 +405,10 @@ func TestPutAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 
-				content, err = document.BuildContent(
-					document.WithSize(int64(len(b))),
-					document.WithContentBytes(b),
-					document.WithContentType("plain/text"),
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(b))),
+					models.WithContentBytes(b),
+					models.WithContentType("plain/text"),
 				)
 			)
 			defer api.Close()
@@ -509,11 +509,11 @@ func (e errNotFound) NotFound() bool {
 }
 
 type contentMatcher struct {
-	content document.Content
+	content models.Content
 }
 
 func (m contentMatcher) Matches(x interface{}) bool {
-	d, ok := x.(document.Content)
+	d, ok := x.(models.Content)
 	if !ok {
 		return false
 	}
@@ -529,4 +529,4 @@ func (contentMatcher) String() string {
 	return "is content"
 }
 
-func Content(content document.Content) gomock.Matcher { return contentMatcher{content} }
+func Content(content models.Content) gomock.Matcher { return contentMatcher{content} }

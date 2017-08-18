@@ -8,7 +8,7 @@ import (
 
 // Entity represents a value with in the persistent store, that allows us to
 // formally understand the underlying model. Entity in this case represents a
-// document.Document without the file content.
+// models.Ledger without the file content.
 type Entity struct {
 	ID                   uuid.UUID
 	Name                 string

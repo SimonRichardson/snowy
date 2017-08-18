@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	"github.com/trussle/snowy/pkg/document"
 	errs "github.com/trussle/snowy/pkg/http"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -51,7 +51,7 @@ func (qp *SelectQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
 type SelectQueryResult struct {
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
-	Content  document.Content  `json:"content"`
+	Content  models.Content    `json:"content"`
 }
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
@@ -111,7 +111,7 @@ func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 type InsertQueryResult struct {
 	Params   InsertQueryParams `json:"query"`
 	Duration string            `json:"duration"`
-	Content  document.Content  `json:"content"`
+	Content  models.Content    `json:"content"`
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.

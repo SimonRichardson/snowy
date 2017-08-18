@@ -5,7 +5,7 @@ package mocks
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	document "github.com/trussle/snowy/pkg/document"
+	models "github.com/trussle/snowy/pkg/models"
 	repository "github.com/trussle/snowy/pkg/repository"
 	uuid "github.com/trussle/snowy/pkg/uuid"
 	reflect "reflect"
@@ -34,17 +34,17 @@ func (_m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return _m.recorder
 }
 
-// AppendDocument mocks base method
-func (_m *MockRepository) AppendDocument(_param0 uuid.UUID, _param1 document.Document) (document.Document, error) {
-	ret := _m.ctrl.Call(_m, "AppendDocument", _param0, _param1)
-	ret0, _ := ret[0].(document.Document)
+// AppendLedger mocks base method
+func (_m *MockRepository) AppendLedger(_param0 uuid.UUID, _param1 models.Ledger) (models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "AppendLedger", _param0, _param1)
+	ret0, _ := ret[0].(models.Ledger)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AppendDocument indicates an expected call of AppendDocument
-func (_mr *MockRepositoryMockRecorder) AppendDocument(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "AppendDocument", reflect.TypeOf((*MockRepository)(nil).AppendDocument), arg0, arg1)
+// AppendLedger indicates an expected call of AppendLedger
+func (_mr *MockRepositoryMockRecorder) AppendLedger(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "AppendLedger", reflect.TypeOf((*MockRepository)(nil).AppendLedger), arg0, arg1)
 }
 
 // Close mocks base method
@@ -60,9 +60,9 @@ func (_mr *MockRepositoryMockRecorder) Close() *gomock.Call {
 }
 
 // GetContent mocks base method
-func (_m *MockRepository) GetContent(_param0 uuid.UUID) (document.Content, error) {
+func (_m *MockRepository) GetContent(_param0 uuid.UUID) (models.Content, error) {
 	ret := _m.ctrl.Call(_m, "GetContent", _param0)
-	ret0, _ := ret[0].(document.Content)
+	ret0, _ := ret[0].(models.Content)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,49 +72,49 @@ func (_mr *MockRepositoryMockRecorder) GetContent(arg0 interface{}) *gomock.Call
 	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetContent", reflect.TypeOf((*MockRepository)(nil).GetContent), arg0)
 }
 
-// GetDocument mocks base method
-func (_m *MockRepository) GetDocument(_param0 uuid.UUID, _param1 repository.Query) (document.Document, error) {
-	ret := _m.ctrl.Call(_m, "GetDocument", _param0, _param1)
-	ret0, _ := ret[0].(document.Document)
+// GetLedger mocks base method
+func (_m *MockRepository) GetLedger(_param0 uuid.UUID, _param1 repository.Query) (models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "GetLedger", _param0, _param1)
+	ret0, _ := ret[0].(models.Ledger)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetDocument indicates an expected call of GetDocument
-func (_mr *MockRepositoryMockRecorder) GetDocument(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetDocument", reflect.TypeOf((*MockRepository)(nil).GetDocument), arg0, arg1)
+// GetLedger indicates an expected call of GetLedger
+func (_mr *MockRepositoryMockRecorder) GetLedger(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetLedger", reflect.TypeOf((*MockRepository)(nil).GetLedger), arg0, arg1)
 }
 
-// GetDocuments mocks base method
-func (_m *MockRepository) GetDocuments(_param0 uuid.UUID, _param1 repository.Query) ([]document.Document, error) {
-	ret := _m.ctrl.Call(_m, "GetDocuments", _param0, _param1)
-	ret0, _ := ret[0].([]document.Document)
+// GetLedgers mocks base method
+func (_m *MockRepository) GetLedgers(_param0 uuid.UUID, _param1 repository.Query) ([]models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "GetLedgers", _param0, _param1)
+	ret0, _ := ret[0].([]models.Ledger)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetDocuments indicates an expected call of GetDocuments
-func (_mr *MockRepositoryMockRecorder) GetDocuments(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetDocuments", reflect.TypeOf((*MockRepository)(nil).GetDocuments), arg0, arg1)
+// GetLedgers indicates an expected call of GetLedgers
+func (_mr *MockRepositoryMockRecorder) GetLedgers(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetLedgers", reflect.TypeOf((*MockRepository)(nil).GetLedgers), arg0, arg1)
 }
 
-// InsertDocument mocks base method
-func (_m *MockRepository) InsertDocument(_param0 document.Document) (document.Document, error) {
-	ret := _m.ctrl.Call(_m, "InsertDocument", _param0)
-	ret0, _ := ret[0].(document.Document)
+// InsertLedger mocks base method
+func (_m *MockRepository) InsertLedger(_param0 models.Ledger) (models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "InsertLedger", _param0)
+	ret0, _ := ret[0].(models.Ledger)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// InsertDocument indicates an expected call of InsertDocument
-func (_mr *MockRepositoryMockRecorder) InsertDocument(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "InsertDocument", reflect.TypeOf((*MockRepository)(nil).InsertDocument), arg0)
+// InsertLedger indicates an expected call of InsertLedger
+func (_mr *MockRepositoryMockRecorder) InsertLedger(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "InsertLedger", reflect.TypeOf((*MockRepository)(nil).InsertLedger), arg0)
 }
 
 // PutContent mocks base method
-func (_m *MockRepository) PutContent(_param0 document.Content) (document.Content, error) {
+func (_m *MockRepository) PutContent(_param0 models.Content) (models.Content, error) {
 	ret := _m.ctrl.Call(_m, "PutContent", _param0)
-	ret0, _ := ret[0].(document.Content)
+	ret0, _ := ret[0].(models.Content)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

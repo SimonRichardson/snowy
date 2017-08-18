@@ -1,1 +1,1 @@
-CREATE INDEX documents_tags ON documents USING GIN(tags);
+CREATE INDEX ledgers_tags ON ledgers USING GIN(tags);

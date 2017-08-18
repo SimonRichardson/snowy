@@ -16,8 +16,8 @@ import (
 	"github.com/SimonRichardson/betwixt/pkg/output"
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/document"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
+	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -59,22 +59,22 @@ func TestDocumentation_Flow(t *testing.T) {
 		base64Source = base64.URLEncoding.EncodeToString(source)
 		b            = []byte(base64Source)
 	)
-	address, err := document.ContentAddress(b)
+	address, err := models.ContentAddress(b)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var (
-		inputContent, _ = document.BuildContent(
-			document.WithSize(int64(len(b))),
-			document.WithContentBytes(b),
-			document.WithContentType("application/octet-stream"),
+		inputContent, _ = models.BuildContent(
+			models.WithSize(int64(len(b))),
+			models.WithContentBytes(b),
+			models.WithContentType("application/octet-stream"),
 		)
-		outputContent, _ = document.BuildContent(
-			document.WithAddress(address),
-			document.WithContentType("application/octet-stream"),
-			document.WithSize(int64(len(b))),
-			document.WithBytes(b),
+		outputContent, _ = models.BuildContent(
+			models.WithAddress(address),
+			models.WithContentType("application/octet-stream"),
+			models.WithSize(int64(len(b))),
+			models.WithBytes(b),
 		)
 	)
 

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/trussle/snowy/pkg/document"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 )
 
@@ -98,7 +98,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	var (
 		notFound      = make(chan struct{})
 		internalError = make(chan error)
-		result        = make(chan document.Content)
+		result        = make(chan models.Content)
 	)
 	a.action <- func() {
 		content, err := a.repository.GetContent(qp.ResourceID)
@@ -119,7 +119,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	case err := <-internalError:
 		errs.Error(w, err.Error(), http.StatusInternalServerError)
 	case content := <-result:
-		// Make sure we collect the document for the result.
+		// Make sure we collect the content for the result.
 		qr := SelectQueryResult{Params: qp}
 		qr.Content = content
 
@@ -147,7 +147,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		internalError   = make(chan error)
 		badRequestError = make(chan error)
-		result          = make(chan document.Content)
+		result          = make(chan models.Content)
 	)
 	a.action <- func() {
 		buffer := bytes.NewBuffer(make([]byte, 0, defaultMaxContentLength))
@@ -157,10 +157,10 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		bytes := buffer.Bytes()
-		content, err := document.BuildContent(
-			document.WithContentBytes(bytes),
-			document.WithSize(int64(len(bytes))),
-			document.WithContentType(qp.ContentType),
+		content, err := models.BuildContent(
+			models.WithContentBytes(bytes),
+			models.WithSize(int64(len(bytes))),
+			models.WithContentType(qp.ContentType),
 		)
 		if err != nil {
 			badRequestError <- err
@@ -181,7 +181,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	case err := <-badRequestError:
 		errs.Error(w, err.Error(), http.StatusBadRequest)
 	case content := <-result:
-		// Make sure we collect the document for the result.
+		// Make sure we collect the content for the result.
 		qr := InsertQueryResult{Params: qp}
 		qr.Content = content
 

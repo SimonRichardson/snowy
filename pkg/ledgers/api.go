@@ -1,4 +1,4 @@
-package documents
+package ledgers
 
 import (
 	"encoding/json"
@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/trussle/snowy/pkg/document"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 )
 
@@ -101,7 +101,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := a.repository.GetDocument(qp.ResourceID, options)
+	doc, err := a.repository.GetLedger(qp.ResourceID, options)
 	if err != nil {
 		if repository.ErrNotFound(err) {
 			errs.NotFound(w, r)
@@ -113,7 +113,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we collect the document for the result.
 	qr := SelectQueryResult{Params: qp}
-	qr.Document = doc
+	qr.Ledger = doc
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
@@ -133,15 +133,15 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() document.DocOption {
-		return document.WithNewResourceID()
+	doc, err := ingestRequest(r.Body, func() models.DocOption {
+		return models.WithNewResourceID()
 	})
 	if err != nil {
 		errs.BadRequest(w, r, err.Error())
 		return
 	}
 
-	resource, err := a.repository.InsertDocument(doc)
+	resource, err := a.repository.InsertLedger(doc)
 	if err != nil {
 		errs.InternalServerError(w, r, err.Error())
 		return
@@ -169,15 +169,15 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() document.DocOption {
-		return document.WithResourceID(qp.ResourceID)
+	doc, err := ingestRequest(r.Body, func() models.DocOption {
+		return models.WithResourceID(qp.ResourceID)
 	})
 	if err != nil {
 		errs.BadRequest(w, r, err.Error())
 		return
 	}
 
-	resource, err := a.repository.AppendDocument(qp.ResourceID, doc)
+	resource, err := a.repository.AppendLedger(qp.ResourceID, doc)
 	if err != nil {
 		errs.InternalServerError(w, r, err.Error())
 		return
@@ -214,7 +214,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	docs, err := a.repository.GetDocuments(qp.ResourceID, options)
+	ledgers, err := a.repository.GetLedgers(qp.ResourceID, options)
 	if err != nil {
 		errs.InternalServerError(w, r, err.Error())
 		return
@@ -222,7 +222,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we collect the documents for the result.
 	qr := SelectMultipleQueryResult{Params: qp}
-	qr.Documents = docs
+	qr.Ledgers = ledgers
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
@@ -239,37 +239,37 @@ func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.ResponseWriter.WriteHeader(code)
 }
 
-func ingestRequest(reader io.ReadCloser, fn func() document.DocOption) (document.Document, error) {
+func ingestRequest(reader io.ReadCloser, fn func() models.DocOption) (models.Ledger, error) {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
 	if len(bytes) < 1 {
-		return document.Document{}, errors.New("no body content")
+		return models.Ledger{}, errors.New("no body content")
 	}
 
-	var input documentInput
+	var input ledgerInput
 	if err = json.Unmarshal(bytes, &input); err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 	if err = validateInput(input); err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
-	return document.BuildDocument(
+	return models.BuildLedger(
 		fn(),
-		document.WithName(input.Name),
-		document.WithResourceAddress(input.ResourceAddress),
-		document.WithResourceSize(input.ResourceSize),
-		document.WithResourceContentType(input.ResourceContentType),
-		document.WithAuthorID(input.AuthorID),
-		document.WithTags(input.Tags),
-		document.WithCreatedOn(time.Now()),
+		models.WithName(input.Name),
+		models.WithResourceAddress(input.ResourceAddress),
+		models.WithResourceSize(input.ResourceSize),
+		models.WithResourceContentType(input.ResourceContentType),
+		models.WithAuthorID(input.AuthorID),
+		models.WithTags(input.Tags),
+		models.WithCreatedOn(time.Now()),
 	)
 }
 
-type documentInput struct {
+type ledgerInput struct {
 	Name                string   `json:"name"`
 	ResourceAddress     string   `json:"resource_address"`
 	ResourceSize        int64    `json:"resource_size"`
@@ -278,7 +278,7 @@ type documentInput struct {
 	Tags                []string `json:"tags"`
 }
 
-func validateInput(input documentInput) error {
+func validateInput(input ledgerInput) error {
 	if len(strings.TrimSpace(input.Name)) == 0 {
 		return errors.New("input.name is empty")
 	}

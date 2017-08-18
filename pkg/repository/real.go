@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
-	"github.com/trussle/snowy/pkg/document"
 	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -27,42 +27,42 @@ func NewRealRepository(fs fs.Filesystem, store store.Store, logger log.Logger) R
 	}
 }
 
-// GetDocument returns a Document corresponding to the resource ID. If no
-// document exists it will return an error.
-func (r *realRepository) GetDocument(resourceID uuid.UUID, options Query) (document.Document, error) {
+// GetLedger returns a Ledger corresponding to the resource ID. If no
+// ledger exists it will return an error.
+func (r *realRepository) GetLedger(resourceID uuid.UUID, options Query) (models.Ledger, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
 		store.WithQueryAuthorID(options.AuthorID),
 	)
 	if err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
 	entity, err := r.store.Get(resourceID, query)
 	if err != nil {
 		if store.ErrNotFound(err) {
-			return document.Document{}, errNotFound{err}
+			return models.Ledger{}, errNotFound{err}
 		}
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
-	return document.BuildDocument(
-		document.WithID(entity.ID),
-		document.WithName(entity.Name),
-		document.WithResourceID(entity.ResourceID),
-		document.WithResourceAddress(entity.ResourceAddress),
-		document.WithResourceSize(entity.ResourceSize),
-		document.WithResourceContentType(entity.ResourceContentType),
-		document.WithAuthorID(entity.AuthorID),
-		document.WithTags(entity.Tags),
-		document.WithCreatedOn(entity.CreatedOn),
-		document.WithDeletedOn(entity.DeletedOn),
+	return models.BuildLedger(
+		models.WithID(entity.ID),
+		models.WithName(entity.Name),
+		models.WithResourceID(entity.ResourceID),
+		models.WithResourceAddress(entity.ResourceAddress),
+		models.WithResourceSize(entity.ResourceSize),
+		models.WithResourceContentType(entity.ResourceContentType),
+		models.WithAuthorID(entity.AuthorID),
+		models.WithTags(entity.Tags),
+		models.WithCreatedOn(entity.CreatedOn),
+		models.WithDeletedOn(entity.DeletedOn),
 	)
 }
 
-// InsertDocument inserts document into the repository. If there is an error
-// putting documents into the repository then it will return an error.
-func (r *realRepository) InsertDocument(doc document.Document) (document.Document, error) {
+// InsertLedger inserts ledger into the repository. If there is an error
+// putting ledgers into the repository then it will return an error.
+func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) {
 	entity, err := store.BuildEntity(
 		store.BuildEntityWithName(doc.Name()),
 		store.BuildEntityWithResourceID(doc.ResourceID()),
@@ -75,46 +75,46 @@ func (r *realRepository) InsertDocument(doc document.Document) (document.Documen
 		store.BuildEntityWithDeletedOn(time.Time{}),
 	)
 	if err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
 	if err = r.store.Insert(entity); err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
-	// Reconstruct the document.
-	return document.BuildDocument(
-		document.WithID(entity.ID),
-		document.WithName(entity.Name),
-		document.WithResourceID(entity.ResourceID),
-		document.WithResourceAddress(entity.ResourceAddress),
-		document.WithResourceSize(entity.ResourceSize),
-		document.WithResourceContentType(entity.ResourceContentType),
-		document.WithAuthorID(entity.AuthorID),
-		document.WithTags(entity.Tags),
-		document.WithCreatedOn(entity.CreatedOn),
-		document.WithDeletedOn(entity.DeletedOn),
+	// Reconstruct the models.
+	return models.BuildLedger(
+		models.WithID(entity.ID),
+		models.WithName(entity.Name),
+		models.WithResourceID(entity.ResourceID),
+		models.WithResourceAddress(entity.ResourceAddress),
+		models.WithResourceSize(entity.ResourceSize),
+		models.WithResourceContentType(entity.ResourceContentType),
+		models.WithAuthorID(entity.AuthorID),
+		models.WithTags(entity.Tags),
+		models.WithCreatedOn(entity.CreatedOn),
+		models.WithDeletedOn(entity.DeletedOn),
 	)
 }
 
-// AppendDocument adds a new document as a revision. If there is no head
-// document, it will return an error. If there is an error appending
-// documents into the repository then it will return an error.
-func (r *realRepository) AppendDocument(resourceID uuid.UUID, doc document.Document) (document.Document, error) {
+// AppendLedger adds a new ledger as a revision. If there is no head
+// ledger, it will return an error. If there is an error appending
+// ledgers into the repository then it will return an error.
+func (r *realRepository) AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error) {
 	// We don't care what we get back, just that it exists.
-	_, err := r.GetDocument(resourceID, Query{})
+	_, err := r.GetLedger(resourceID, Query{})
 	if err != nil {
-		return document.Document{}, err
+		return models.Ledger{}, err
 	}
 
-	return r.InsertDocument(doc)
+	return r.InsertLedger(doc)
 }
 
-// GetDocuments returns a set of Documents corresponding to a resourceID,
-// with some additional qualifiers. If no documents are found it will return
-// an empty slice. If there is an error parsing the documents then it will
+// GetLedgers returns a set of Ledgers corresponding to a resourceID,
+// with some additional qualifiers. If no ledgers are found it will return
+// an empty slice. If there is an error parsing the ledgers then it will
 // return an error.
-func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]document.Document, error) {
+func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
 		store.WithQueryAuthorID(options.AuthorID),
@@ -128,19 +128,19 @@ func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]do
 		return nil, err
 	}
 
-	res := make([]document.Document, len(entities))
+	res := make([]models.Ledger, len(entities))
 	for k, entity := range entities {
-		doc, err := document.BuildDocument(
-			document.WithID(entity.ID),
-			document.WithName(entity.Name),
-			document.WithResourceID(entity.ResourceID),
-			document.WithResourceAddress(entity.ResourceAddress),
-			document.WithResourceSize(entity.ResourceSize),
-			document.WithResourceContentType(entity.ResourceContentType),
-			document.WithAuthorID(entity.AuthorID),
-			document.WithTags(entity.Tags),
-			document.WithCreatedOn(entity.CreatedOn),
-			document.WithDeletedOn(entity.DeletedOn),
+		doc, err := models.BuildLedger(
+			models.WithID(entity.ID),
+			models.WithName(entity.Name),
+			models.WithResourceID(entity.ResourceID),
+			models.WithResourceAddress(entity.ResourceAddress),
+			models.WithResourceSize(entity.ResourceSize),
+			models.WithResourceContentType(entity.ResourceContentType),
+			models.WithAuthorID(entity.AuthorID),
+			models.WithTags(entity.Tags),
+			models.WithCreatedOn(entity.CreatedOn),
+			models.WithDeletedOn(entity.DeletedOn),
 		)
 		if err != nil {
 			return nil, err
@@ -153,12 +153,12 @@ func (r *realRepository) GetDocuments(resourceID uuid.UUID, options Query) ([]do
 }
 
 // PutContent inserts content into the repository, this will make sure that
-// links to the content is managed by the document storage. If there is an error
+// links to the content is managed by the ledger storage. If there is an error
 // during the saving of the content to the underlying storage it will then
 // return an error.
-func (r *realRepository) GetContent(resourceID uuid.UUID) (content document.Content, err error) {
-	var doc document.Document
-	doc, err = r.GetDocument(resourceID, Query{})
+func (r *realRepository) GetContent(resourceID uuid.UUID) (content models.Content, err error) {
+	var doc models.Ledger
+	doc, err = r.GetLedger(resourceID, Query{})
 	if err != nil {
 		return
 	}
@@ -173,17 +173,17 @@ func (r *realRepository) GetContent(resourceID uuid.UUID) (content document.Cont
 		return
 	}
 
-	return document.BuildContent(
-		document.WithAddress(doc.ResourceAddress()),
-		document.WithSize(file.Size()),
-		document.WithContentType(doc.ResourceContentType()),
-		document.WithReader(file),
+	return models.BuildContent(
+		models.WithAddress(doc.ResourceAddress()),
+		models.WithSize(file.Size()),
+		models.WithContentType(doc.ResourceContentType()),
+		models.WithReader(file),
 	)
 }
 
 // PutContent inserts content into the repository. If there is an error
 // putting content into the repository then it will return an error.
-func (r *realRepository) PutContent(content document.Content) (res document.Content, err error) {
+func (r *realRepository) PutContent(content models.Content) (res models.Content, err error) {
 	var bytes []byte
 	bytes, err = content.Bytes()
 	if err != nil {
@@ -216,7 +216,7 @@ func (r *realRepository) PutContent(content document.Content) (res document.Cont
 	return content, nil
 }
 
-// Close the underlying document store and returns an error if it fails.
+// Close the underlying ledger store and returns an error if it fails.
 func (r *realRepository) Close() error {
 	return nil
 }

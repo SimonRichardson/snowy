@@ -12,7 +12,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	"github.com/trussle/snowy/pkg/document"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -205,8 +205,8 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.Content, err = document.BuildContent(
-				document.WithBytes(body),
+			res.Content, err = models.BuildContent(
+				models.WithBytes(body),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -520,10 +520,10 @@ func TestInsertQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			content, err := document.BuildContent(
-				document.WithAddress(address),
-				document.WithSize(size),
-				document.WithContentType(contentType),
+			content, err := models.BuildContent(
+				models.WithAddress(address),
+				models.WithSize(size),
+				models.WithContentType(contentType),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -535,7 +535,7 @@ func TestInsertQueryResult(t *testing.T) {
 			res.Content = content
 			res.EncodeTo(recorder)
 
-			var output document.Content
+			var output models.Content
 			if err = json.Unmarshal(recorder.Body.Bytes(), &output); err != nil {
 				t.Fatal(err)
 			}

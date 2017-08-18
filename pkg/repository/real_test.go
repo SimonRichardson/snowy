@@ -9,17 +9,17 @@ import (
 
 	"github.com/go-kit/kit/log"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/document"
 	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
 	storeMocks "github.com/trussle/snowy/pkg/store/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
-func TestGetDocument(t *testing.T) {
+func TestGetLedger(t *testing.T) {
 	t.Parallel()
 
-	t.Run("get document with invalid id", func(t *testing.T) {
+	t.Run("get ledger with invalid id", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -34,7 +34,7 @@ func TestGetDocument(t *testing.T) {
 				Get(uid, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetDocument(uid, Query{})
+			_, err := repo.GetLedger(uid, Query{})
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -47,7 +47,7 @@ func TestGetDocument(t *testing.T) {
 		}
 	})
 
-	t.Run("get document with store error", func(t *testing.T) {
+	t.Run("get ledger with store error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -62,7 +62,7 @@ func TestGetDocument(t *testing.T) {
 				Get(uid, store.Query{}).
 				Return(store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetDocument(uid, Query{})
+			_, err := repo.GetLedger(uid, Query{})
 			if expected, actual := false, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -75,7 +75,7 @@ func TestGetDocument(t *testing.T) {
 		}
 	})
 
-	t.Run("get document", func(t *testing.T) {
+	t.Run("get ledger", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -90,7 +90,7 @@ func TestGetDocument(t *testing.T) {
 				Get(uid, store.Query{}).
 				Return(store.Entity{ID: id}, nil)
 
-			doc, err := repo.GetDocument(uid, Query{})
+			doc, err := repo.GetLedger(uid, Query{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -108,10 +108,10 @@ func TestGetDocument(t *testing.T) {
 	})
 }
 
-func TestInsertDocument(t *testing.T) {
+func TestInsertLedger(t *testing.T) {
 	t.Parallel()
 
-	t.Run("insert document with store failure", func(t *testing.T) {
+	t.Run("insert ledger with store failure", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -126,12 +126,12 @@ func TestInsertDocument(t *testing.T) {
 					CreatedOn:  createdOn,
 					DeletedOn:  time.Time{},
 				}
-				doc, _ = document.BuildDocument(
-					document.WithName(name),
-					document.WithResourceID(resourceID),
-					document.WithAuthorID(authorID),
-					document.WithTags(tags),
-					document.WithCreatedOn(createdOn),
+				doc, _ = models.BuildLedger(
+					models.WithName(name),
+					models.WithResourceID(resourceID),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
 				)
 
 				fsys = fs.NewVirtualFilesystem()
@@ -143,7 +143,7 @@ func TestInsertDocument(t *testing.T) {
 				Insert(gomock.Eq(entity)).
 				Return(errNotFound{errors.New("not found")})
 
-			_, err := repo.InsertDocument(doc)
+			_, err := repo.InsertLedger(doc)
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -156,7 +156,7 @@ func TestInsertDocument(t *testing.T) {
 		}
 	})
 
-	t.Run("insert document", func(t *testing.T) {
+	t.Run("insert ledger", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -171,12 +171,12 @@ func TestInsertDocument(t *testing.T) {
 					CreatedOn:  createdOn,
 					DeletedOn:  time.Time{},
 				}
-				doc, _ = document.BuildDocument(
-					document.WithResourceID(resourceID),
-					document.WithName(name),
-					document.WithAuthorID(authorID),
-					document.WithTags(tags),
-					document.WithCreatedOn(createdOn),
+				doc, _ = models.BuildLedger(
+					models.WithResourceID(resourceID),
+					models.WithName(name),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
 				)
 
 				fsys = fs.NewVirtualFilesystem()
@@ -188,7 +188,7 @@ func TestInsertDocument(t *testing.T) {
 				Insert(gomock.Eq(entity)).
 				Return(nil)
 
-			res, err := repo.InsertDocument(doc)
+			res, err := repo.InsertLedger(doc)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -206,22 +206,22 @@ func TestInsertDocument(t *testing.T) {
 	})
 }
 
-func TestAppendDocument(t *testing.T) {
+func TestAppendLedger(t *testing.T) {
 	t.Parallel()
 
-	t.Run("append document with exists store failure", func(t *testing.T) {
+	t.Run("append ledger with exists store failure", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
 			var (
 				createdOn = time.Now()
-				doc, _    = document.BuildDocument(
-					document.WithName(name),
-					document.WithResourceID(resourceID),
-					document.WithAuthorID(authorID),
-					document.WithTags(tags),
-					document.WithCreatedOn(createdOn),
+				doc, _    = models.BuildLedger(
+					models.WithName(name),
+					models.WithResourceID(resourceID),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
 				)
 
 				fsys = fs.NewVirtualFilesystem()
@@ -233,7 +233,7 @@ func TestAppendDocument(t *testing.T) {
 				Get(resourceID, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.AppendDocument(resourceID, doc)
+			_, err := repo.AppendLedger(resourceID, doc)
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -246,7 +246,7 @@ func TestAppendDocument(t *testing.T) {
 		}
 	})
 
-	t.Run("append document with insert store failure", func(t *testing.T) {
+	t.Run("append ledger with insert store failure", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -261,12 +261,12 @@ func TestAppendDocument(t *testing.T) {
 					CreatedOn:  createdOn,
 					DeletedOn:  time.Time{},
 				}
-				doc, _ = document.BuildDocument(
-					document.WithName(name),
-					document.WithResourceID(resourceID),
-					document.WithAuthorID(authorID),
-					document.WithTags(tags),
-					document.WithCreatedOn(createdOn),
+				doc, _ = models.BuildLedger(
+					models.WithName(name),
+					models.WithResourceID(resourceID),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
 				)
 
 				fsys = fs.NewVirtualFilesystem()
@@ -281,7 +281,7 @@ func TestAppendDocument(t *testing.T) {
 				Insert(entity).
 				Return(errNotFound{errors.New("not found")})
 
-			_, err := repo.AppendDocument(resourceID, doc)
+			_, err := repo.AppendLedger(resourceID, doc)
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -294,7 +294,7 @@ func TestAppendDocument(t *testing.T) {
 		}
 	})
 
-	t.Run("append document", func(t *testing.T) {
+	t.Run("append ledger", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -309,12 +309,12 @@ func TestAppendDocument(t *testing.T) {
 					CreatedOn:  createdOn,
 					DeletedOn:  time.Time{},
 				}
-				doc, _ = document.BuildDocument(
-					document.WithResourceID(resourceID),
-					document.WithName(name),
-					document.WithAuthorID(authorID),
-					document.WithTags(tags),
-					document.WithCreatedOn(createdOn),
+				doc, _ = models.BuildLedger(
+					models.WithResourceID(resourceID),
+					models.WithName(name),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
 				)
 
 				fsys = fs.NewVirtualFilesystem()
@@ -329,7 +329,7 @@ func TestAppendDocument(t *testing.T) {
 				Insert(entity).
 				Return(nil)
 
-			res, err := repo.AppendDocument(resourceID, doc)
+			res, err := repo.AppendLedger(resourceID, doc)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -347,10 +347,10 @@ func TestAppendDocument(t *testing.T) {
 	})
 }
 
-func TestGetDocuments(t *testing.T) {
+func TestGetLedgers(t *testing.T) {
 	t.Parallel()
 
-	t.Run("get documents with invalid id", func(t *testing.T) {
+	t.Run("get ledgers with invalid id", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -365,7 +365,7 @@ func TestGetDocuments(t *testing.T) {
 				GetMultiple(uid, store.Query{}).
 				Return([]store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetDocuments(uid, Query{})
+			_, err := repo.GetLedgers(uid, Query{})
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -378,7 +378,7 @@ func TestGetDocuments(t *testing.T) {
 		}
 	})
 
-	t.Run("get documents with store error", func(t *testing.T) {
+	t.Run("get ledgers with store error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -393,7 +393,7 @@ func TestGetDocuments(t *testing.T) {
 				GetMultiple(uid, store.Query{}).
 				Return([]store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetDocuments(uid, Query{})
+			_, err := repo.GetLedgers(uid, Query{})
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -406,7 +406,7 @@ func TestGetDocuments(t *testing.T) {
 		}
 	})
 
-	t.Run("get documents", func(t *testing.T) {
+	t.Run("get ledgers", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -421,7 +421,7 @@ func TestGetDocuments(t *testing.T) {
 				GetMultiple(uid, store.Query{}).
 				Return([]store.Entity{store.Entity{ID: id}}, nil)
 
-			doc, err := repo.GetDocuments(uid, Query{})
+			doc, err := repo.GetLedgers(uid, Query{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -446,7 +446,7 @@ func TestGetDocuments(t *testing.T) {
 func TestGetContent(t *testing.T) {
 	t.Parallel()
 
-	t.Run("get content with no document", func(t *testing.T) {
+	t.Run("get content with no ledger", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -475,7 +475,7 @@ func TestGetContent(t *testing.T) {
 		}
 	})
 
-	t.Run("get content with store failure for document", func(t *testing.T) {
+	t.Run("get content with store failure for ledger", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -595,9 +595,9 @@ func TestPutContent(t *testing.T) {
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
 
-			content, err := document.BuildContent(
-				document.WithAddress(address),
-				document.WithContentType("application/octet-stream"),
+			content, err := models.BuildContent(
+				models.WithAddress(address),
+				models.WithContentType("application/octet-stream"),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -632,10 +632,10 @@ func TestPutContent(t *testing.T) {
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
 
-			content, err := document.BuildContent(
-				document.WithContentBytes(body),
-				document.WithSize(int64(len(body))),
-				document.WithContentType(contentType),
+			content, err := models.BuildContent(
+				models.WithContentBytes(body),
+				models.WithSize(int64(len(body))),
+				models.WithContentType(contentType),
 			)
 			if err != nil {
 				t.Fatal(err)

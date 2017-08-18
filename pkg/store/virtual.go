@@ -99,7 +99,7 @@ func (r *virtualStore) Stop() {
 	<-c
 }
 
-// Drop removes all of the stored documents
+// Drop removes all of the stored ledgers
 func (r *virtualStore) Drop() error {
 	r.entities = make(map[string][]Entity)
 	return nil

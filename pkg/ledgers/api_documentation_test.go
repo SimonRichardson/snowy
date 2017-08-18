@@ -1,6 +1,6 @@
 // +build documentation
 
-package documents
+package ledgers
 
 import (
 	"bytes"
@@ -17,8 +17,8 @@ import (
 	"github.com/SimonRichardson/betwixt/pkg/output"
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/document"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
+	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
@@ -53,24 +53,24 @@ func TestDocumentation_Flow(t *testing.T) {
 
 		uid         = uuid.New()
 		tags        = []string{"abc", "def", "g"}
-		inputDoc, _ = document.BuildDocument(
-			document.WithAuthorID(uid.String()),
-			document.WithResourceAddress("abcdefghij"),
-			document.WithResourceSize(10),
-			document.WithResourceContentType("application/octet-stream"),
-			document.WithName("document-name"),
-			document.WithTags(tags),
+		inputDoc, _ = models.BuildLedger(
+			models.WithAuthorID(uid.String()),
+			models.WithResourceAddress("abcdefghij"),
+			models.WithResourceSize(10),
+			models.WithResourceContentType("application/octet-stream"),
+			models.WithName("document-name"),
+			models.WithTags(tags),
 		)
-		outputDoc, _ = document.BuildDocument(
-			document.WithResourceID(uid),
-			document.WithResourceAddress("abcdefghij"),
-			document.WithResourceSize(10),
-			document.WithResourceContentType("application/octet-stream"),
-			document.WithAuthorID(uuid.New().String()),
-			document.WithName("document-name"),
-			document.WithTags(tags),
-			document.WithCreatedOn(time.Now()),
-			document.WithDeletedOn(time.Time{}),
+		outputDoc, _ = models.BuildLedger(
+			models.WithResourceID(uid),
+			models.WithResourceAddress("abcdefghij"),
+			models.WithResourceSize(10),
+			models.WithResourceContentType("application/octet-stream"),
+			models.WithAuthorID(uuid.New().String()),
+			models.WithName("document-name"),
+			models.WithTags(tags),
+			models.WithCreatedOn(time.Now()),
+			models.WithDeletedOn(time.Time{}),
 		)
 	)
 
@@ -95,7 +95,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			repository.WithQueryAuthorID(""),
 		)
 
-		repo.EXPECT().GetDocument(uid, query).Times(1).Return(outputDoc, nil)
+		repo.EXPECT().GetLedger(uid, query).Times(1).Return(outputDoc, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
@@ -116,7 +116,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			repository.WithQueryAuthorID(""),
 		)
 
-		repo.EXPECT().GetDocuments(uid, query).Times(1).Return([]document.Document{
+		repo.EXPECT().GetLedgers(uid, query).Times(1).Return([]models.Ledger{
 			outputDoc,
 		}, nil)
 
@@ -134,7 +134,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().InsertDocument(Document(inputDoc)).Times(1).Return(outputDoc, nil)
+		repo.EXPECT().InsertLedger(Ledger(inputDoc)).Times(1).Return(outputDoc, nil)
 
 		b, err := json.Marshal(struct {
 			Name     string   `json:"name"`
@@ -163,7 +163,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().AppendDocument(uid, Document(inputDoc)).Return(outputDoc, nil).Times(1)
+		repo.EXPECT().AppendLedger(uid, Ledger(inputDoc)).Return(outputDoc, nil).Times(1)
 
 		b, err := json.Marshal(struct {
 			Name     string   `json:"name"`

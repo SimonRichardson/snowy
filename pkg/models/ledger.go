@@ -1,4 +1,4 @@
-package document
+package models
 
 import (
 	"encoding/json"
@@ -7,9 +7,9 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
-// Document encapsulates all values that are required to represent a document of
+// Ledger encapsulates all values that are required to represent a ledger of
 // the system.
-type Document struct {
+type Ledger struct {
 	id                   uuid.UUID
 	name                 string
 	resourceID           uuid.UUID
@@ -21,59 +21,59 @@ type Document struct {
 	createdOn, deletedOn time.Time
 }
 
-// ID returns the id of the document resource, this is the unique identifier
-// for each document.
-func (d Document) ID() uuid.UUID {
+// ID returns the id of the ledger resource, this is the unique identifier
+// for each ledger.
+func (d Ledger) ID() uuid.UUID {
 	return d.id
 }
 
-// ResourceID returns the id associated with the document resource.
-func (d Document) ResourceID() uuid.UUID {
+// ResourceID returns the id associated with the ledger resource.
+func (d Ledger) ResourceID() uuid.UUID {
 	return d.resourceID
 }
 
 // ResourceAddress returns the content addressable file name of the resource
-func (d Document) ResourceAddress() string {
+func (d Ledger) ResourceAddress() string {
 	return d.resourceAddress
 }
 
 // ResourceSize returns the content file size
-func (d Document) ResourceSize() int64 {
+func (d Ledger) ResourceSize() int64 {
 	return d.resourceSize
 }
 
 // ResourceContentType returns the content type
-func (d Document) ResourceContentType() string {
+func (d Ledger) ResourceContentType() string {
 	return d.resourceContentType
 }
 
-// AuthorID returns the id associated with the document resource.
-func (d Document) AuthorID() string {
+// AuthorID returns the id associated with the ledger resource.
+func (d Ledger) AuthorID() string {
 	return d.authorID
 }
 
-// Name returns the name of the document
-func (d Document) Name() string {
+// Name returns the name of the ledger
+func (d Ledger) Name() string {
 	return d.name
 }
 
-// Tags returns the associated tags that categorize the document.
-func (d Document) Tags() []string {
+// Tags returns the associated tags that categorize the ledger.
+func (d Ledger) Tags() []string {
 	return d.tags
 }
 
-// CreatedOn returns the time of creation for the document
-func (d Document) CreatedOn() time.Time {
+// CreatedOn returns the time of creation for the ledger
+func (d Ledger) CreatedOn() time.Time {
 	return d.createdOn
 }
 
-// DeletedOn returns the time of deletion for the document
-func (d Document) DeletedOn() time.Time {
+// DeletedOn returns the time of deletion for the ledger
+func (d Ledger) DeletedOn() time.Time {
 	return d.deletedOn
 }
 
 // MarshalJSON converts a UUID into a serialisable json format
-func (d Document) MarshalJSON() ([]byte, error) {
+func (d Ledger) MarshalJSON() ([]byte, error) {
 	tags := d.tags
 	if d.tags == nil {
 		tags = make([]string, 0)
@@ -102,8 +102,8 @@ func (d Document) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON unserialises the json format and converts it into a Document
-func (d *Document) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON unserialises the json format and converts it into a Ledger
+func (d *Ledger) UnmarshalJSON(b []byte) error {
 	var res struct {
 		Name                string    `json:"name"`
 		ResourceID          uuid.UUID `json:"resource_id"`
@@ -142,105 +142,105 @@ func (d *Document) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// DocOption defines a option for generating a document
-type DocOption func(*Document) error
+// DocOption defines a option for generating a ledger
+type DocOption func(*Ledger) error
 
-// BuildDocument ingests configuration options to then yield a Document and returns a
+// BuildLedger ingests configuration options to then yield a Ledger and returns a
 // error if it fails during setup.
-func BuildDocument(opts ...DocOption) (Document, error) {
-	var doc Document
+func BuildLedger(opts ...DocOption) (Ledger, error) {
+	var doc Ledger
 	for _, opt := range opts {
 		err := opt(&doc)
 		if err != nil {
-			return Document{}, err
+			return Ledger{}, err
 		}
 	}
 	return doc, nil
 }
 
-// WithID adds a ID to the document
+// WithID adds a ID to the ledger
 func WithID(id uuid.UUID) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.id = id
 		return nil
 	}
 }
 
-// WithName adds a Name to the document
+// WithName adds a Name to the ledger
 func WithName(name string) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.name = name
 		return nil
 	}
 }
 
-// WithNewResourceID adds a new ResourceID to the document
+// WithNewResourceID adds a new ResourceID to the ledger
 func WithNewResourceID() DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.resourceID = uuid.New()
 		return nil
 	}
 }
 
-// WithResourceID adds a ResourceID to the document
+// WithResourceID adds a ResourceID to the ledger
 func WithResourceID(resourceID uuid.UUID) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.resourceID = resourceID
 		return nil
 	}
 }
 
-// WithResourceAddress adds a ResourceAddress to the document
+// WithResourceAddress adds a ResourceAddress to the ledger
 func WithResourceAddress(resourceAddress string) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.resourceAddress = resourceAddress
 		return nil
 	}
 }
 
-// WithResourceSize adds a ResourceSize to the document
+// WithResourceSize adds a ResourceSize to the ledger
 func WithResourceSize(resourceSize int64) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.resourceSize = resourceSize
 		return nil
 	}
 }
 
-// WithResourceContentType adds a ResourceContentType to the document
+// WithResourceContentType adds a ResourceContentType to the ledger
 func WithResourceContentType(resourceContentType string) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.resourceContentType = resourceContentType
 		return nil
 	}
 }
 
-// WithAuthorID adds a AuthorID to the document
+// WithAuthorID adds a AuthorID to the ledger
 func WithAuthorID(authorID string) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.authorID = authorID
 		return nil
 	}
 }
 
-// WithTags adds a Tags to the document
+// WithTags adds a Tags to the ledger
 func WithTags(tags []string) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.tags = tags
 		return nil
 	}
 }
 
-// WithCreatedOn adds a CreatedOn to the document
+// WithCreatedOn adds a CreatedOn to the ledger
 func WithCreatedOn(createdOn time.Time) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.createdOn = createdOn
 		return nil
 	}
 }
 
-// WithDeletedOn adds a DeletedOn to the document
+// WithDeletedOn adds a DeletedOn to the ledger
 func WithDeletedOn(deletedOn time.Time) DocOption {
-	return func(doc *Document) error {
+	return func(doc *Ledger) error {
 		doc.deletedOn = deletedOn
 		return nil
 	}

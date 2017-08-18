@@ -26,11 +26,11 @@ const (
 	tags, 
 	created_on, 
 	deleted_on 
-FROM   documents 
+FROM   ledgers 
 WHERE  resource_id = $1 
 ORDER  BY created_on DESC, 
 		 resource_address DESC;`
-	defaultInsertQuery = `INSERT INTO documents 
+	defaultInsertQuery = `INSERT INTO ledgers 
 	(name, 
 	 resource_id, 
 	 resource_address, 
@@ -59,7 +59,7 @@ VALUES      ($1,
 	tags, 
 	created_on, 
 	deleted_on 
-FROM   documents 
+FROM   ledgers 
 WHERE  resource_id = $1 
 	AND tags && $2 
 ORDER  BY created_on DESC, 
@@ -74,13 +74,13 @@ ORDER  BY created_on DESC,
 		 tags, 
 		 created_on, 
 		 deleted_on 
-	 FROM   documents 
+	 FROM   ledgers 
 	 WHERE  resource_id = $1 
 	 	 AND author_id = $2
 		 AND tags && $3 
 	 ORDER  BY created_on DESC, 
 				resource_address DESC;`
-	defaultDropQuery = `TRUNCATE TABLE documents;`
+	defaultDropQuery = `TRUNCATE TABLE ledgers;`
 )
 
 // RealConfig holds the options for connecting to the DB
@@ -256,7 +256,7 @@ func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
 	return
 }
 
-// Drop removes all of the stored documents
+// Drop removes all of the stored ledgers
 func (r *realStore) Drop() error {
 	if r.db == nil {
 		return errors.New("db not found")

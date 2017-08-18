@@ -35,7 +35,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case method == "GET" && path == APIPathGetQuery:
 		w.WriteHeader(http.StatusOK)
 
-		// Handle empty documents
+		// Handle empty ledgers
 		if err := json.NewEncoder(w).Encode(struct{}{}); err != nil {
 			errs.Error(w, err.Error(), http.StatusInternalServerError)
 		}
