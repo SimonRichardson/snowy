@@ -18,3 +18,4 @@ dist/
 .env
 documents
 src/
+*.zip

@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"syscall"
 	"text/tabwriter"
 
 	"github.com/pkg/errors"
@@ -32,20 +33,27 @@ func (c command) Run(args []string) {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		usage()
-		os.Exit(1)
+	args := os.Args
+
+	if len(args) < 2 {
+		if mode, ok := syscall.Getenv("MODE"); ok {
+			args = append(args, mode)
+		} else {
+			usage()
+			os.Exit(1)
+		}
 	}
+
 	var cmd command
-	switch strings.ToLower(os.Args[1]) {
+	switch strings.ToLower(args[1]) {
 	case "documents":
 		cmd = runDocuments
 	default:
 		usage()
-		return
+		os.Exit(1)
 	}
 
-	cmd.Run(os.Args[2:])
+	cmd.Run(args[2:])
 }
 
 func usage() {

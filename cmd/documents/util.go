@@ -79,3 +79,7 @@ func registerProfile(mux *http.ServeMux) {
 	mux.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 	mux.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
 }
+
+func envName(name string) string {
+	return strings.Replace(strings.ToUpper(name), ".", "_", -1)
+}

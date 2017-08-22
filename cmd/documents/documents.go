@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"syscall"
 
 	"github.com/SimonRichardson/gexec"
 	"github.com/go-kit/kit/log"
@@ -63,10 +64,21 @@ func runDocuments(args []string) error {
 		metricsRegistration = flagset.Bool("metrics.registration", defaultMetricsRegistration, "Registration of metrics on launch")
 	)
 
+	var envArgs []string
+	flagset.VisitAll(func(flag *flag.Flag) {
+		key := envName(flag.Name)
+		if value, ok := syscall.Getenv(key); ok {
+			envArgs = append(envArgs, fmt.Sprintf("-%s=%s", flag.Name, value))
+		}
+	})
+
+	flagsetArgs := append(args, envArgs...)
 	flagset.Usage = usageFor(flagset, "documents [flags]")
-	if err := flagset.Parse(args); err != nil {
+	if err := flagset.Parse(flagsetArgs); err != nil {
 		return nil
 	}
+
+	fmt.Println(flagsetArgs)
 
 	// Setup the logger.
 	var logger log.Logger
