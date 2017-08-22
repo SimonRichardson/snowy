@@ -78,8 +78,6 @@ func runDocuments(args []string) error {
 		return nil
 	}
 
-	fmt.Println(flagsetArgs)
-
 	// Setup the logger.
 	var logger log.Logger
 	{
