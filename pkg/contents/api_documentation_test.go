@@ -94,9 +94,27 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().GetContent(uid).Times(1).Return(outputContent, nil)
+		repo.EXPECT().GetContent(UUID(uid), Query()).Times(1).Return(outputContent, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+	})
+
+	t.Run("getMultiple", func(t *testing.T) {
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		repo.EXPECT().GetContents(UUID(uid), Query()).Times(1).Return([]models.Content{
+			outputContent,
+		}, nil)
+
+		resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
 		if err != nil {
 			t.Fatal(err)
 		}

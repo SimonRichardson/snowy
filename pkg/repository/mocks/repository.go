@@ -4,11 +4,12 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/trussle/snowy/pkg/models"
 	repository "github.com/trussle/snowy/pkg/repository"
 	uuid "github.com/trussle/snowy/pkg/uuid"
-	reflect "reflect"
 )
 
 // MockRepository is a mock of Repository interface
@@ -60,16 +61,29 @@ func (_mr *MockRepositoryMockRecorder) Close() *gomock.Call {
 }
 
 // GetContent mocks base method
-func (_m *MockRepository) GetContent(_param0 uuid.UUID) (models.Content, error) {
-	ret := _m.ctrl.Call(_m, "GetContent", _param0)
+func (_m *MockRepository) GetContent(_param0 uuid.UUID, _param1 repository.Query) (models.Content, error) {
+	ret := _m.ctrl.Call(_m, "GetContent", _param0, _param1)
 	ret0, _ := ret[0].(models.Content)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetContent indicates an expected call of GetContent
-func (_mr *MockRepositoryMockRecorder) GetContent(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetContent", reflect.TypeOf((*MockRepository)(nil).GetContent), arg0)
+func (_mr *MockRepositoryMockRecorder) GetContent(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetContent", reflect.TypeOf((*MockRepository)(nil).GetContent), arg0, arg1)
+}
+
+// GetContents mocks base method
+func (_m *MockRepository) GetContents(_param0 uuid.UUID, _param1 repository.Query) ([]models.Content, error) {
+	ret := _m.ctrl.Call(_m, "GetContents", _param0, _param1)
+	ret0, _ := ret[0].([]models.Content)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetContents indicates an expected call of GetContents
+func (_mr *MockRepositoryMockRecorder) GetContents(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetContents", reflect.TypeOf((*MockRepository)(nil).GetContents), arg0, arg1)
 }
 
 // GetLedger mocks base method

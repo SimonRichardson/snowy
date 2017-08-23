@@ -42,11 +42,15 @@ type Repository interface {
 
 	// GetContent returns a content corresponding to the resourceID. If no
 	// ledger or content exists, it will return an error.
-	GetContent(resourceID uuid.UUID) (models.Content, error)
+	GetContent(resourceID uuid.UUID, options Query) (models.Content, error)
 
 	// PutContent inserts content into the repository. If there is an error
 	// putting content into the repository then it will return an error.
 	PutContent(content models.Content) (models.Content, error)
+
+	// GetContents returns a set of content corresponding to the resourceID. If no
+	// ledger or content exists, it will return an error.
+	GetContents(resourceID uuid.UUID, options Query) ([]models.Content, error)
 
 	// Close the underlying ledger store and returns an error if it fails.
 	Close() error

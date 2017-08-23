@@ -156,9 +156,9 @@ func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]mode
 // links to the content is managed by the ledger storage. If there is an error
 // during the saving of the content to the underlying storage it will then
 // return an error.
-func (r *realRepository) GetContent(resourceID uuid.UUID) (content models.Content, err error) {
+func (r *realRepository) GetContent(resourceID uuid.UUID, options Query) (content models.Content, err error) {
 	var doc models.Ledger
-	doc, err = r.GetLedger(resourceID, Query{})
+	doc, err = r.GetLedger(resourceID, options)
 	if err != nil {
 		return
 	}
@@ -214,6 +214,67 @@ func (r *realRepository) PutContent(content models.Content) (res models.Content,
 	}
 
 	return content, nil
+}
+
+// PutContent inserts content into the repository, this will make sure that
+// links to the content is managed by the ledger storage. If there is an error
+// during the saving of the content to the underlying storage it will then
+// return an error.
+func (r *realRepository) GetContents(resourceID uuid.UUID, options Query) (contents []models.Content, err error) {
+	var docs []models.Ledger
+	docs, err = r.GetLedgers(resourceID, options)
+	if err != nil {
+		return
+	}
+	if len(docs) == 0 {
+		contents = make([]models.Content, 0)
+		return
+	}
+
+	var (
+		notFound      = make(chan struct{})
+		internalError = make(chan error)
+		result        = make(chan models.Content)
+	)
+	for _, k := range docs {
+		go func(doc models.Ledger) {
+			var file fs.File
+			file, err = r.fs.Open(doc.ResourceAddress())
+			if err != nil {
+				if fs.ErrNotFound(err) {
+					notFound <- struct{}{}
+					return
+				}
+				internalError <- err
+				return
+			}
+
+			content, err := models.BuildContent(
+				models.WithAddress(doc.ResourceAddress()),
+				models.WithSize(file.Size()),
+				models.WithContentType(doc.ResourceContentType()),
+				models.WithReader(file),
+			)
+			if err != nil {
+				internalError <- err
+				return
+			}
+			result <- content
+		}(k)
+	}
+
+	var res []models.Content
+	for i := 0; i < len(docs); i++ {
+		select {
+		case <-notFound:
+			continue
+		case err := <-internalError:
+			return nil, err
+		case content := <-result:
+			res = append(res, content)
+		}
+	}
+	return res, nil
 }
 
 // Close the underlying ledger store and returns an error if it fails.

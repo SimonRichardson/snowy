@@ -15,8 +15,9 @@ import (
 
 // These are the query API URL paths.
 const (
-	APIPathGetQuery  = "/"
-	APIPathPostQuery = "/"
+	APIPathGetQuery         = "/"
+	APIPathPostQuery        = "/"
+	APIPathGetMultipleQuery = "/multiple/"
 )
 
 // API serves the query API
@@ -76,6 +77,8 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleGet(w, r)
 	case (method == "PUT" || method == "POST") && path == APIPathPostQuery:
 		a.handlePost(w, r)
+	case method == "GET" && path == APIPathGetMultipleQuery:
+		a.handleGetMultiple(w, r)
 	default:
 		// Nothing found
 		errs.NotFound(w, r)
@@ -95,13 +98,22 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	options, err := repository.BuildQuery(
+		repository.WithQueryTags(qp.Tags),
+		repository.WithQueryAuthorID(qp.AuthorID),
+	)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
 	var (
 		notFound      = make(chan struct{})
 		internalError = make(chan error)
 		result        = make(chan models.Content)
 	)
-	a.action <- func() {
-		content, err := a.repository.GetContent(qp.ResourceID)
+	go func() {
+		content, err := a.repository.GetContent(qp.ResourceID, options)
 		if err != nil {
 			if repository.ErrNotFound(err) {
 				notFound <- struct{}{}
@@ -111,7 +123,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result <- content
-	}
+	}()
 
 	select {
 	case <-notFound:
@@ -184,6 +196,55 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		// Make sure we collect the content for the result.
 		qr := InsertQueryResult{Params: qp}
 		qr.Content = content
+
+		// Finish
+		qr.Duration = time.Since(begin).String()
+		qr.EncodeTo(w)
+	}
+}
+
+func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp SelectQueryParams
+	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	options, err := repository.BuildQuery(
+		repository.WithQueryTags(qp.Tags),
+		repository.WithQueryAuthorID(qp.AuthorID),
+	)
+	if err != nil {
+		errs.BadRequest(w, r, err.Error())
+		return
+	}
+
+	var (
+		internalError = make(chan error)
+		result        = make(chan []models.Content)
+	)
+	go func() {
+		contents, err := a.repository.GetContents(qp.ResourceID, options)
+		if err != nil {
+			internalError <- err
+			return
+		}
+		result <- contents
+	}()
+
+	select {
+	case err := <-internalError:
+		errs.Error(w, err.Error(), http.StatusInternalServerError)
+	case contents := <-result:
+		// Make sure we collect the content for the result.
+		qr := SelectMultipleQueryResult{Params: qp}
+		qr.Contents = contents
 
 		// Finish
 		qr.Duration = time.Since(begin).String()

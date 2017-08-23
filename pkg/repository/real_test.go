@@ -461,7 +461,7 @@ func TestGetContent(t *testing.T) {
 				Get(uid, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetContent(uid)
+			_, err := repo.GetContent(uid, Query{})
 
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -490,7 +490,7 @@ func TestGetContent(t *testing.T) {
 				Get(uid, store.Query{}).
 				Return(store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetContent(uid)
+			_, err := repo.GetContent(uid, Query{})
 
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -521,7 +521,7 @@ func TestGetContent(t *testing.T) {
 					ResourceID: uid,
 				}, nil)
 
-			_, err := repo.GetContent(uid)
+			_, err := repo.GetContent(uid, Query{})
 
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -562,12 +562,158 @@ func TestGetContent(t *testing.T) {
 					ResourceAddress: uid.String(),
 				}, nil)
 
-			content, err := repo.GetContent(uid)
+			content, err := repo.GetContent(uid, Query{})
 			if expected, actual := true, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
 
 			b, err := content.Bytes()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return reflect.DeepEqual(b, body)
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestGetContents(t *testing.T) {
+	t.Parallel()
+
+	t.Run("get contents with no ledger", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				GetMultiple(uid, store.Query{}).
+				Return(nil, errNotFound{errors.New("not found")})
+
+			_, err := repo.GetContents(uid, Query{})
+
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Fatalf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get contents with store failure for ledger", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				GetMultiple(uid, store.Query{}).
+				Return(nil, errors.New("not found"))
+
+			_, err := repo.GetContents(uid, Query{})
+
+			if expected, actual := false, err == nil; expected != actual {
+				t.Fatalf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get content with no file", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				GetMultiple(uid, store.Query{}).
+				Return([]store.Entity{
+					store.Entity{
+						ResourceID: uid,
+					},
+				}, nil)
+
+			_, err := repo.GetContents(uid, Query{})
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Fatalf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get contents with file", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID, body []byte) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			file, err := fsys.Create(uid.String())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if _, err = file.Write(body); err != nil {
+				t.Fatal(err)
+			}
+
+			mock.EXPECT().
+				GetMultiple(uid, store.Query{}).
+				Return([]store.Entity{
+					store.Entity{
+						ResourceID:      uid,
+						ResourceAddress: uid.String(),
+					},
+				}, nil)
+
+			contents, err := repo.GetContents(uid, Query{})
+			if expected, actual := true, err == nil; expected != actual {
+				t.Fatalf("expected: %t, actual: %t", expected, actual)
+			}
+
+			if expected, actual := 1, len(contents); expected != actual {
+				t.Fatalf("expected: %d, actual: %d", expected, actual)
+			}
+
+			b, err := contents[0].Bytes()
 			if err != nil {
 				t.Fatal(err)
 			}

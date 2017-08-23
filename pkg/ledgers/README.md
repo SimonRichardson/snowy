@@ -1,14 +1,14 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-08-18T15:43:11+01:00
+Date generated on: 2017-08-23T09:35:16+01:00
 # GET /
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('56ef9ef0-34d2-4509-9e00-fa3b21245033')
+            resource_id ('b78d6ddc-bfee-4694-9f93-7a2040e12baa')
 
     + Headers
 
@@ -19,21 +19,21 @@ Date generated on: 2017-08-18T15:43:11+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 74.008µs
+            X-Duration: 73.968µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 56ef9ef0-34d2-4509-9e00-fa3b21245033
+            X-Resource-Id: b78d6ddc-bfee-4694-9f93-7a2040e12baa
 
     + Body
 
             {
-                "author_id": "ab37eb40-8363-4950-b8d7-4f25ecd4351a",
-                "created_on": "2017-08-18T15:43:11+01:00",
+                "author_id": "346f58b2-60c4-42b6-8e55-0acb9262cca8",
+                "created_on": "2017-08-23T09:35:16+01:00",
                 "deleted_on": "0001-01-01T00:00:00Z",
                 "name": "document-name",
                 "resource_address": "abcdefghij",
                 "resource_content_type": "application/octet-stream",
-                "resource_id": "56ef9ef0-34d2-4509-9e00-fa3b21245033",
+                "resource_id": "b78d6ddc-bfee-4694-9f93-7a2040e12baa",
                 "resource_size": 10,
                 "tags": [
                     "abc",
@@ -48,7 +48,7 @@ Date generated on: 2017-08-18T15:43:11+01:00
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('56ef9ef0-34d2-4509-9e00-fa3b21245033')
+            resource_id ('b78d6ddc-bfee-4694-9f93-7a2040e12baa')
 
     + Headers
 
@@ -59,22 +59,22 @@ Date generated on: 2017-08-18T15:43:11+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 35.855µs
+            X-Duration: 62.655µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 56ef9ef0-34d2-4509-9e00-fa3b21245033
+            X-Resource-Id: b78d6ddc-bfee-4694-9f93-7a2040e12baa
 
     + Body
 
             [
                 {
-                    "author_id": "ab37eb40-8363-4950-b8d7-4f25ecd4351a",
-                    "created_on": "2017-08-18T15:43:11+01:00",
+                    "author_id": "346f58b2-60c4-42b6-8e55-0acb9262cca8",
+                    "created_on": "2017-08-23T09:35:16+01:00",
                     "deleted_on": "0001-01-01T00:00:00Z",
                     "name": "document-name",
                     "resource_address": "abcdefghij",
                     "resource_content_type": "application/octet-stream",
-                    "resource_id": "56ef9ef0-34d2-4509-9e00-fa3b21245033",
+                    "resource_id": "b78d6ddc-bfee-4694-9f93-7a2040e12baa",
                     "resource_size": 10,
                     "tags": [
                         "abc",
@@ -101,12 +101,12 @@ Date generated on: 2017-08-18T15:43:11+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 91.211µs
+            X-Duration: 142.74µs
 
     + Body
 
             {
-                "resource_id": "56ef9ef0-34d2-4509-9e00-fa3b21245033"
+                "resource_id": "b78d6ddc-bfee-4694-9f93-7a2040e12baa"
             }
 
 # PUT /
@@ -114,7 +114,7 @@ Date generated on: 2017-08-18T15:43:11+01:00
 + Request
     + Parameters
 
-            resource_id ('56ef9ef0-34d2-4509-9e00-fa3b21245033')
+            resource_id ('b78d6ddc-bfee-4694-9f93-7a2040e12baa')
 
     + Headers
 
@@ -127,8 +127,8 @@ Date generated on: 2017-08-18T15:43:11+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 75.602µs
-            X-Resource-Id: 56ef9ef0-34d2-4509-9e00-fa3b21245033
+            X-Duration: 66.582µs
+            X-Resource-Id: b78d6ddc-bfee-4694-9f93-7a2040e12baa
 
     + Body
 

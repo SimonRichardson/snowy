@@ -14,6 +14,7 @@ import (
 	"github.com/golang/mock/gomock"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
+	"github.com/trussle/snowy/pkg/repository"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -128,7 +129,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid).Times(1).Return(content, nil)
+			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -179,7 +180,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid).Times(1).Return(content, errNotFound{errors.New("failure")})
+			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -230,9 +231,182 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid).Times(1).Return(content, errors.New("failure"))
+			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, errors.New("failure"))
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusInternalServerError, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestGetMultipleAPI(t *testing.T) {
+	t.Parallel()
+
+	t.Run("get multiple with no resource_id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func() bool {
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/", server.URL))
+			if err != nil {
+				t.Error(err)
+			}
+			defer resp.Body.Close()
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get multiple with invalid resource_id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func() bool {
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, "bad"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get multiple with resource_id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID, bytes []byte) bool {
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(bytes))),
+					models.WithBytes(bytes),
+				)
+			)
+			defer api.Close()
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			repo.EXPECT().GetContents(UUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusOK, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get with resource_id but repo failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID, bytes []byte) bool {
+			var (
+				clients  = metricMocks.NewMockGauge(ctrl)
+				duration = metricMocks.NewMockHistogramVec(ctrl)
+				observer = metricMocks.NewMockObserver(ctrl)
+				repo     = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "500").Return(observer).Times(1)
+			observer.EXPECT().Observe(Float64()).Times(1)
+
+			repo.EXPECT().GetContents(UUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -530,3 +704,62 @@ func (contentMatcher) String() string {
 }
 
 func Content(content models.Content) gomock.Matcher { return contentMatcher{content} }
+
+type contentsMatcher struct {
+	contents []models.Content
+}
+
+func (m contentsMatcher) Matches(x interface{}) bool {
+	d, ok := x.([]models.Content)
+	if !ok {
+		return false
+	}
+
+	res := true
+	for k, content := range m.contents {
+		c := d[k]
+		res = content.Address() == c.Address() &&
+			content.ContentType() == c.ContentType() &&
+			content.Size() == c.Size()
+	}
+
+	return res
+}
+
+func (contentsMatcher) String() string {
+	return "is contents"
+}
+
+func Contents(contents []models.Content) gomock.Matcher { return contentsMatcher{contents} }
+
+type uuidMatcher struct {
+	uuid uuid.UUID
+}
+
+func (m uuidMatcher) Matches(x interface{}) bool {
+	d, ok := x.(uuid.UUID)
+	if !ok {
+		return false
+	}
+
+	return m.uuid.Equals(d)
+}
+
+func (uuidMatcher) String() string {
+	return "is uuid"
+}
+
+func UUID(uuid uuid.UUID) gomock.Matcher { return uuidMatcher{uuid} }
+
+type queryMatcher struct{}
+
+func (m queryMatcher) Matches(x interface{}) bool {
+	_, ok := x.(repository.Query)
+	return ok
+}
+
+func (queryMatcher) String() string {
+	return "is query"
+}
+
+func Query() gomock.Matcher { return queryMatcher{} }

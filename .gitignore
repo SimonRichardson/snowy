@@ -14,8 +14,8 @@
 .glide/
 vendor/
 dist/
+src/
 .DS_Store
 .env
-documents
-src/
 *.zip
+documents
