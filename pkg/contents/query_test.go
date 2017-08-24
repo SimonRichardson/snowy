@@ -12,6 +12,7 @@ import (
 	"testing"
 	"testing/quick"
 
+	"github.com/go-kit/kit/log"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -117,7 +118,7 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderResourceID) == uid.String()
@@ -147,7 +148,7 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			return recorder.Code == 200
 		}
@@ -176,7 +177,7 @@ func TestSelectQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			return string(recorder.Body.Bytes()) == ""
 		}
@@ -212,7 +213,7 @@ func TestSelectQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			return bytesEqual(recorder.Body.Bytes(), body)
 		}
@@ -480,7 +481,7 @@ func TestInsertQueryResult(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			res := InsertQueryResult{Params: qp}
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderContentType) == defaultContentType
@@ -533,7 +534,7 @@ func TestInsertQueryResult(t *testing.T) {
 
 			res := InsertQueryResult{Params: qp}
 			res.Content = content
-			res.EncodeTo(recorder)
+			res.EncodeTo(log.NewNopLogger(), recorder)
 
 			var output models.Content
 			if err = json.Unmarshal(recorder.Body.Bytes(), &output); err != nil {

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
 	"github.com/trussle/snowy/pkg/models"
@@ -47,6 +48,8 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	level.Info(a.logger).Log("url", r.URL.String())
+
 	iw := &interceptingWriter{http.StatusOK, w}
 	w = iw
 
@@ -75,7 +78,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleGetMultiple(w, r)
 	default:
 		// Nothing found
-		errs.NotFound(w, r)
+		errs.NotFound(a.logger, w, r)
 	}
 }
 
@@ -88,7 +91,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -97,17 +100,17 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
 	doc, err := a.repository.GetLedger(qp.ResourceID, options)
 	if err != nil {
 		if repository.ErrNotFound(err) {
-			errs.NotFound(w, r)
+			errs.NotFound(a.logger, w, r)
 			return
 		}
-		errs.InternalServerError(w, r, err.Error())
+		errs.InternalServerError(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -117,7 +120,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(w)
+	qr.EncodeTo(a.logger, w)
 }
 
 func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +132,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp InsertQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -137,13 +140,13 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return models.WithNewResourceID()
 	})
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
 	resource, err := a.repository.InsertLedger(doc)
 	if err != nil {
-		errs.InternalServerError(w, r, err.Error())
+		errs.InternalServerError(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -153,7 +156,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(w)
+	qr.EncodeTo(a.logger, w)
 }
 
 func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +168,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp AppendQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -173,13 +176,13 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return models.WithResourceID(qp.ResourceID)
 	})
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
 	resource, err := a.repository.AppendLedger(qp.ResourceID, doc)
 	if err != nil {
-		errs.InternalServerError(w, r, err.Error())
+		errs.InternalServerError(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -189,7 +192,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(w)
+	qr.EncodeTo(a.logger, w)
 }
 
 func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
@@ -201,7 +204,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -210,13 +213,13 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
 	ledgers, err := a.repository.GetLedgers(qp.ResourceID, options)
 	if err != nil {
-		errs.InternalServerError(w, r, err.Error())
+		errs.InternalServerError(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -226,7 +229,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(w)
+	qr.EncodeTo(a.logger, w)
 }
 
 type interceptingWriter struct {

@@ -37,11 +37,11 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Handle empty ledgers
 		if err := json.NewEncoder(w).Encode(struct{}{}); err != nil {
-			errs.Error(w, err.Error(), http.StatusInternalServerError)
+			errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 		}
 	default:
 		// Nothing found
-		errs.NotFound(w, r)
+		errs.NotFound(a.logger, w, r)
 	}
 }
 

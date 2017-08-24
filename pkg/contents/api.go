@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
 	"github.com/trussle/snowy/pkg/models"
@@ -55,6 +56,8 @@ func (a *API) Close() {
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	level.Info(a.logger).Log("url", r.URL.String())
+
 	iw := &interceptingWriter{http.StatusOK, w}
 	w = iw
 
@@ -81,7 +84,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleGetMultiple(w, r)
 	default:
 		// Nothing found
-		errs.NotFound(w, r)
+		errs.NotFound(a.logger, w, r)
 	}
 }
 
@@ -94,7 +97,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.Error(w, err.Error(), http.StatusBadRequest)
+		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -103,7 +106,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -127,9 +130,9 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-notFound:
-		errs.Error(w, "not found", http.StatusNotFound)
+		errs.Error(a.logger, w, "not found", http.StatusNotFound)
 	case err := <-internalError:
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 	case content := <-result:
 		// Make sure we collect the content for the result.
 		qr := SelectQueryResult{Params: qp}
@@ -137,7 +140,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(w)
+		qr.EncodeTo(a.logger, w)
 	}
 }
 
@@ -152,7 +155,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp InsertQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.Error(w, err.Error(), http.StatusBadRequest)
+		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -189,9 +192,9 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case err := <-internalError:
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 	case err := <-badRequestError:
-		errs.Error(w, err.Error(), http.StatusBadRequest)
+		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
 	case content := <-result:
 		// Make sure we collect the content for the result.
 		qr := InsertQueryResult{Params: qp}
@@ -199,7 +202,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(w)
+		qr.EncodeTo(a.logger, w)
 	}
 }
 
@@ -212,7 +215,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -221,7 +224,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(w, r, err.Error())
+		errs.BadRequest(a.logger, w, r, err.Error())
 		return
 	}
 
@@ -240,7 +243,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case err := <-internalError:
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 	case contents := <-result:
 		// Make sure we collect the content for the result.
 		qr := SelectMultipleQueryResult{Params: qp}
@@ -248,7 +251,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(w)
+		qr.EncodeTo(a.logger, w)
 	}
 }
 

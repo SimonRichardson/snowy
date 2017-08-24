@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
@@ -71,7 +72,7 @@ type SelectQueryResult struct {
 }
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
-func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *SelectQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderContentType, qr.Content.ContentType())
@@ -79,11 +80,11 @@ func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 
 	bytes, err := qr.Content.Bytes()
 	if err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 
 	if _, err := w.Write(bytes); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -131,12 +132,12 @@ type InsertQueryResult struct {
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
-func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *InsertQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 
 	if err := json.NewEncoder(w).Encode(qr.Content); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -148,7 +149,7 @@ type SelectMultipleQueryResult struct {
 }
 
 // EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
-func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *SelectMultipleQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, "application/zip")
 	w.Header().Set(httpHeaderContentDisposition, fmt.Sprintf("attachment; filename=%s.zip", qr.Params.ResourceID))
 	w.Header().Set(httpHeaderContentTransferEncoding, "binary")
@@ -163,18 +164,18 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	for _, content := range qr.Contents {
 		file, err := writer.Create(content.Address())
 		if err != nil {
-			errs.Error(w, err.Error(), http.StatusInternalServerError)
+			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		bytes, err := content.Bytes()
 		if err != nil {
-			errs.Error(w, err.Error(), http.StatusInternalServerError)
+			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if _, err := file.Write(bytes); err != nil {
-			errs.Error(w, err.Error(), http.StatusInternalServerError)
+			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

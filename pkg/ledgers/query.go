@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
@@ -61,7 +62,7 @@ type SelectQueryResult struct {
 }
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
-func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *SelectQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
@@ -70,7 +71,7 @@ func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 
 	// Handle empty ledgers
 	if err := json.NewEncoder(w).Encode(qr.Ledger); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -95,7 +96,7 @@ type InsertQueryResult struct {
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
-func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *InsertQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 
@@ -104,7 +105,7 @@ func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -116,7 +117,7 @@ type SelectMultipleQueryResult struct {
 }
 
 // EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
-func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *SelectMultipleQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
@@ -131,7 +132,7 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	}
 
 	if err := json.NewEncoder(w).Encode(docs); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -171,7 +172,7 @@ type AppendQueryResult struct {
 }
 
 // EncodeTo encodes the AppendQueryResult to the HTTP response writer.
-func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
+func (qr *AppendQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
@@ -181,7 +182,7 @@ func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
-		errs.Error(w, err.Error(), http.StatusInternalServerError)
+		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

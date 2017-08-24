@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/trussle/snowy/pkg/fs"
 	"github.com/trussle/snowy/pkg/models"
@@ -79,6 +80,7 @@ func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) 
 	}
 
 	if err = r.store.Insert(entity); err != nil {
+		level.Error(r.logger).Log("type", "insert", "err", err.Error())
 		return models.Ledger{}, err
 	}
 
