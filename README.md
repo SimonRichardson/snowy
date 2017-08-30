@@ -25,9 +25,9 @@ audit trail can be viewed for each ledger.
 
 ### Local development
 
-Snowy expects that you have a `$GOPATH` configured correctly and that you've
+Snowy expects that you have a `$GOPATH` configured correctly with `$GOPATH/bin` in your path and that you've
 installed it using `go get ...`. Once these are done, it should be as simple as
-`make install`, which will get all the correct dependencies for you to start 
+`make all`, which will get all the correct dependencies for you to start 
 working with the code.
 
 ### Integration development
