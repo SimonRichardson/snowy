@@ -25,10 +25,10 @@ audit trail can be viewed for each ledger.
 
 ### Local development
 
-Snowy expects that you have a `$GOPATH` configured correctly with `$GOPATH/bin` in your path and that you've
-installed it using `go get ...`. Once these are done, it should be as simple as
-`make all`, which will get all the correct dependencies for you to start 
-working with the code.
+Snowy expects that you have a `$GOPATH` configured correctly with `$GOPATH/bin` 
+in your path and that you've installed it using `go get ...`. Once these are 
+done, it should be as simple as `make all`, which will get all the correct 
+dependencies for you to start working with the code.
 
 ### Integration development
 
@@ -80,3 +80,12 @@ to add new revision to the ledger a new ledger, content can be be appended
 using the same resource_id.
 
  - [API](pkg/ledgers/README.md)
+
+### Journals
+
+Journals API allows for inserting/appending both contents and ledgers in one
+request. The Journal API uses both the Contents and Ledgers repository API 
+under the hood. In essence the Journals API is a thin wrapper over the 
+underlying storage system in a composable manor.
+
+ - [API](pkg/journals/README.md)
