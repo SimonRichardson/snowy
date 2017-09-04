@@ -24,7 +24,7 @@ const (
 	defaultKB = 1024
 	defaultMB = 1024 * defaultKB
 
-	defaultMaxContentLength = 5 * defaultMB
+	defaultMaxContentLength = 10 * defaultMB
 )
 
 // SelectQueryParams defines all the dimensions of a query.
@@ -90,8 +90,8 @@ func (qr *SelectQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) 
 
 // InsertQueryParams defines all the dimensions of a query.
 type InsertQueryParams struct {
-	ContentType   string
-	ContentLength int64
+	contentType   string
+	contentLength int64
 }
 
 // DecodeFrom populates a InsertQueryParams from a URL.
@@ -99,7 +99,7 @@ func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 	// Required depending on the query behavior
 	if rb == queryRequired {
 		// Get the content-type
-		if qp.ContentType = h.Get("Content-Type"); qp.ContentType == "" {
+		if qp.contentType = h.Get("Content-Type"); qp.contentType == "" {
 			return errors.New("error reading 'content-type' (required) query")
 		}
 
@@ -118,11 +118,17 @@ func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 			return errors.Errorf("error request body is empty")
 		}
 
-		qp.ContentLength = size
+		qp.contentLength = size
 	}
 
 	return nil
 }
+
+// ContentType returns the content-type from the header
+func (qp InsertQueryParams) ContentType() string { return qp.contentType }
+
+// ContentLength returns the content-length from the header
+func (qp InsertQueryParams) ContentLength() int64 { return qp.contentLength }
 
 // InsertQueryResult contains statistics about the query.
 type InsertQueryResult struct {

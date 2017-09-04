@@ -2,6 +2,7 @@ package contents
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -165,18 +166,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		result          = make(chan models.Content)
 	)
 	a.action <- func() {
-		buffer := bytes.NewBuffer(make([]byte, 0, defaultMaxContentLength))
-		if _, err := buffer.ReadFrom(r.Body); err != nil {
-			badRequestError <- err
-			return
-		}
-
-		bytes := buffer.Bytes()
-		content, err := models.BuildContent(
-			models.WithContentBytes(bytes),
-			models.WithSize(int64(len(bytes))),
-			models.WithContentType(qp.ContentType),
-		)
+		content, err := ingestContent(r.Body, qp)
 		if err != nil {
 			badRequestError <- err
 			return
@@ -276,4 +266,24 @@ type interceptingWriter struct {
 func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.code = code
 	iw.ResponseWriter.WriteHeader(code)
+}
+
+// ContentHeader returns a header with both type and length
+type ContentHeader interface {
+	ContentType() string
+	ContentLength() int64
+}
+
+func ingestContent(file io.Reader, header ContentHeader) (models.Content, error) {
+	buffer := bytes.NewBuffer(make([]byte, 0, header.ContentLength()))
+	if _, err := buffer.ReadFrom(file); err != nil {
+		return models.Content{}, err
+	}
+
+	bytes := buffer.Bytes()
+	return models.BuildContent(
+		models.WithContentBytes(bytes),
+		models.WithSize(int64(len(bytes))),
+		models.WithContentType(header.ContentType()),
+	)
 }

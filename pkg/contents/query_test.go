@@ -369,7 +369,7 @@ func TestInsertQueryParams(t *testing.T) {
 				t.Errorf("expected: %v, actual: %v", expected, actual)
 			}
 
-			return qp.ContentType == contentType
+			return qp.ContentType() == contentType
 		}
 
 		if err := quick.Check(fn, nil); err != nil {
@@ -398,7 +398,7 @@ func TestInsertQueryParams(t *testing.T) {
 				t.Errorf("expected: %v, actual: %v", expected, actual)
 			}
 
-			return qp.ContentType == contentType
+			return qp.ContentType() == contentType
 		}
 
 		if err := quick.Check(fn, nil); err != nil {
@@ -436,8 +436,8 @@ func TestInsertQueryParams(t *testing.T) {
 				t.Errorf("expected: %v, actual: %v", expected, actual)
 			}
 
-			return qp.ContentType == contentType &&
-				qp.ContentLength == size
+			return qp.ContentType() == contentType &&
+				qp.ContentLength() == size
 		}
 
 		if err := quick.Check(fn, nil); err != nil {

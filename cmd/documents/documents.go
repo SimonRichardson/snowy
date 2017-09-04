@@ -15,6 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/trussle/snowy/pkg/contents"
 	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/snowy/pkg/journals"
 	"github.com/trussle/snowy/pkg/ledgers"
 	"github.com/trussle/snowy/pkg/repository"
 	"github.com/trussle/snowy/pkg/status"
@@ -206,6 +207,11 @@ func runDocuments(args []string) error {
 				apiDuration,
 			)))
 			mux.Handle("/contents/", http.StripPrefix("/contents", contentsAPI))
+			mux.Handle("/journals/", http.StripPrefix("/journals", journals.NewAPI(repository,
+				log.With(logger, "component", "journals_api"),
+				connectedClients.WithLabelValues("journals"),
+				apiDuration,
+			)))
 			mux.Handle("/status/", http.StripPrefix("/status", status.NewAPI(
 				log.With(logger, "component", "status_api"),
 			)))

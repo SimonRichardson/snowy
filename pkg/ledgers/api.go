@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -136,7 +135,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() models.DocOption {
+	doc, err := ingestLedger(r.Body, func() models.DocOption {
 		return models.WithNewResourceID()
 	})
 	if err != nil {
@@ -172,7 +171,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := ingestRequest(r.Body, func() models.DocOption {
+	doc, err := ingestLedger(r.Body, func() models.DocOption {
 		return models.WithResourceID(qp.ResourceID)
 	})
 	if err != nil {
@@ -242,7 +241,7 @@ func (iw *interceptingWriter) WriteHeader(code int) {
 	iw.ResponseWriter.WriteHeader(code)
 }
 
-func ingestRequest(reader io.ReadCloser, fn func() models.DocOption) (models.Ledger, error) {
+func ingestLedger(reader io.ReadCloser, fn func() models.DocOption) (models.Ledger, error) {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return models.Ledger{}, err
@@ -252,11 +251,11 @@ func ingestRequest(reader io.ReadCloser, fn func() models.DocOption) (models.Led
 		return models.Ledger{}, errors.New("no body content")
 	}
 
-	var input ledgerInput
+	var input models.LedgerInput
 	if err = json.Unmarshal(bytes, &input); err != nil {
 		return models.Ledger{}, err
 	}
-	if err = validateInput(input); err != nil {
+	if err = models.ValidateLedgerInput(input); err != nil {
 		return models.Ledger{}, err
 	}
 
@@ -270,25 +269,4 @@ func ingestRequest(reader io.ReadCloser, fn func() models.DocOption) (models.Led
 		models.WithTags(input.Tags),
 		models.WithCreatedOn(time.Now()),
 	)
-}
-
-type ledgerInput struct {
-	Name                string   `json:"name"`
-	ResourceAddress     string   `json:"resource_address"`
-	ResourceSize        int64    `json:"resource_size"`
-	ResourceContentType string   `json:"resource_content_type"`
-	AuthorID            string   `json:"author_id"`
-	Tags                []string `json:"tags"`
-}
-
-func validateInput(input ledgerInput) error {
-	if len(strings.TrimSpace(input.Name)) == 0 {
-		return errors.New("input.name is empty")
-	}
-
-	if len(strings.TrimSpace(input.AuthorID)) == 0 {
-		return errors.New("input.author_id is empty")
-	}
-
-	return nil
 }

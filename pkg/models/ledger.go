@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/trussle/snowy/pkg/uuid"
@@ -244,4 +246,27 @@ func WithDeletedOn(deletedOn time.Time) DocOption {
 		doc.deletedOn = deletedOn
 		return nil
 	}
+}
+
+// LedgerInput takes values from json and places them into a unverified model.
+type LedgerInput struct {
+	Name                string   `json:"name"`
+	ResourceAddress     string   `json:"resource_address"`
+	ResourceSize        int64    `json:"resource_size"`
+	ResourceContentType string   `json:"resource_content_type"`
+	AuthorID            string   `json:"author_id"`
+	Tags                []string `json:"tags"`
+}
+
+// ValidateLedgerInput validates input of the LedgerInput
+func ValidateLedgerInput(input LedgerInput) error {
+	if len(strings.TrimSpace(input.Name)) == 0 {
+		return errors.New("input.name is empty")
+	}
+
+	if len(strings.TrimSpace(input.AuthorID)) == 0 {
+		return errors.New("input.author_id is empty")
+	}
+
+	return nil
 }
