@@ -74,12 +74,18 @@ build-docker:
 	docker run --rm -v ${PWD}:/go/src/${PATH_SNOWY} -w /go/src/${PATH_SNOWY} iron/go:dev go build -o documents ${PATH_SNOWY}/cmd/documents
 	docker build -t teamtrussle/snowy:${TAG} .
 
+.PHONY: push-docker-tag
+push-docker-tag: FORCE
+	@echo "Pushing '${TAG}' for '${BRANCH}'"
+	docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+	docker push teamtrussle/snowy:${TAG}
+
 .PHONY: push-docker
 ifeq ($(TAG),latest)
 push-docker: FORCE
 	@echo "Pushing '${TAG}' for '${BRANCH}'"
 	docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-	docker push teamtrussle/snowy
+	docker push teamtrussle/snowy:${TAG}
 else
 push-docker: FORCE
 	@echo "Pushing requires branch '${BRANCH}' to be master"
