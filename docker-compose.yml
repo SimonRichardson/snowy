@@ -7,7 +7,7 @@ services:
       - 54321:54321
     volumes:
       - ./db/postgres/:/docker-entrypoint-initdb.d/
-    environment: 
+    environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
@@ -25,3 +25,5 @@ services:
       AWS_REGION: "${AWS_REGION}"
       AWS_TOKEN: "${AWS_TOKEN}"
       AWS_BUCKET: "${AWS_BUCKET}"
+      AWS_KMSKEY: "${AWS_KMSKEY}"
+      AWS_SSE: "${AWS_SSE}"

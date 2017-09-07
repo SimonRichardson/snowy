@@ -202,8 +202,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderResourceID) == uid.String() &&
@@ -233,8 +233,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
 		}
@@ -262,8 +262,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == string(emptyDoc)+"\n"
 		}
@@ -291,14 +291,14 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
 			res.Ledger, err = models.BuildLedger(
 				models.WithResourceID(uid),
 			)
 			if err != nil {
 				t.Fatal(err)
 			}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res.EncodeTo(recorder)
 
 			var doc models.Ledger
 			if err := json.Unmarshal(recorder.Body.Bytes(), &doc); err != nil {
@@ -340,8 +340,8 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderResourceID) == uid.String() &&
@@ -371,8 +371,8 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
 		}
@@ -400,8 +400,8 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == string(emptyDocs)+"\n"
 		}
@@ -437,9 +437,9 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res := SelectMultipleQueryResult{Params: qp}
+			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
 			res.Ledgers = docs
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res.EncodeTo(recorder)
 
 			var resDocs []models.Ledger
 			if err := json.Unmarshal(recorder.Body.Bytes(), &resDocs); err != nil {

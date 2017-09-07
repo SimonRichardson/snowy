@@ -117,8 +117,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderResourceID) == uid.String()
@@ -147,8 +147,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
 		}
@@ -176,8 +176,8 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == ""
 		}
@@ -205,7 +205,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Params: qp}
+			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
 			res.Content, err = models.BuildContent(
 				models.WithBytes(body),
 			)
@@ -213,7 +213,7 @@ func TestSelectQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res.EncodeTo(recorder)
 
 			return bytesEqual(recorder.Body.Bytes(), body)
 		}
@@ -480,8 +480,8 @@ func TestInsertQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := InsertQueryResult{Params: qp}
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res := InsertQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
 			return headers.Get(httpHeaderContentType) == defaultContentType
@@ -532,9 +532,9 @@ func TestInsertQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := InsertQueryResult{Params: qp}
+			res := InsertQueryResult{Logger: log.NewNopLogger(), Params: qp}
 			res.Content = content
-			res.EncodeTo(log.NewNopLogger(), recorder)
+			res.EncodeTo(recorder)
 
 			var output models.Content
 			if err = json.Unmarshal(recorder.Body.Bytes(), &output); err != nil {

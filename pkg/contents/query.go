@@ -66,13 +66,14 @@ func (qp *SelectQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
 
 // SelectQueryResult contains statistics about the query.
 type SelectQueryResult struct {
+	Logger   log.Logger
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Content  models.Content    `json:"content"`
 }
 
 // EncodeTo encodes the SelectQueryResult to the HTTP response writer.
-func (qr *SelectQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
+func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
 	w.Header().Set(httpHeaderContentType, qr.Content.ContentType())
@@ -80,11 +81,11 @@ func (qr *SelectQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) 
 
 	bytes, err := qr.Content.Bytes()
 	if err != nil {
-		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 	}
 
 	if _, err := w.Write(bytes); err != nil {
-		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -132,30 +133,32 @@ func (qp InsertQueryParams) ContentLength() int64 { return qp.contentLength }
 
 // InsertQueryResult contains statistics about the query.
 type InsertQueryResult struct {
+	Logger   log.Logger
 	Params   InsertQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Content  models.Content    `json:"content"`
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
-func (qr *InsertQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
+func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 
 	if err := json.NewEncoder(w).Encode(qr.Content); err != nil {
-		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 // SelectMultipleQueryResult contains statistics about the query.
 type SelectMultipleQueryResult struct {
+	Logger   log.Logger
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Contents []models.Content  `json:"contents"`
 }
 
 // EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
-func (qr *SelectMultipleQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
+func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, "application/zip")
 	w.Header().Set(httpHeaderContentDisposition, fmt.Sprintf("attachment; filename=%s.zip", qr.Params.ResourceID))
 	w.Header().Set(httpHeaderContentTransferEncoding, "binary")
@@ -170,18 +173,18 @@ func (qr *SelectMultipleQueryResult) EncodeTo(logger log.Logger, w http.Response
 	for _, content := range qr.Contents {
 		file, err := writer.Create(content.Address())
 		if err != nil {
-			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		bytes, err := content.Bytes()
 		if err != nil {
-			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if _, err := file.Write(bytes); err != nil {
-			errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

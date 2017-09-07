@@ -136,12 +136,12 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 	case content := <-result:
 		// Make sure we collect the content for the result.
-		qr := SelectQueryResult{Params: qp}
+		qr := SelectQueryResult{Logger: a.logger, Params: qp}
 		qr.Content = content
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(a.logger, w)
+		qr.EncodeTo(w)
 	}
 }
 
@@ -187,12 +187,12 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
 	case content := <-result:
 		// Make sure we collect the content for the result.
-		qr := InsertQueryResult{Params: qp}
+		qr := InsertQueryResult{Logger: a.logger, Params: qp}
 		qr.Content = content
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(a.logger, w)
+		qr.EncodeTo(w)
 	}
 }
 
@@ -236,12 +236,12 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
 	case contents := <-result:
 		// Make sure we collect the content for the result.
-		qr := SelectMultipleQueryResult{Params: qp}
+		qr := SelectMultipleQueryResult{Logger: a.logger, Params: qp}
 		qr.Contents = contents
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(a.logger, w)
+		qr.EncodeTo(w)
 	}
 }
 

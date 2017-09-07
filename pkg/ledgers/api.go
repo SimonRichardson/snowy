@@ -114,12 +114,12 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the document for the result.
-	qr := SelectQueryResult{Params: qp}
+	qr := SelectQueryResult{Logger: a.logger, Params: qp}
 	qr.Ledger = doc
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(a.logger, w)
+	qr.EncodeTo(w)
 }
 
 func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
@@ -150,12 +150,12 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the document for the result.
-	qr := InsertQueryResult{Params: qp}
+	qr := InsertQueryResult{Logger: a.logger, Params: qp}
 	qr.ResourceID = resource.ResourceID()
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(a.logger, w)
+	qr.EncodeTo(w)
 }
 
 func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
@@ -186,12 +186,12 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the document for the result.
-	qr := AppendQueryResult{Params: qp}
+	qr := AppendQueryResult{Logger: a.logger, Params: qp}
 	qr.ResourceID = resource.ID()
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(a.logger, w)
+	qr.EncodeTo(w)
 }
 
 func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
@@ -223,12 +223,12 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the documents for the result.
-	qr := SelectMultipleQueryResult{Params: qp}
+	qr := SelectMultipleQueryResult{Logger: a.logger, Params: qp}
 	qr.Ledgers = ledgers
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
-	qr.EncodeTo(a.logger, w)
+	qr.EncodeTo(w)
 }
 
 type interceptingWriter struct {

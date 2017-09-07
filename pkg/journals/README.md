@@ -1,33 +1,7 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-09-04T20:36:42+01:00
-# PUT /
-
-+ Request
-    + Parameters
-
-            resource_id ('8e761909-87cd-4d17-a3fa-9c1e9ef69f0a')
-
-    + Headers
-
-            Accept-Encoding: gzip
-            Content-Length: 730
-            Content-Type: multipart/form-data; boundary=c67da4d2baea5b8d61579a33945bc1d4deba774445610c14d036051950b2
-            User-Agent: Go-http-client/1.1
-
-+ Response 200
-    + Headers
-
-            Content-Type: multipart/form-data
-            X-Duration: 138.933µs
-            X-Resource-Id: 8e761909-87cd-4d17-a3fa-9c1e9ef69f0a
-
-    + Body
-
-            {"resource_id":"8e761909-87cd-4d17-a3fa-9c1e9ef69f0a"}
-
-
+Date generated on: 2017-09-04T21:07:10+01:00
 # POST /
 
 + Request
@@ -38,17 +12,43 @@ Date generated on: 2017-09-04T20:36:42+01:00
 
             Accept-Encoding: gzip
             Content-Length: 730
-            Content-Type: multipart/form-data; boundary=98d7acba8e8e75dc4e4ff82c73922f6d6066335a43db72ce8c7a38b2c1f4
+            Content-Type: multipart/form-data; boundary=5cd3faf7bafc66b2294f26c5ecaf8b5f1fe142125e846b71d7c541ce06fa
             User-Agent: Go-http-client/1.1
 
 + Response 200
     + Headers
 
             Content-Type: multipart/form-data
-            X-Duration: 278.045µs
+            X-Duration: 261.503µs
 
     + Body
 
-            {"resource_id":"8e761909-87cd-4d17-a3fa-9c1e9ef69f0a"}
+            {"resource_id":"7cf063b2-f548-475f-a9aa-3b07563b0e52"}
+
+
+# PUT /
+
++ Request
+    + Parameters
+
+            resource_id ('7cf063b2-f548-475f-a9aa-3b07563b0e52')
+
+    + Headers
+
+            Accept-Encoding: gzip
+            Content-Length: 730
+            Content-Type: multipart/form-data; boundary=bbb238fef43d6053ef5ea30dd6206e570165b663146c1d46b041612af874
+            User-Agent: Go-http-client/1.1
+
++ Response 200
+    + Headers
+
+            Content-Type: multipart/form-data
+            X-Duration: 181.895µs
+            X-Resource-Id: 7cf063b2-f548-475f-a9aa-3b07563b0e52
+
+    + Body
+
+            {"resource_id":"7cf063b2-f548-475f-a9aa-3b07563b0e52"}
 
 

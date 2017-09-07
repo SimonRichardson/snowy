@@ -11,7 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3crypto"
 	"github.com/pkg/errors"
 )
 
@@ -19,28 +21,89 @@ const (
 	defaultContentType = "application/octet-stream"
 )
 
+// RemoteAccessType defines what type of access to the remote S3 is going to be
+// utilized.
+type RemoteAccessType int
+
+const (
+	// KMSRemoteAccessType uses the KMS access
+	KMSRemoteAccessType RemoteAccessType = iota
+
+	// KeySecretRemoteAccessType uses the traditional Key Secret access
+	KeySecretRemoteAccessType
+)
+
 // RemoteConfig creates a configuration to create a RemoteFilesystem.
 type RemoteConfig struct {
-	ID, Secret, Token, Region, Bucket string
+	Type                         RemoteAccessType
+	KMSKey, ServerSideEncryption string
+	ID, Secret, Token            string
+	Region, Bucket               string
+}
+
+func (c RemoteConfig) String() string {
+	switch c.Type {
+	case KMSRemoteAccessType:
+		return fmt.Sprintf("RemoteConfig (encryption: true, Region: %q, Bucket: %q, SSE: %q)", c.Region, c.Bucket, c.ServerSideEncryption)
+	default:
+		return fmt.Sprintf("RemoteConfig (encryption: false, Region: %q, Bucket: %q, ID: %q)", c.Region, c.Bucket, c.ID)
+	}
 }
 
 type remoteFilesystem struct {
-	service *s3.S3
-	bucket  *string
+	client remoteClient
+	bucket *string
 }
 
 // NewRemoteFilesystem creates a new remote file system that abstracts over a S3
 // bucket.
 func NewRemoteFilesystem(config *RemoteConfig) (Filesystem, error) {
-	creds := credentials.NewStaticCredentials(config.ID, config.Secret, config.Token)
+	creds := credentials.NewStaticCredentials(
+		config.ID,
+		config.Secret,
+		config.Token,
+	)
 	if _, err := creds.Get(); err != nil {
 		return nil, errors.Wrap(err, "invalid credentials")
 	}
 
-	cfg := aws.NewConfig().WithRegion(config.Region).WithCredentials(creds)
+	var (
+		client remoteClient
+		cfg    = aws.NewConfig().
+			WithRegion(config.Region).
+			WithCredentials(creds).
+			WithCredentialsChainVerboseErrors(true)
+		sess = session.New(cfg)
+	)
+
+	switch config.Type {
+	case KMSRemoteAccessType:
+		if len(config.KMSKey) == 0 {
+			return nil, errors.Errorf("expected valid KMSKey")
+		}
+
+		var (
+			kms       = kms.New(sess)
+			generator = s3crypto.NewKMSKeyGenerator(kms, config.KMSKey)
+			crypto    = s3crypto.AESGCMContentCipherBuilder(generator)
+		)
+		client = newCryptoS3Client(
+			s3.New(sess),
+			s3crypto.NewEncryptionClient(sess, crypto),
+			s3crypto.NewDecryptionClient(sess),
+			config.KMSKey,
+			config.ServerSideEncryption,
+		)
+
+	case KeySecretRemoteAccessType:
+		client = newS3Client(s3.New(sess))
+	default:
+		return nil, errors.Errorf("invalid remote config type %v", config.Type)
+	}
+
 	return &remoteFilesystem{
-		service: s3.New(session.New(), cfg),
-		bucket:  aws.String(config.Bucket),
+		client: client,
+		bucket: aws.String(config.Bucket),
 	}, nil
 }
 
@@ -54,7 +117,7 @@ func (fs *remoteFilesystem) Create(path string) (File, error) {
 }
 
 func (fs *remoteFilesystem) Open(path string) (File, error) {
-	object, err := fs.service.GetObject(&s3.GetObjectInput{
+	object, err := fs.client.GetObject(&s3.GetObjectInput{
 		Bucket: fs.bucket,
 		Key:    aws.String(path),
 	})
@@ -76,7 +139,8 @@ func (fs *remoteFilesystem) Open(path string) (File, error) {
 
 func (fs *remoteFilesystem) Rename(oldname, newname string) error {
 	source := fmt.Sprintf("%s/%s", *fs.bucket, oldname)
-	if _, err := fs.service.CopyObject(&s3.CopyObjectInput{
+
+	if _, err := fs.client.CopyObject(&s3.CopyObjectInput{
 		Bucket:     fs.bucket,
 		Key:        aws.String(newname),
 		CopySource: aws.String(source),
@@ -87,7 +151,7 @@ func (fs *remoteFilesystem) Rename(oldname, newname string) error {
 }
 
 func (fs *remoteFilesystem) Exists(path string) bool {
-	_, err := fs.service.GetObject(&s3.GetObjectInput{
+	_, err := fs.client.GetObject(&s3.GetObjectInput{
 		Bucket: fs.bucket,
 		Key:    aws.String(path),
 	})
@@ -100,7 +164,7 @@ func (fs *remoteFilesystem) Exists(path string) bool {
 }
 
 func (fs *remoteFilesystem) Remove(path string) error {
-	_, err := fs.service.DeleteObject(&s3.DeleteObjectInput{
+	_, err := fs.client.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: fs.bucket,
 		Key:    aws.String(path),
 	})
@@ -108,7 +172,7 @@ func (fs *remoteFilesystem) Remove(path string) error {
 }
 
 func (fs *remoteFilesystem) Walk(root string, walkFn filepath.WalkFunc) error {
-	objects, err := fs.service.ListObjects(&s3.ListObjectsInput{
+	objects, err := fs.client.ListObjects(&s3.ListObjectsInput{
 		Bucket: fs.bucket,
 		Prefix: aws.String(root),
 	})
@@ -174,13 +238,13 @@ func (f *remoteFile) Name() string { return f.path }
 func (f *remoteFile) Size() int64  { return f.size }
 
 func (f *remoteFile) Sync() error {
-	_, err := f.sys.service.PutObject(&s3.PutObjectInput{
-		Bucket:        f.sys.bucket,
-		Key:           aws.String(f.path),
-		Body:          bytes.NewReader(f.writeContent),
-		ContentLength: aws.Int64(int64(len(f.writeContent))),
-		ContentType:   aws.String(f.contentType),
+	_, err := f.sys.client.PutObject(&s3.PutObjectInput{
+		Bucket:      f.sys.bucket,
+		Key:         aws.String(f.path),
+		Body:        bytes.NewReader(f.writeContent),
+		ContentType: aws.String(f.contentType),
 	})
+
 	return err
 }
 
@@ -207,6 +271,18 @@ func BuildConfig(opts ...ConfigOption) (*RemoteConfig, error) {
 		}
 	}
 	return &config, nil
+}
+
+// WithEncryption adds an ID option to the configuration
+func WithEncryption(encryption bool) ConfigOption {
+	return func(config *RemoteConfig) error {
+		if encryption {
+			config.Type = KMSRemoteAccessType
+		} else {
+			config.Type = KeySecretRemoteAccessType
+		}
+		return nil
+	}
 }
 
 // WithID adds an ID option to the configuration
@@ -247,4 +323,102 @@ func WithBucket(bucket string) ConfigOption {
 		config.Bucket = bucket
 		return nil
 	}
+}
+
+// WithKMSKey adds a KMSKey option to the configuration
+func WithKMSKey(kmsKey string) ConfigOption {
+	return func(config *RemoteConfig) error {
+		config.KMSKey = kmsKey
+		return nil
+	}
+}
+
+// WithServerSideEncryption adds a ServerSideEncryption option to the configuration
+func WithServerSideEncryption(serverSideEncryption string) ConfigOption {
+	return func(config *RemoteConfig) error {
+		config.ServerSideEncryption = serverSideEncryption
+		return nil
+	}
+}
+
+// Various clients to work with
+
+type remoteClient interface {
+	GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error)
+	CopyObject(input *s3.CopyObjectInput) (*s3.CopyObjectOutput, error)
+	DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error)
+	ListObjects(input *s3.ListObjectsInput) (*s3.ListObjectsOutput, error)
+	PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error)
+}
+
+type cryptoS3Client struct {
+	service     *s3.S3
+	encrypt     *s3crypto.EncryptionClient
+	decrypt     *s3crypto.DecryptionClient
+	kmsKey, sse string
+}
+
+func newCryptoS3Client(service *s3.S3,
+	encrypt *s3crypto.EncryptionClient,
+	decrypt *s3crypto.DecryptionClient,
+	kmsKey, sse string,
+) remoteClient {
+	return &cryptoS3Client{
+		service,
+		encrypt,
+		decrypt,
+		kmsKey,
+		sse,
+	}
+}
+
+func (c *cryptoS3Client) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
+	return c.decrypt.GetObject(input)
+}
+
+func (c *cryptoS3Client) CopyObject(input *s3.CopyObjectInput) (*s3.CopyObjectOutput, error) {
+	return c.service.CopyObject(input)
+}
+
+func (c *cryptoS3Client) DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+	return c.service.DeleteObject(input)
+}
+
+func (c *cryptoS3Client) ListObjects(input *s3.ListObjectsInput) (*s3.ListObjectsOutput, error) {
+	return c.service.ListObjects(input)
+}
+
+func (c *cryptoS3Client) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+	input.SetSSEKMSKeyId(c.kmsKey)
+	input.SetServerSideEncryption(c.sse)
+
+	return c.encrypt.PutObject(input)
+}
+
+type s3Client struct {
+	service *s3.S3
+}
+
+func newS3Client(service *s3.S3) remoteClient {
+	return &s3Client{service}
+}
+
+func (c *s3Client) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
+	return c.service.GetObject(input)
+}
+
+func (c *s3Client) CopyObject(input *s3.CopyObjectInput) (*s3.CopyObjectOutput, error) {
+	return c.service.CopyObject(input)
+}
+
+func (c *s3Client) DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+	return c.service.DeleteObject(input)
+}
+
+func (c *s3Client) ListObjects(input *s3.ListObjectsInput) (*s3.ListObjectsOutput, error) {
+	return c.service.ListObjects(input)
+}
+
+func (c *s3Client) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+	return c.service.PutObject(input)
 }

@@ -11,13 +11,16 @@ func TestConfigBuild(t *testing.T) {
 	t.Parallel()
 
 	t.Run("build", func(t *testing.T) {
-		fn := func(id, secret, token, region, bucket string) bool {
+		fn := func(id, secret, token, region, bucket, key, encryption string) bool {
 			config, err := BuildConfig(
 				WithID(id),
 				WithSecret(secret),
 				WithToken(token),
 				WithRegion(region),
 				WithBucket(bucket),
+				WithEncryption(true),
+				WithKMSKey(key),
+				WithServerSideEncryption(encryption),
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -26,7 +29,10 @@ func TestConfigBuild(t *testing.T) {
 				config.Secret == secret &&
 				config.Token == token &&
 				config.Region == region &&
-				config.Bucket == bucket
+				config.Bucket == bucket &&
+				config.KMSKey == key &&
+				config.ServerSideEncryption == encryption &&
+				config.Type == KMSRemoteAccessType
 		}
 
 		if err := quick.Check(fn, nil); err != nil {

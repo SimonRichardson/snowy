@@ -1,14 +1,14 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-09-04T20:36:42+01:00
-# GET /multiple/
+Date generated on: 2017-09-04T21:07:10+01:00
+# GET /
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d')
+            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
 
     + Headers
 
@@ -19,22 +19,62 @@ Date generated on: 2017-09-04T20:36:42+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 45.424µs
+            X-Duration: 92.69µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d
+            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
+
+    + Body
+
+            {
+                "author_id": "0734e39b-5272-452b-b989-5ef4720f7ee3",
+                "created_on": "2017-09-04T21:07:10+01:00",
+                "deleted_on": "0001-01-01T00:00:00Z",
+                "name": "document-name",
+                "resource_address": "abcdefghij",
+                "resource_content_type": "application/octet-stream",
+                "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595",
+                "resource_size": 10,
+                "tags": [
+                    "abc",
+                    "def",
+                    "g"
+                ]
+            }
+
+# GET /multiple/
+
++ Request
+    + Parameters
+
+            query.tags ('abc,def,g')
+            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
+
+    + Headers
+
+            Accept-Encoding: gzip
+            User-Agent: Go-http-client/1.1
+
++ Response 200
+    + Headers
+
+            Content-Type: application/json
+            X-Duration: 38.973µs
+            X-Query-Author-Id: 
+            X-Query-Tags: abc,def,g
+            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
 
     + Body
 
             [
                 {
-                    "author_id": "40271c71-c061-4a4c-bd24-7023e70e7d34",
-                    "created_on": "2017-09-04T20:36:42+01:00",
+                    "author_id": "0734e39b-5272-452b-b989-5ef4720f7ee3",
+                    "created_on": "2017-09-04T21:07:10+01:00",
                     "deleted_on": "0001-01-01T00:00:00Z",
                     "name": "document-name",
                     "resource_address": "abcdefghij",
                     "resource_content_type": "application/octet-stream",
-                    "resource_id": "196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d",
+                    "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595",
                     "resource_size": 10,
                     "tags": [
                         "abc",
@@ -61,12 +101,12 @@ Date generated on: 2017-09-04T20:36:42+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 131.571µs
+            X-Duration: 88.814µs
 
     + Body
 
             {
-                "resource_id": "196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d"
+                "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595"
             }
 
 # PUT /
@@ -74,7 +114,7 @@ Date generated on: 2017-09-04T20:36:42+01:00
 + Request
     + Parameters
 
-            resource_id ('196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d')
+            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
 
     + Headers
 
@@ -87,52 +127,12 @@ Date generated on: 2017-09-04T20:36:42+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 71.303µs
-            X-Resource-Id: 196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d
+            X-Duration: 56.121µs
+            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
 
     + Body
 
             {
                 "resource_id": "00000000-0000-0000-0000-000000000000"
-            }
-
-# GET /
-
-+ Request
-    + Parameters
-
-            query.tags ('abc,def,g')
-            resource_id ('196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d')
-
-    + Headers
-
-            Accept-Encoding: gzip
-            User-Agent: Go-http-client/1.1
-
-+ Response 200
-    + Headers
-
-            Content-Type: application/json
-            X-Duration: 77.478µs
-            X-Query-Author-Id: 
-            X-Query-Tags: abc,def,g
-            X-Resource-Id: 196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d
-
-    + Body
-
-            {
-                "author_id": "40271c71-c061-4a4c-bd24-7023e70e7d34",
-                "created_on": "2017-09-04T20:36:42+01:00",
-                "deleted_on": "0001-01-01T00:00:00Z",
-                "name": "document-name",
-                "resource_address": "abcdefghij",
-                "resource_content_type": "application/octet-stream",
-                "resource_id": "196df4a7-fb6f-4e41-b2c9-5c2f2cbf558d",
-                "resource_size": 10,
-                "tags": [
-                    "abc",
-                    "def",
-                    "g"
-                ]
             }
 
