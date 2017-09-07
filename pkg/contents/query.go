@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
@@ -66,7 +65,7 @@ func (qp *SelectQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
 
 // SelectQueryResult contains statistics about the query.
 type SelectQueryResult struct {
-	Logger   log.Logger
+	Errors   errs.Error
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Content  models.Content    `json:"content"`
@@ -81,11 +80,11 @@ func (qr *SelectQueryResult) EncodeTo(w http.ResponseWriter) {
 
 	bytes, err := qr.Content.Bytes()
 	if err != nil {
-		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	if _, err := w.Write(bytes); err != nil {
-		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -133,7 +132,7 @@ func (qp InsertQueryParams) ContentLength() int64 { return qp.contentLength }
 
 // InsertQueryResult contains statistics about the query.
 type InsertQueryResult struct {
-	Logger   log.Logger
+	Errors   errs.Error
 	Params   InsertQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Content  models.Content    `json:"content"`
@@ -145,13 +144,13 @@ func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 
 	if err := json.NewEncoder(w).Encode(qr.Content); err != nil {
-		errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 // SelectMultipleQueryResult contains statistics about the query.
 type SelectMultipleQueryResult struct {
-	Logger   log.Logger
+	Errors   errs.Error
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Contents []models.Content  `json:"contents"`
@@ -173,18 +172,18 @@ func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
 	for _, content := range qr.Contents {
 		file, err := writer.Create(content.Address())
 		if err != nil {
-			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		bytes, err := content.Bytes()
 		if err != nil {
-			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if _, err := file.Write(bytes); err != nil {
-			errs.Error(qr.Logger, w, err.Error(), http.StatusInternalServerError)
+			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

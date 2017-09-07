@@ -16,12 +16,14 @@ const (
 // API serves the status API
 type API struct {
 	logger log.Logger
+	errors errs.Error
 }
 
 // NewAPI creates a API with the correct dependencies.
 func NewAPI(logger log.Logger) *API {
 	return &API{
 		logger: logger,
+		errors: errs.NewError(logger),
 	}
 }
 
@@ -37,11 +39,11 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Handle empty ledgers
 		if err := json.NewEncoder(w).Encode(struct{}{}); err != nil {
-			errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
+			a.errors.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	default:
 		// Nothing found
-		errs.NotFound(a.logger, w, r)
+		a.errors.NotFound(w, r)
 	}
 }
 

@@ -33,6 +33,7 @@ type API struct {
 	logger     log.Logger
 	clients    metrics.Gauge
 	duration   metrics.HistogramVec
+	errors     errs.Error
 }
 
 // NewAPI creates a API with correct dependencies.
@@ -45,6 +46,7 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 		logger:     logger,
 		clients:    clients,
 		duration:   duration,
+		errors:     errs.NewError(logger),
 	}
 }
 
@@ -73,7 +75,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handlePut(w, r)
 	default:
 		// Nothing found
-		errs.NotFound(a.logger, w, r)
+		a.errors.NotFound(w, r)
 	}
 }
 
@@ -86,7 +88,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp InsertQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -150,9 +152,9 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case err := <-internalError:
-		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
+		a.errors.Error(w, err.Error(), http.StatusInternalServerError)
 	case err := <-badRequestError:
-		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
+		a.errors.Error(w, err.Error(), http.StatusBadRequest)
 	case resource := <-result:
 		// Make sure we collect the content for the result.
 		qr := InsertQueryResult{Params: qp}
@@ -160,7 +162,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(a.logger, w)
+		qr.EncodeTo(w)
 	}
 }
 
@@ -173,7 +175,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp AppendQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -237,9 +239,9 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case err := <-internalError:
-		errs.Error(a.logger, w, err.Error(), http.StatusInternalServerError)
+		a.errors.Error(w, err.Error(), http.StatusInternalServerError)
 	case err := <-badRequestError:
-		errs.Error(a.logger, w, err.Error(), http.StatusBadRequest)
+		a.errors.Error(w, err.Error(), http.StatusBadRequest)
 	case resource := <-result:
 		// Make sure we collect the content for the result.
 		qr := AppendQueryResult{Params: qp}
@@ -247,7 +249,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 
 		// Finish
 		qr.Duration = time.Since(begin).String()
-		qr.EncodeTo(a.logger, w)
+		qr.EncodeTo(w)
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/uuid"
@@ -40,13 +39,14 @@ func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 
 // InsertQueryResult contains statistics about the query.
 type InsertQueryResult struct {
+	Errors     errs.Error
 	Params     InsertQueryParams `json:"query"`
 	Duration   string            `json:"duration"`
 	ResourceID uuid.UUID         `json:"resource_id"`
 }
 
 // EncodeTo encodes the InsertQueryResult to the HTTP response writer.
-func (qr *InsertQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
+func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 
@@ -55,7 +55,7 @@ func (qr *InsertQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) 
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
-		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -131,13 +131,14 @@ func (qp *AppendQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehav
 
 // AppendQueryResult contains statistics about the query.
 type AppendQueryResult struct {
+	Errors     errs.Error
 	Params     AppendQueryParams `json:"query"`
 	Duration   string            `json:"duration"`
 	ResourceID uuid.UUID         `json:"resource_id"`
 }
 
 // EncodeTo encodes the AppendQueryResult to the HTTP response writer.
-func (qr *AppendQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) {
+func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
@@ -147,7 +148,7 @@ func (qr *AppendQueryResult) EncodeTo(logger log.Logger, w http.ResponseWriter) 
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
-		errs.Error(logger, w, err.Error(), http.StatusInternalServerError)
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

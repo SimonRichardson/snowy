@@ -13,6 +13,7 @@ import (
 	"testing/quick"
 
 	"github.com/go-kit/kit/log"
+	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -117,7 +118,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
@@ -147,7 +148,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
@@ -176,7 +177,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == ""
@@ -205,7 +206,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.Content, err = models.BuildContent(
 				models.WithBytes(body),
 			)
@@ -480,7 +481,7 @@ func TestInsertQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := InsertQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := InsertQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
@@ -532,7 +533,7 @@ func TestInsertQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := InsertQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := InsertQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.Content = content
 			res.EncodeTo(recorder)
 

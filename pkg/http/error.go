@@ -8,12 +8,22 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
+// Error is a HTTP error type that allows the sending of errors correctly.
+type Error struct {
+	logger log.Logger
+}
+
+// NewError creates a new Error with a logger.
+func NewError(logger log.Logger) Error {
+	return Error{logger}
+}
+
 // Error replies to the request with the specified error message and HTTP code.
 // It does not otherwise end the request; the caller should ensure no further
 // writes are done to w.
 // The error message should be application/json.
-func Error(logger log.Logger, w http.ResponseWriter, err string, code int) {
-	level.Error(logger).Log("err", err, "code", code)
+func (e Error) Error(w http.ResponseWriter, err string, code int) {
+	level.Error(e.logger).Log("err", err, "code", code)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -31,16 +41,16 @@ func Error(logger log.Logger, w http.ResponseWriter, err string, code int) {
 }
 
 // NotFound replies to the request with an HTTP 404 not found error.
-func NotFound(logger log.Logger, w http.ResponseWriter, r *http.Request) {
-	Error(logger, w, "not found", http.StatusNotFound)
+func (e Error) NotFound(w http.ResponseWriter, r *http.Request) {
+	e.Error(w, "not found", http.StatusNotFound)
 }
 
 // BadRequest to the request with an HTTP 400 bad request error.
-func BadRequest(logger log.Logger, w http.ResponseWriter, r *http.Request, err string) {
-	Error(logger, w, err, http.StatusBadRequest)
+func (e Error) BadRequest(w http.ResponseWriter, r *http.Request, err string) {
+	e.Error(w, err, http.StatusBadRequest)
 }
 
 // InternalServerError to the request with an HTTP 500 bad request error.
-func InternalServerError(logger log.Logger, w http.ResponseWriter, r *http.Request, err string) {
-	Error(logger, w, err, http.StatusInternalServerError)
+func (e Error) InternalServerError(w http.ResponseWriter, r *http.Request, err string) {
+	e.Error(w, err, http.StatusInternalServerError)
 }

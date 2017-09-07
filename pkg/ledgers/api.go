@@ -31,6 +31,7 @@ type API struct {
 	logger     log.Logger
 	clients    metrics.Gauge
 	duration   metrics.HistogramVec
+	errors     errs.Error
 }
 
 // NewAPI creates a API with correct dependencies.
@@ -43,6 +44,7 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 		logger:     logger,
 		clients:    clients,
 		duration:   duration,
+		errors:     errs.NewError(logger),
 	}
 }
 
@@ -77,7 +79,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleGetMultiple(w, r)
 	default:
 		// Nothing found
-		errs.NotFound(a.logger, w, r)
+		a.errors.NotFound(w, r)
 	}
 }
 
@@ -90,7 +92,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -99,22 +101,22 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
 	doc, err := a.repository.GetLedger(qp.ResourceID, options)
 	if err != nil {
 		if repository.ErrNotFound(err) {
-			errs.NotFound(a.logger, w, r)
+			a.errors.NotFound(w, r)
 			return
 		}
-		errs.InternalServerError(a.logger, w, r, err.Error())
+		a.errors.InternalServerError(w, r, err.Error())
 		return
 	}
 
 	// Make sure we collect the document for the result.
-	qr := SelectQueryResult{Logger: a.logger, Params: qp}
+	qr := SelectQueryResult{Errors: a.errors, Params: qp}
 	qr.Ledger = doc
 
 	// Finish
@@ -131,7 +133,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp InsertQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -139,18 +141,18 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		return models.WithNewResourceID()
 	})
 	if err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
 	resource, err := a.repository.InsertLedger(doc)
 	if err != nil {
-		errs.InternalServerError(a.logger, w, r, err.Error())
+		a.errors.InternalServerError(w, r, err.Error())
 		return
 	}
 
 	// Make sure we collect the document for the result.
-	qr := InsertQueryResult{Logger: a.logger, Params: qp}
+	qr := InsertQueryResult{Errors: a.errors, Params: qp}
 	qr.ResourceID = resource.ResourceID()
 
 	// Finish
@@ -167,7 +169,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp AppendQueryParams
 	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -175,18 +177,18 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		return models.WithResourceID(qp.ResourceID)
 	})
 	if err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
 	resource, err := a.repository.AppendLedger(qp.ResourceID, doc)
 	if err != nil {
-		errs.InternalServerError(a.logger, w, r, err.Error())
+		a.errors.InternalServerError(w, r, err.Error())
 		return
 	}
 
 	// Make sure we collect the document for the result.
-	qr := AppendQueryResult{Logger: a.logger, Params: qp}
+	qr := AppendQueryResult{Errors: a.errors, Params: qp}
 	qr.ResourceID = resource.ID()
 
 	// Finish
@@ -203,7 +205,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 	// Validate user input.
 	var qp SelectQueryParams
 	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -212,18 +214,18 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		repository.WithQueryAuthorID(qp.AuthorID),
 	)
 	if err != nil {
-		errs.BadRequest(a.logger, w, r, err.Error())
+		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
 
 	ledgers, err := a.repository.GetLedgers(qp.ResourceID, options)
 	if err != nil {
-		errs.InternalServerError(a.logger, w, r, err.Error())
+		a.errors.InternalServerError(w, r, err.Error())
 		return
 	}
 
 	// Make sure we collect the documents for the result.
-	qr := SelectMultipleQueryResult{Logger: a.logger, Params: qp}
+	qr := SelectMultipleQueryResult{Errors: a.errors, Params: qp}
 	qr.Ledgers = ledgers
 
 	// Finish

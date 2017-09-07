@@ -14,6 +14,7 @@ import (
 	"testing/quick"
 
 	"github.com/go-kit/kit/log"
+	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/uuid"
 )
@@ -202,7 +203,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
@@ -233,7 +234,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
@@ -262,7 +263,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == string(emptyDoc)+"\n"
@@ -291,7 +292,7 @@ func TestSelectQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.Ledger, err = models.BuildLedger(
 				models.WithResourceID(uid),
 			)
@@ -340,7 +341,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
@@ -371,7 +372,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
@@ -400,7 +401,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == string(emptyDocs)+"\n"
@@ -437,7 +438,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res := SelectMultipleQueryResult{Logger: log.NewNopLogger(), Params: qp}
+			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.Ledgers = docs
 			res.EncodeTo(recorder)
 
