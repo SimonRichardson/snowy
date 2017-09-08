@@ -12,6 +12,10 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
+const (
+	defaultRootParentID = "00000000-0000-0000-0000-000000000000"
+)
+
 type realRepository struct {
 	fs     fs.Filesystem
 	store  store.Store
@@ -49,6 +53,7 @@ func (r *realRepository) GetLedger(resourceID uuid.UUID, options Query) (models.
 
 	return models.BuildLedger(
 		models.WithID(entity.ID),
+		models.WithParentID(entity.ParentID),
 		models.WithName(entity.Name),
 		models.WithResourceID(entity.ResourceID),
 		models.WithResourceAddress(entity.ResourceAddress),
@@ -64,7 +69,30 @@ func (r *realRepository) GetLedger(resourceID uuid.UUID, options Query) (models.
 // InsertLedger inserts ledger into the repository. If there is an error
 // putting ledgers into the repository then it will return an error.
 func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) {
+	parentID, err := uuid.Parse(defaultRootParentID)
+	if err != nil {
+		return models.Ledger{}, err
+	}
+
+	return r.insertLedgerWithParentID(doc, parentID)
+}
+
+// AppendLedger adds a new ledger as a revision. If there is no head
+// ledger, it will return an error. If there is an error appending
+// ledgers into the repository then it will return an error.
+func (r *realRepository) AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error) {
+	// We don't care what we get back, just that it exists.
+	entity, err := r.GetLedger(resourceID, Query{})
+	if err != nil {
+		return models.Ledger{}, err
+	}
+
+	return r.insertLedgerWithParentID(doc, entity.ParentID())
+}
+
+func (r *realRepository) insertLedgerWithParentID(doc models.Ledger, parentID uuid.UUID) (models.Ledger, error) {
 	entity, err := store.BuildEntity(
+		store.BuildEntityWithParentID(parentID),
 		store.BuildEntityWithName(doc.Name()),
 		store.BuildEntityWithResourceID(doc.ResourceID()),
 		store.BuildEntityWithResourceAddress(doc.ResourceAddress()),
@@ -87,6 +115,7 @@ func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) 
 	// Reconstruct the models.
 	return models.BuildLedger(
 		models.WithID(entity.ID),
+		models.WithParentID(entity.ParentID),
 		models.WithName(entity.Name),
 		models.WithResourceID(entity.ResourceID),
 		models.WithResourceAddress(entity.ResourceAddress),
@@ -97,19 +126,6 @@ func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) 
 		models.WithCreatedOn(entity.CreatedOn),
 		models.WithDeletedOn(entity.DeletedOn),
 	)
-}
-
-// AppendLedger adds a new ledger as a revision. If there is no head
-// ledger, it will return an error. If there is an error appending
-// ledgers into the repository then it will return an error.
-func (r *realRepository) AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error) {
-	// We don't care what we get back, just that it exists.
-	_, err := r.GetLedger(resourceID, Query{})
-	if err != nil {
-		return models.Ledger{}, err
-	}
-
-	return r.InsertLedger(doc)
 }
 
 // GetLedgers returns a set of Ledgers corresponding to a resourceID,
@@ -134,6 +150,7 @@ func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]mode
 	for k, entity := range entities {
 		doc, err := models.BuildLedger(
 			models.WithID(entity.ID),
+			models.WithParentID(entity.ParentID),
 			models.WithName(entity.Name),
 			models.WithResourceID(entity.ResourceID),
 			models.WithResourceAddress(entity.ResourceAddress),

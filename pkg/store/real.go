@@ -17,6 +17,7 @@ import (
 
 const (
 	defaultSelectQuery = `SELECT id, 
+	parent_id,
 	name, 
 	resource_id, 
 	resource_address, 
@@ -31,7 +32,8 @@ WHERE  resource_id = $1
 ORDER  BY created_on DESC, 
 		 resource_address DESC;`
 	defaultInsertQuery = `INSERT INTO ledgers 
-	(name, 
+	(parent_id, 
+	 name, 
 	 resource_id, 
 	 resource_address, 
 	 resource_size, 
@@ -48,8 +50,10 @@ VALUES      ($1,
 	 $6, 
 	 $7, 
 	 $8, 
-	 $9);`
+	 $9,
+	 $10);`
 	defaultSelectQueryTags = `SELECT id, 
+	parent_id, 
 	name, 
 	resource_id, 
 	resource_address, 
@@ -65,6 +69,7 @@ WHERE  resource_id = $1
 ORDER  BY created_on DESC, 
 		 resource_address DESC;`
 	defaultSelectQueryTagsAuthorID = `SELECT id, 
+		 parent_id, 
 		 name, 
 		 resource_id, 
 		 resource_address, 
@@ -116,10 +121,11 @@ func (r *realStore) Get(resource uuid.UUID, query Query) (Entity, error) {
 		statement, args = buildSQLFromQuery(resource, query)
 		row             = r.db.QueryRow(statement, args...)
 
-		id, resourceID string
+		id, parentID, resourceID string
 	)
 	err := row.Scan(
 		&id,
+		&parentID,
 		&entity.Name,
 		&resourceID,
 		&entity.ResourceAddress,
@@ -142,6 +148,9 @@ func (r *realStore) Get(resource uuid.UUID, query Query) (Entity, error) {
 	if entity.ID, err = uuid.Parse(id); err != nil {
 		return entity, err
 	}
+	if entity.ParentID, err = uuid.Parse(parentID); err != nil {
+		return entity, err
+	}
 	if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {
 		return entity, err
 	}
@@ -161,6 +170,7 @@ func (r *realStore) Insert(entity Entity) error {
 		tags := sortTags(entity.Tags)
 
 		if _, err = stmt.Exec(
+			entity.ParentID.String(),
 			entity.Name,
 			entity.ResourceID.String(),
 			entity.ResourceAddress,
@@ -194,10 +204,11 @@ func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, erro
 		var (
 			entity Entity
 
-			id, resourceID string
+			id, parentID, resourceID string
 		)
 		err := rows.Scan(
 			&id,
+			&parentID,
 			&entity.Name,
 			&resourceID,
 			&entity.ResourceAddress,
@@ -218,6 +229,9 @@ func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, erro
 		// We have to manually extract the UUID, as database/sql doesn't provide this
 		// for us.
 		if entity.ID, err = uuid.Parse(id); err != nil {
+			return nil, err
+		}
+		if entity.ParentID, err = uuid.Parse(parentID); err != nil {
 			return nil, err
 		}
 		if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {

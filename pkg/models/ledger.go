@@ -13,6 +13,7 @@ import (
 // the system.
 type Ledger struct {
 	id                   uuid.UUID
+	parentID             uuid.UUID
 	name                 string
 	resourceID           uuid.UUID
 	resourceAddress      string
@@ -27,6 +28,11 @@ type Ledger struct {
 // for each ledger.
 func (d Ledger) ID() uuid.UUID {
 	return d.id
+}
+
+// ParentID returns the parent id of the ledger resource.
+func (d Ledger) ParentID() uuid.UUID {
+	return d.parentID
 }
 
 // ResourceID returns the id associated with the ledger resource.
@@ -83,6 +89,7 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(struct {
 		Name                string    `json:"name"`
+		ParentID            uuid.UUID `json:"parent_id"`
 		ResourceID          uuid.UUID `json:"resource_id"`
 		ResourceAddress     string    `json:"resource_address"`
 		ResourceSize        int64     `json:"resource_size"`
@@ -93,6 +100,7 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 		DeletedOn           string    `json:"deleted_on"`
 	}{
 		Name:                d.name,
+		ParentID:            d.parentID,
 		ResourceID:          d.resourceID,
 		ResourceAddress:     d.resourceAddress,
 		ResourceSize:        d.resourceSize,
@@ -108,6 +116,7 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 func (d *Ledger) UnmarshalJSON(b []byte) error {
 	var res struct {
 		Name                string    `json:"name"`
+		ParentID            uuid.UUID `json:"parent_id"`
 		ResourceID          uuid.UUID `json:"resource_id"`
 		ResourceAddress     string    `json:"resource_address"`
 		ResourceSize        int64     `json:"resource_size"`
@@ -124,6 +133,7 @@ func (d *Ledger) UnmarshalJSON(b []byte) error {
 	var err error
 
 	d.name = res.Name
+	d.parentID = res.ParentID
 	d.resourceID = res.ResourceID
 	d.resourceAddress = res.ResourceAddress
 	d.resourceSize = res.ResourceSize
@@ -164,6 +174,14 @@ func BuildLedger(opts ...DocOption) (Ledger, error) {
 func WithID(id uuid.UUID) DocOption {
 	return func(doc *Ledger) error {
 		doc.id = id
+		return nil
+	}
+}
+
+// WithParentID adds a ParentID to the ledger
+func WithParentID(parentID uuid.UUID) DocOption {
+	return func(doc *Ledger) error {
+		doc.parentID = parentID
 		return nil
 	}
 }

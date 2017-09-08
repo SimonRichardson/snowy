@@ -119,6 +119,7 @@ func TestInsertLedger(t *testing.T) {
 			var (
 				createdOn = time.Now()
 				entity    = store.Entity{
+					ParentID:   uuid.MustParse(defaultRootParentID),
 					Name:       name,
 					ResourceID: resourceID,
 					AuthorID:   authorID,
@@ -164,6 +165,7 @@ func TestInsertLedger(t *testing.T) {
 			var (
 				createdOn = time.Now()
 				entity    = store.Entity{
+					ParentID:   uuid.MustParse(defaultRootParentID),
 					Name:       name,
 					ResourceID: resourceID,
 					AuthorID:   authorID,

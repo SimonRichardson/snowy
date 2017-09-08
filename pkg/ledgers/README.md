@@ -1,14 +1,14 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-09-04T21:07:10+01:00
+Date generated on: 2017-09-08T10:40:20+01:00
 # GET /
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
+            resource_id ('d7030131-03cc-4eb4-8d7c-ec2ebde846e5')
 
     + Headers
 
@@ -19,21 +19,22 @@ Date generated on: 2017-09-04T21:07:10+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 92.69µs
+            X-Duration: 77.145µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
+            X-Resource-Id: d7030131-03cc-4eb4-8d7c-ec2ebde846e5
 
     + Body
 
             {
-                "author_id": "0734e39b-5272-452b-b989-5ef4720f7ee3",
-                "created_on": "2017-09-04T21:07:10+01:00",
+                "author_id": "10fcbc8c-7054-41bc-8329-aa31b2f1caed",
+                "created_on": "2017-09-08T10:40:20+01:00",
                 "deleted_on": "0001-01-01T00:00:00Z",
                 "name": "document-name",
+                "parent_id": "00000000-0000-0000-0000-000000000000",
                 "resource_address": "abcdefghij",
                 "resource_content_type": "application/octet-stream",
-                "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595",
+                "resource_id": "d7030131-03cc-4eb4-8d7c-ec2ebde846e5",
                 "resource_size": 10,
                 "tags": [
                     "abc",
@@ -48,7 +49,7 @@ Date generated on: 2017-09-04T21:07:10+01:00
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
+            resource_id ('d7030131-03cc-4eb4-8d7c-ec2ebde846e5')
 
     + Headers
 
@@ -59,22 +60,23 @@ Date generated on: 2017-09-04T21:07:10+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 38.973µs
+            X-Duration: 44.301µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
+            X-Resource-Id: d7030131-03cc-4eb4-8d7c-ec2ebde846e5
 
     + Body
 
             [
                 {
-                    "author_id": "0734e39b-5272-452b-b989-5ef4720f7ee3",
-                    "created_on": "2017-09-04T21:07:10+01:00",
+                    "author_id": "10fcbc8c-7054-41bc-8329-aa31b2f1caed",
+                    "created_on": "2017-09-08T10:40:20+01:00",
                     "deleted_on": "0001-01-01T00:00:00Z",
                     "name": "document-name",
+                    "parent_id": "00000000-0000-0000-0000-000000000000",
                     "resource_address": "abcdefghij",
                     "resource_content_type": "application/octet-stream",
-                    "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595",
+                    "resource_id": "d7030131-03cc-4eb4-8d7c-ec2ebde846e5",
                     "resource_size": 10,
                     "tags": [
                         "abc",
@@ -101,12 +103,12 @@ Date generated on: 2017-09-04T21:07:10+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 88.814µs
+            X-Duration: 107.36µs
 
     + Body
 
             {
-                "resource_id": "80a4772b-339f-4a4e-aefb-4be1b96f0595"
+                "resource_id": "d7030131-03cc-4eb4-8d7c-ec2ebde846e5"
             }
 
 # PUT /
@@ -114,7 +116,7 @@ Date generated on: 2017-09-04T21:07:10+01:00
 + Request
     + Parameters
 
-            resource_id ('80a4772b-339f-4a4e-aefb-4be1b96f0595')
+            resource_id ('d7030131-03cc-4eb4-8d7c-ec2ebde846e5')
 
     + Headers
 
@@ -127,8 +129,8 @@ Date generated on: 2017-09-04T21:07:10+01:00
     + Headers
 
             Content-Type: application/json
-            X-Duration: 56.121µs
-            X-Resource-Id: 80a4772b-339f-4a4e-aefb-4be1b96f0595
+            X-Duration: 77.975µs
+            X-Resource-Id: d7030131-03cc-4eb4-8d7c-ec2ebde846e5
 
     + Body
 

@@ -14,7 +14,7 @@ func TestBuildingEntity(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(id uuid.UUID,
+		fn := func(id, parentID uuid.UUID,
 			name string,
 			resourceID uuid.UUID,
 			resourceAddress string,
@@ -25,6 +25,7 @@ func TestBuildingEntity(t *testing.T) {
 			now := time.Now()
 			entity, err := BuildEntity(
 				BuildEntityWithID(id),
+				BuildEntityWithParentID(parentID),
 				BuildEntityWithName(name),
 				BuildEntityWithResourceID(resourceID),
 				BuildEntityWithResourceAddress(resourceAddress),
@@ -41,6 +42,7 @@ func TestBuildingEntity(t *testing.T) {
 
 			want := Entity{
 				ID:                  id,
+				ParentID:            parentID,
 				Name:                name,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,

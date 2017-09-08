@@ -52,6 +52,15 @@ func Parse(id string) (UUID, error) {
 	return UUID(res), nil
 }
 
+// MustParse parses the uuid or panics
+func MustParse(id string) UUID {
+	uid, err := Parse(id)
+	if err != nil {
+		panic(err)
+	}
+	return uid
+}
+
 // Bytes returns a series of bytes for the UUID
 func (u UUID) Bytes() []byte {
 	return u[:]

@@ -65,6 +65,19 @@ func TestUUID(t *testing.T) {
 		}
 	})
 
+	t.Run("must parse isomorphic", func(t *testing.T) {
+		fn := func(id UUID) bool {
+			actual := id.String()
+			uuid := MustParse(actual)
+
+			return uuid.String() == actual
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
 	t.Run("marshal json", func(t *testing.T) {
 		fn := func(id UUID) bool {
 			res, err := json.Marshal(id)

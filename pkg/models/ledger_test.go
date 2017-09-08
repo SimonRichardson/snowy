@@ -17,7 +17,7 @@ func TestLedger(t *testing.T) {
 	t.Parallel()
 
 	t.Run("fields", func(t *testing.T) {
-		fn := func(id uuid.UUID,
+		fn := func(id, parentID uuid.UUID,
 			name string,
 			resourceID uuid.UUID,
 			resourceAddress string,
@@ -28,6 +28,7 @@ func TestLedger(t *testing.T) {
 			now := time.Now()
 			output := Ledger{
 				id:                  id,
+				parentID:            parentID,
 				name:                name,
 				resourceID:          resourceID,
 				resourceAddress:     resourceAddress,
@@ -40,6 +41,7 @@ func TestLedger(t *testing.T) {
 			}
 
 			return output.ID().Equals(id) &&
+				output.ParentID().Equals(parentID) &&
 				output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
 				output.ResourceAddress() == resourceAddress &&
@@ -57,7 +59,7 @@ func TestLedger(t *testing.T) {
 	})
 
 	t.Run("json marshal", func(t *testing.T) {
-		fn := func(id uuid.UUID,
+		fn := func(id, parentID uuid.UUID,
 			name string,
 			resourceID uuid.UUID,
 			resourceAddress string,
@@ -68,6 +70,7 @@ func TestLedger(t *testing.T) {
 			now := time.Now().Round(time.Second)
 			input := Ledger{
 				id:                  id,
+				parentID:            parentID,
 				name:                name,
 				resourceID:          resourceID,
 				resourceAddress:     resourceAddress,
@@ -89,7 +92,8 @@ func TestLedger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return output.Name() == name &&
+			return output.ParentID() == parentID &&
+				output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
 				output.ResourceAddress() == resourceAddress &&
 				output.ResourceSize() == resourceSize &&
@@ -106,7 +110,7 @@ func TestLedger(t *testing.T) {
 	})
 
 	t.Run("json marshal with empty tags", func(t *testing.T) {
-		fn := func(id uuid.UUID,
+		fn := func(id, parentID uuid.UUID,
 			name string,
 			resourceID uuid.UUID,
 			resourceAddress string,
@@ -116,6 +120,7 @@ func TestLedger(t *testing.T) {
 			now := time.Now().Round(time.Second)
 			input := Ledger{
 				id:                  id,
+				parentID:            parentID,
 				name:                name,
 				resourceID:          resourceID,
 				resourceAddress:     resourceAddress,
@@ -136,7 +141,8 @@ func TestLedger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return output.Name() == name &&
+			return output.ParentID() == parentID &&
+				output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
 				output.ResourceAddress() == resourceAddress &&
 				output.ResourceSize() == resourceSize &&
@@ -251,7 +257,7 @@ func TestLedgerBuild(t *testing.T) {
 	t.Parallel()
 
 	t.Run("build", func(t *testing.T) {
-		fn := func(id uuid.UUID,
+		fn := func(id, parentID uuid.UUID,
 			name string,
 			resourceID uuid.UUID,
 			resourceAddress string,
@@ -262,6 +268,7 @@ func TestLedgerBuild(t *testing.T) {
 			now := time.Now()
 			doc, err := BuildLedger(
 				WithID(id),
+				WithParentID(parentID),
 				WithName(name),
 				WithResourceID(resourceID),
 				WithResourceAddress(resourceAddress),
@@ -276,6 +283,7 @@ func TestLedgerBuild(t *testing.T) {
 				t.Fatal(err)
 			}
 			return doc.ID().Equals(id) &&
+				doc.ParentID().Equals(parentID) &&
 				doc.Name() == name &&
 				doc.ResourceID().Equals(resourceID) &&
 				doc.ResourceAddress() == resourceAddress &&

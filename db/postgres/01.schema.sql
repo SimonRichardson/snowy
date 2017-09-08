@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS ledgers (
   id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  parent_id               UUID NOT NULL,
   resource_id             UUID NOT NULL,
   resource_address        TEXT NOT NULL,
   resource_size           BIGINT NOT NULL,

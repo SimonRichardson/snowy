@@ -10,7 +10,7 @@ import (
 // formally understand the underlying model. Entity in this case represents a
 // models.Ledger without the file content.
 type Entity struct {
-	ID                   uuid.UUID
+	ID, ParentID         uuid.UUID
 	Name                 string
 	ResourceID           uuid.UUID
 	ResourceAddress      string
@@ -41,6 +41,14 @@ func BuildEntity(opts ...EntityOption) (Entity, error) {
 func BuildEntityWithID(id uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ID = id
+		return nil
+	}
+}
+
+// BuildEntityWithParentID adds a type of parent id to the entity.
+func BuildEntityWithParentID(parentID uuid.UUID) EntityOption {
+	return func(entity *Entity) error {
+		entity.ParentID = parentID
 		return nil
 	}
 }

@@ -92,7 +92,7 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name string,
@@ -101,6 +101,7 @@ func TestRealStore_Integration(t *testing.T) {
 			defer store.Drop()
 
 			err := store.Insert(Entity{
+				ParentID:            parentID,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,
 				ResourceSize:        resourceSize,
@@ -123,7 +124,7 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name string,
@@ -132,6 +133,7 @@ func TestRealStore_Integration(t *testing.T) {
 			defer store.Drop()
 
 			if err := store.Insert(Entity{
+				ParentID:            parentID,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,
 				ResourceSize:        resourceSize,
@@ -149,7 +151,8 @@ func TestRealStore_Integration(t *testing.T) {
 			if err != nil {
 				return false
 			}
-			return entity.ResourceID.Equals(resourceID) &&
+			return entity.ParentID.Equals(parentID) &&
+				entity.ResourceID.Equals(resourceID) &&
 				entity.ResourceAddress == resourceAddress &&
 				entity.ResourceSize == resourceSize &&
 				entity.ResourceContentType == resourceContentType &&
@@ -180,7 +183,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -189,6 +192,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			defer store.Drop()
 
 			if err := store.Insert(Entity{
+				ParentID:            parentID,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,
 				ResourceSize:        resourceSize,
@@ -219,7 +223,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -228,6 +232,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			defer store.Drop()
 
 			entity := Entity{
+				ParentID:            parentID,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,
 				ResourceSize:        resourceSize,
@@ -262,7 +267,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -273,6 +278,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
+					ParentID:            parentID,
 					ResourceID:          resourceID,
 					ResourceAddress:     resourceAddress,
 					ResourceSize:        resourceSize,
@@ -308,7 +314,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -319,6 +325,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
+					ParentID:            parentID,
 					ResourceID:          resourceID,
 					ResourceAddress:     resourceAddress,
 					ResourceSize:        resourceSize,
@@ -354,7 +361,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -363,6 +370,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			defer store.Drop()
 
 			entity := Entity{
+				ParentID:            parentID,
 				ResourceID:          resourceID,
 				ResourceAddress:     resourceAddress,
 				ResourceSize:        resourceSize,
@@ -399,7 +407,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		fn := func(resourceID uuid.UUID,
+		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name ASCII,
@@ -410,6 +418,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
+					ParentID:            parentID,
 					ResourceID:          resourceID,
 					ResourceAddress:     resourceAddress,
 					ResourceSize:        resourceSize,
