@@ -3,6 +3,7 @@ PATH_SNOWY = github.com/trussle/snowy
 .PHONY: all
 all:
 	go get github.com/Masterminds/glide
+	go get github.com/mjibson/esc
 	glide install
 	$(MAKE) clean build
 
@@ -60,6 +61,20 @@ coverage-tests:
 .PHONY: coverage-view
 coverage-view:
 	go tool cover -html=bin/coverage.out
+
+.PHONY: build-ui
+build-ui: ui/scripts/snowy.js pkg/ui/static.go
+
+.PHONY: clean-ui
+clean-ui: FORCE
+	rm -f pkg/ui/static.go
+	$(MAKE) -C ./ui clean
+
+ui/scripts/snowy.js:
+	$(MAKE) -C ./ui
+
+pkg/ui/static.go:
+	esc -o="pkg/ui/static.go" -ignore="elm-stuff|Makefile|src|elm-package.json" -pkg="ui" ui
 
 PWD ?= ${GOPATH}/src/${PATH_SNOWY}
 TAG ?= dev

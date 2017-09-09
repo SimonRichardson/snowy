@@ -20,6 +20,7 @@ import (
 	"github.com/trussle/snowy/pkg/repository"
 	"github.com/trussle/snowy/pkg/status"
 	"github.com/trussle/snowy/pkg/store"
+	"github.com/trussle/snowy/pkg/ui"
 )
 
 const (
@@ -43,6 +44,7 @@ const (
 	defaultDBSSLMode  = "disable"
 
 	defaultMetricsRegistration = true
+	defaultUILocal             = false
 )
 
 func runDocuments(args []string) error {
@@ -69,6 +71,7 @@ func runDocuments(args []string) error {
 		dbName                  = flagset.String("db.name", defaultDBName, "Name of the database with in the datastore")
 		dbSSLMode               = flagset.String("db.sslmode", defaultDBSSLMode, "SSL mode for connecting to the datastore")
 		metricsRegistration     = flagset.Bool("metrics.registration", defaultMetricsRegistration, "Registration of metrics on launch")
+		uiLocal                 = flagset.Bool("ui.local", defaultUILocal, "Ignores embedded files and goes straight to the filesystem")
 	)
 
 	var envArgs []string
@@ -233,6 +236,7 @@ func runDocuments(args []string) error {
 			mux.Handle("/status/", http.StripPrefix("/status", status.NewAPI(
 				log.With(logger, "component", "status_api"),
 			)))
+			mux.Handle("/ui/", ui.NewAPI(*uiLocal, log.With(logger, "component", "ui")))
 
 			registerMetrics(mux)
 			registerProfile(mux)
