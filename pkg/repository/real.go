@@ -214,6 +214,12 @@ func (r *realRepository) PutContent(content models.Content) (res models.Content,
 		return
 	}
 
+	// Content already exists, return out quickly.
+	if r.fs.Exists(content.Address()) {
+		res = content
+		return
+	}
+
 	var file fs.File
 	file, err = r.fs.Create(content.Address())
 	if err != nil {
