@@ -36,12 +36,14 @@ func TestDocumentation_Flow(t *testing.T) {
 	}
 
 	var (
-		clients  = metricMocks.NewMockGauge(ctrl)
-		duration = metricMocks.NewMockHistogramVec(ctrl)
-		observer = metricMocks.NewMockObserver(ctrl)
-		repo     = repoMocks.NewMockRepository(ctrl)
+		clients      = metricMocks.NewMockGauge(ctrl)
+		writtenBytes = metricMocks.NewMockCounter(ctrl)
+		records      = metricMocks.NewMockCounter(ctrl)
+		duration     = metricMocks.NewMockHistogramVec(ctrl)
+		observer     = metricMocks.NewMockObserver(ctrl)
+		repo         = repoMocks.NewMockRepository(ctrl)
 
-		api = NewAPI(repo, log.NewNopLogger(), clients, duration)
+		api = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 
 		outputs = []betwixt.Output{
 			output.NewMarkdown(file, output.Options{
@@ -116,6 +118,8 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
+		writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
+		records.EXPECT().Inc().Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
 		repo.EXPECT().PutContent(Content(inputContent)).Return(outputContent, nil).Times(1)
@@ -158,6 +162,8 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
+		writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
+		records.EXPECT().Inc().Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
 		repo.EXPECT().PutContent(Content(inputContent)).Return(outputContent, nil).Times(1)

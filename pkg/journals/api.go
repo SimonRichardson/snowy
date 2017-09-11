@@ -29,22 +29,26 @@ const (
 
 // API serves the query API
 type API struct {
-	repository repository.Repository
-	logger     log.Logger
-	clients    metrics.Gauge
-	duration   metrics.HistogramVec
-	errors     errs.Error
+	repository     repository.Repository
+	logger         log.Logger
+	clients        metrics.Gauge
+	bytes, records metrics.Counter
+	duration       metrics.HistogramVec
+	errors         errs.Error
 }
 
 // NewAPI creates a API with correct dependencies.
 func NewAPI(repository repository.Repository, logger log.Logger,
 	clients metrics.Gauge,
+	bytes, records metrics.Counter,
 	duration metrics.HistogramVec,
 ) *API {
 	return &API{
 		repository: repository,
 		logger:     logger,
 		clients:    clients,
+		bytes:      bytes,
+		records:    records,
 		duration:   duration,
 		errors:     errs.NewError(logger),
 	}
@@ -122,7 +126,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		content, err := ingestContent(file, fqp)
+		content, contentLength, err := ingestContent(file, fqp)
 		if err != nil {
 			badRequestError <- err
 			return
@@ -146,6 +150,9 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 			internalError <- err
 			return
 		}
+
+		a.bytes.Add(float64(contentLength))
+		a.records.Inc()
 
 		result <- ledgerResult
 	}()
@@ -209,7 +216,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		content, err := ingestContent(file, fqp)
+		content, contentLength, err := ingestContent(file, fqp)
 		if err != nil {
 			badRequestError <- err
 			return
@@ -233,6 +240,9 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 			internalError <- err
 			return
 		}
+
+		a.bytes.Add(float64(contentLength))
+		a.records.Inc()
 
 		result <- ledgerResult
 	}()
@@ -269,22 +279,26 @@ type ContentHeader interface {
 	ContentLength() int64
 }
 
-func ingestContent(reader io.Reader, header ContentHeader) (models.Content, error) {
+func ingestContent(reader io.Reader, header ContentHeader) (models.Content, int, error) {
 	buffer := bytes.NewBuffer(make([]byte, 0, header.ContentLength()))
 	if _, err := buffer.ReadFrom(reader); err != nil {
-		return models.Content{}, err
+		return models.Content{}, -1, err
 	}
 
 	bytes := buffer.Bytes()
 	if len(bytes) < 1 {
-		return models.Content{}, errors.New("no body content")
+		return models.Content{}, -1, errors.New("no body content")
 	}
 
-	return models.BuildContent(
+	content, err := models.BuildContent(
 		models.WithContentBytes(bytes),
 		models.WithSize(int64(len(bytes))),
 		models.WithContentType(header.ContentType()),
 	)
+	if err != nil {
+		return content, -1, err
+	}
+	return content, len(bytes), nil
 }
 
 func ingestLedger(reader io.ReadCloser, content models.Content, header ContentHeader, fn func() models.DocOption) (models.Ledger, error) {

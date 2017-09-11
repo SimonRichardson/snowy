@@ -33,12 +33,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -72,12 +74,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -113,12 +117,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -181,12 +187,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -249,12 +257,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -316,12 +326,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -352,6 +364,8 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
+			writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
+			records.EXPECT().Inc().Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().InsertLedger(Ledger(doc)).Return(doc, nil).Times(1)
@@ -416,12 +430,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -504,12 +520,14 @@ func TestPostAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -586,12 +604,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -625,12 +645,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -666,12 +688,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -734,12 +758,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -802,12 +828,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -869,12 +897,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -905,6 +935,8 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
+			writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
+			records.EXPECT().Inc().Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().AppendLedger(resourceID, Ledger(doc)).Return(doc, nil).Times(1)
@@ -969,12 +1001,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -1057,12 +1091,14 @@ func TestPutAPI(t *testing.T) {
 		defer ctrl.Finish()
 
 		var (
-			clients  = metricMocks.NewMockGauge(ctrl)
-			duration = metricMocks.NewMockHistogramVec(ctrl)
-			observer = metricMocks.NewMockObserver(ctrl)
-			repo     = repoMocks.NewMockRepository(ctrl)
+			clients      = metricMocks.NewMockGauge(ctrl)
+			writtenBytes = metricMocks.NewMockCounter(ctrl)
+			records      = metricMocks.NewMockCounter(ctrl)
+			duration     = metricMocks.NewMockHistogramVec(ctrl)
+			observer     = metricMocks.NewMockObserver(ctrl)
+			repo         = repoMocks.NewMockRepository(ctrl)
 
-			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
 
@@ -1140,12 +1176,14 @@ func TestNotFoundAPI(t *testing.T) {
 
 		fn := func(resource ASCII) bool {
 			var (
-				clients  = metricMocks.NewMockGauge(ctrl)
-				duration = metricMocks.NewMockHistogramVec(ctrl)
-				observer = metricMocks.NewMockObserver(ctrl)
-				repo     = repoMocks.NewMockRepository(ctrl)
+				clients      = metricMocks.NewMockGauge(ctrl)
+				writtenBytes = metricMocks.NewMockCounter(ctrl)
+				records      = metricMocks.NewMockCounter(ctrl)
+				duration     = metricMocks.NewMockHistogramVec(ctrl)
+				observer     = metricMocks.NewMockObserver(ctrl)
+				repo         = repoMocks.NewMockRepository(ctrl)
 
-				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
+				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
 

@@ -4,12 +4,11 @@
 package mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/trussle/snowy/pkg/models"
 	repository "github.com/trussle/snowy/pkg/repository"
 	uuid "github.com/trussle/snowy/pkg/uuid"
+	reflect "reflect"
 )
 
 // MockRepository is a mock of Repository interface

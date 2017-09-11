@@ -20,7 +20,7 @@ pkg/repository/mocks/repository.go:
 	mockgen -package=mocks -destination=pkg/repository/mocks/repository.go ${PATH_SNOWY}/pkg/repository Repository
 
 pkg/metrics/mocks/metrics.go:
-	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go ${PATH_SNOWY}/pkg/metrics Gauge,HistogramVec
+	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go ${PATH_SNOWY}/pkg/metrics Gauge,HistogramVec,Counter
 	sed -i '' -- 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
 
 pkg/metrics/mocks/observer.go:

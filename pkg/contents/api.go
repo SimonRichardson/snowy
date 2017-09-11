@@ -24,18 +24,20 @@ const (
 
 // API serves the query API
 type API struct {
-	repository repository.Repository
-	action     chan func()
-	stop       chan chan struct{}
-	logger     log.Logger
-	clients    metrics.Gauge
-	duration   metrics.HistogramVec
-	errors     errs.Error
+	repository     repository.Repository
+	action         chan func()
+	stop           chan chan struct{}
+	logger         log.Logger
+	clients        metrics.Gauge
+	bytes, records metrics.Counter
+	duration       metrics.HistogramVec
+	errors         errs.Error
 }
 
 // NewAPI creates a API with correct dependencies.
 func NewAPI(repository repository.Repository, logger log.Logger,
 	clients metrics.Gauge,
+	bytes, records metrics.Counter,
 	duration metrics.HistogramVec,
 ) *API {
 	api := &API{
@@ -44,6 +46,8 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 		stop:       make(chan chan struct{}),
 		logger:     logger,
 		clients:    clients,
+		bytes:      bytes,
+		records:    records,
 		duration:   duration,
 		errors:     errs.NewError(logger),
 	}
@@ -168,7 +172,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		result          = make(chan models.Content)
 	)
 	a.action <- func() {
-		content, err := ingestContent(r.Body, qp)
+		content, contentLength, err := ingestContent(r.Body, qp)
 		if err != nil {
 			badRequestError <- err
 			return
@@ -179,6 +183,10 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 			internalError <- err
 			return
 		}
+
+		a.bytes.Add(float64(contentLength))
+		a.records.Inc()
+
 		result <- res
 	}
 
@@ -276,16 +284,20 @@ type ContentHeader interface {
 	ContentLength() int64
 }
 
-func ingestContent(file io.Reader, header ContentHeader) (models.Content, error) {
+func ingestContent(file io.Reader, header ContentHeader) (models.Content, int, error) {
 	buffer := bytes.NewBuffer(make([]byte, 0, header.ContentLength()))
 	if _, err := buffer.ReadFrom(file); err != nil {
-		return models.Content{}, err
+		return models.Content{}, -1, err
 	}
 
 	bytes := buffer.Bytes()
-	return models.BuildContent(
+	content, err := models.BuildContent(
 		models.WithContentBytes(bytes),
 		models.WithSize(int64(len(bytes))),
 		models.WithContentType(header.ContentType()),
 	)
+	if err != nil {
+		return content, -1, err
+	}
+	return content, len(bytes), err
 }

@@ -106,6 +106,16 @@ func runDocuments(args []string) error {
 		Name:      "connected_clients",
 		Help:      "Number of currently connected clients by modality.",
 	}, []string{"modality"})
+	writerBytes := prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "trussle_documents",
+		Name:      "writer_bytes_written_total",
+		Help:      "The total number of bytes written.",
+	})
+	writerRecords := prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "trussle_documents",
+		Name:      "writer_records_written_total",
+		Help:      "The total number of records written.",
+	})
 	apiDuration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "trussle_documents",
 		Name:      "api_request_duration_seconds",
@@ -116,6 +126,8 @@ func runDocuments(args []string) error {
 	if *metricsRegistration {
 		prometheus.MustRegister(
 			connectedClients,
+			writerBytes,
+			writerRecords,
 			apiDuration,
 		)
 	}
@@ -217,6 +229,7 @@ func runDocuments(args []string) error {
 			contentsAPI := contents.NewAPI(repository,
 				log.With(logger, "component", "contents_api"),
 				connectedClients.WithLabelValues("contents"),
+				writerBytes, writerRecords,
 				apiDuration,
 			)
 			defer contentsAPI.Close()
@@ -231,6 +244,7 @@ func runDocuments(args []string) error {
 			mux.Handle("/journals/", http.StripPrefix("/journals", journals.NewAPI(repository,
 				log.With(logger, "component", "journals_api"),
 				connectedClients.WithLabelValues("journals"),
+				writerBytes, writerRecords,
 				apiDuration,
 			)))
 			mux.Handle("/status/", http.StripPrefix("/status", status.NewAPI(
