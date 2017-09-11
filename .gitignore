@@ -21,4 +21,4 @@ src/
 documents
 *.aws.json
 elm-stuff/
-ui/scripts/index.js
+ui/scripts/

@@ -193,7 +193,7 @@ var _escData = map[string]*_escFile{
 	"/ui/index.html": {
 		local:   "ui/index.html",
 		size:    476,
-		modtime: 1504887405,
+		modtime: 1504961017,
 		compressed: `
 H4sIAAAAAAAC/3SRzU7DMBCE730K4xOo4A1/AhUnHGiPFUjlwtEkm8bFsSPvtiGIh0f5QT0gTvZov/HI
 s/pk+fz0+vayEhXXLpvp8RBCV2gK0cRQWoeprJibBUDbtqq9ViFu4SpJbuEygQmRvUkIXSMbkVcmEnIq
@@ -207,7 +207,7 @@ JwAA//+0brId3AEAAA==
 	"/ui/scripts/snowy.js": {
 		local:   "ui/scripts/snowy.js",
 		size:    245360,
-		modtime: 1504960065,
+		modtime: 1505115470,
 		compressed: `
 H4sIAAAAAAAC/+z9/XvbNrIojv8s/RVovz2VtGZkvdlO5Dh9kjTpZm9euol3z/O9ia8LUZDEmiJVkrKt
 Jv7fP8/MACDAdzvO7jn3nu6zsUgCg8HMYDAYDAbt7mIbuIkXBt0e+9zubGPB4iTy3KRz3G6rb+zlCMr1
@@ -1006,7 +1006,7 @@ Bfj/DwAA//8jYMTmcL4DAA==
 	"/ui/styles/normalize.css": {
 		local:   "ui/styles/normalize.css",
 		size:    8951,
-		modtime: 1504886761,
+		modtime: 1504961017,
 		compressed: `
 H4sIAAAAAAAC/8xZXW/bRta+9684b4oAiSvKkp2vl0Yvull3a+wuWmwK9CIwoCHnUJx6OIeYGUpW2v3v
 i5khxQ+RsrJwukkuTJHDOZ/znOccXpz/HyjSBZPiE85TY2Dzer6YL+AP+OftL/APkaIyCH/AWti8SuYp
