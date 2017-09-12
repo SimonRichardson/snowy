@@ -4,8 +4,6 @@ package store
 
 import (
 	"fmt"
-	"math/rand"
-	"reflect"
 	"sync"
 	"testing"
 	"testing/quick"
@@ -214,7 +212,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			return len(entities) == 1
 		}
 
-		if err := quick.Check(fn, &quick.Config{MaxCount: 1}); err != nil {
+		if err := quick.Check(fn, nil); err != nil {
 			t.Error(err)
 		}
 	})
@@ -478,29 +476,4 @@ func runStore(config *RealConfig) Store {
 	wg.Wait()
 
 	return store
-}
-
-// ASCII creates a series of tags that are ascii compliant.
-type ASCII []byte
-
-// Generate allows ASCII to be used within quickcheck scenarios.
-func (ASCII) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]byte, size)
-	)
-
-	for k := range res {
-		res[k] = byte(chars[r.Intn(len(chars)-1)])
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a ASCII) Slice() []byte {
-	return a
-}
-
-func (a ASCII) String() string {
-	return string(a)
 }

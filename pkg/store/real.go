@@ -17,7 +17,7 @@ import (
 
 const (
 	defaultSelectQuery = `SELECT id, 
-	parent_id,
+	parent_id, 
 	name, 
 	resource_id, 
 	resource_address, 
@@ -50,7 +50,7 @@ VALUES      ($1,
 	 $6, 
 	 $7, 
 	 $8, 
-	 $9,
+	 $9, 
 	 $10);`
 	defaultSelectQueryTags = `SELECT id, 
 	parent_id, 
@@ -69,22 +69,22 @@ WHERE  resource_id = $1
 ORDER  BY created_on DESC, 
 		 resource_address DESC;`
 	defaultSelectQueryTagsAuthorID = `SELECT id, 
-		 parent_id, 
-		 name, 
-		 resource_id, 
-		 resource_address, 
-		 resource_size, 
-		 resource_content_type, 
-		 author_id, 
-		 tags, 
-		 created_on, 
-		 deleted_on 
-	 FROM   ledgers 
-	 WHERE  resource_id = $1 
-	 	 AND author_id = $2
-		 AND tags && $3 
-	 ORDER  BY created_on DESC, 
-				resource_address DESC;`
+	parent_id, 
+	name, 
+	resource_id, 
+	resource_address, 
+	resource_size, 
+	resource_content_type, 
+	author_id, 
+	tags, 
+	created_on, 
+	deleted_on 
+FROM   ledgers 
+WHERE  resource_id = $1 
+	AND author_id = $2 
+	AND tags && $3 
+ORDER  BY created_on DESC, 
+		 resource_address DESC;`
 	defaultDropQuery = `TRUNCATE TABLE ledgers;`
 )
 

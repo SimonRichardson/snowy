@@ -102,22 +102,22 @@ func runDocuments(args []string) error {
 
 	// Instrumentation
 	connectedClients := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "trussle_documents",
+		Namespace: "snowy_documents",
 		Name:      "connected_clients",
 		Help:      "Number of currently connected clients by modality.",
 	}, []string{"modality"})
 	writerBytes := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: "trussle_documents",
+		Namespace: "snowy_documents",
 		Name:      "writer_bytes_written_total",
 		Help:      "The total number of bytes written.",
 	})
 	writerRecords := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: "trussle_documents",
+		Namespace: "snowy_documents",
 		Name:      "writer_records_written_total",
 		Help:      "The total number of records written.",
 	})
 	apiDuration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "trussle_documents",
+		Namespace: "snowy_documents",
 		Name:      "api_request_duration_seconds",
 		Help:      "API request duration in seconds.",
 		Buckets:   prometheus.DefBuckets,

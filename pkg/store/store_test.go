@@ -268,7 +268,7 @@ func entityEquals(a, b Entity) bool {
 	}
 	if expected, actual := a.AuthorID, b.AuthorID; expected != actual {
 		fmt.Printf("author_id - expected: %q, actual: %q\n", expected, actual)
-		//	return false
+		return false
 	}
 	if expected, actual := sortTags(a.Tags), sortTags(b.Tags); !reflect.DeepEqual(expected, actual) {
 		fmt.Printf("tags - expected: %v, actual: %v\n", expected, actual)
@@ -306,4 +306,29 @@ func splitTags(a []string) []string {
 		return a
 	}
 	return a[:len(a)/2]
+}
+
+// ASCII creates a series of tags that are ascii compliant.
+type ASCII []byte
+
+// Generate allows ASCII to be used within quickcheck scenarios.
+func (ASCII) Generate(r *rand.Rand, size int) reflect.Value {
+	var (
+		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+		res   = make([]byte, size)
+	)
+
+	for k := range res {
+		res[k] = byte(chars[r.Intn(len(chars)-1)])
+	}
+
+	return reflect.ValueOf(res)
+}
+
+func (a ASCII) Slice() []byte {
+	return a
+}
+
+func (a ASCII) String() string {
+	return string(a)
 }

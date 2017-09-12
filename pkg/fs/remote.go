@@ -11,9 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3crypto"
 	"github.com/pkg/errors"
 )
 
@@ -82,15 +80,8 @@ func NewRemoteFilesystem(config *RemoteConfig) (Filesystem, error) {
 			return nil, errors.Errorf("expected valid KMSKey")
 		}
 
-		var (
-			kms       = kms.New(sess)
-			generator = s3crypto.NewKMSKeyGenerator(kms, config.KMSKey)
-			crypto    = s3crypto.AESGCMContentCipherBuilder(generator)
-		)
 		client = newCryptoS3Client(
 			s3.New(sess),
-			s3crypto.NewEncryptionClient(sess, crypto),
-			s3crypto.NewDecryptionClient(sess),
 			config.KMSKey,
 			config.ServerSideEncryption,
 		)
@@ -353,20 +344,14 @@ type remoteClient interface {
 
 type cryptoS3Client struct {
 	service     *s3.S3
-	encrypt     *s3crypto.EncryptionClient
-	decrypt     *s3crypto.DecryptionClient
 	kmsKey, sse string
 }
 
 func newCryptoS3Client(service *s3.S3,
-	encrypt *s3crypto.EncryptionClient,
-	decrypt *s3crypto.DecryptionClient,
 	kmsKey, sse string,
 ) remoteClient {
 	return &cryptoS3Client{
 		service,
-		encrypt,
-		decrypt,
 		kmsKey,
 		sse,
 	}

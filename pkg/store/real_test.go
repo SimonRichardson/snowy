@@ -5,6 +5,10 @@ import (
 	"reflect"
 	"testing"
 	"testing/quick"
+
+	"github.com/lib/pq"
+
+	"github.com/trussle/snowy/pkg/uuid"
 )
 
 func TestConfig(t *testing.T) {
@@ -119,4 +123,104 @@ func TestConfig(t *testing.T) {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
 	})
+}
+
+func TestSQLBuilder(t *testing.T) {
+	t.Parallel()
+
+	t.Run("select", func(t *testing.T) {
+		fn := func(resourceID uuid.UUID) bool {
+			statement, args := buildSQLFromQuery(resourceID, Query{})
+			return statement == defaultSelectQuery &&
+				reflect.DeepEqual(args, []interface{}{resourceID.String()})
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("select with empty authorID", func(t *testing.T) {
+		fn := func(resourceID uuid.UUID) bool {
+			s := ""
+			statement, args := buildSQLFromQuery(resourceID, Query{
+				AuthorID: &s,
+			})
+			return statement == defaultSelectQuery &&
+				reflect.DeepEqual(args, []interface{}{resourceID.String()})
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("select with tags", func(t *testing.T) {
+		fn := func(resourceID uuid.UUID, tags Tags) bool {
+			statement, args := buildSQLFromQuery(resourceID, Query{
+				Tags: tags.Slice(),
+			})
+			return statement == defaultSelectQueryTags &&
+				reflect.DeepEqual(args, []interface{}{
+					resourceID.String(),
+					pq.Array(tags.Slice()),
+				})
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("select with tags and empty authorID", func(t *testing.T) {
+		fn := func(resourceID uuid.UUID, tags Tags) bool {
+			s := ""
+			statement, args := buildSQLFromQuery(resourceID, Query{
+				Tags:     tags.Slice(),
+				AuthorID: &s,
+			})
+			return statement == defaultSelectQueryTags &&
+				reflect.DeepEqual(args, []interface{}{
+					resourceID.String(),
+					pq.Array(tags.Slice()),
+				})
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("select with tags", func(t *testing.T) {
+		fn := func(resourceID uuid.UUID, tags Tags, authorID ASCII) bool {
+			s := authorID.String()
+			statement, args := buildSQLFromQuery(resourceID, Query{
+				Tags:     tags.Slice(),
+				AuthorID: &s,
+			})
+			return statement == defaultSelectQueryTagsAuthorID &&
+				reflect.DeepEqual(args, []interface{}{
+					resourceID.String(),
+					authorID.String(),
+					pq.Array(tags.Slice()),
+				})
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestSortTags(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		Input, Output []string
+	}{
+		{[]string{"a", "b", "c"}, []string{"a", "b", "c"}},
+		{[]string{"c", "a", "b"}, []string{"a", "b", "c"}},
+		{[]string{"A", "a", "b"}, []string{"A", "a", "b"}},
+	}
+
+	for _, v := range testCases {
+		if expected, actual := sortTags(v.Input), v.Output; !reflect.DeepEqual(expected, actual) {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	}
 }
