@@ -143,25 +143,16 @@ func runDocuments(args []string) error {
 	level.Debug(logger).Log("API", fmt.Sprintf("%s://%s", apiNetwork, apiAddress))
 
 	// Filesystem setup.
-	var remoteConfig *fs.RemoteConfig
-	if *awsEncryption {
-		remoteConfig, err = fs.BuildConfig(
-			fs.WithEncryption(*awsEncryption),
-			fs.WithKMSKey(*awsKMSKey),
-			fs.WithServerSideEncryption(*awsServerSideEncryption),
-			fs.WithRegion(*awsRegion),
-			fs.WithBucket(*awsBucket),
-		)
-	} else {
-		remoteConfig, err = fs.BuildConfig(
-			fs.WithEncryption(*awsEncryption),
-			fs.WithID(*awsID),
-			fs.WithSecret(*awsSecret),
-			fs.WithToken(*awsToken),
-			fs.WithRegion(*awsRegion),
-			fs.WithBucket(*awsBucket),
-		)
-	}
+	remoteConfig, err := fs.BuildConfig(
+		fs.WithEncryption(*awsEncryption),
+		fs.WithID(*awsID),
+		fs.WithSecret(*awsSecret),
+		fs.WithToken(*awsToken),
+		fs.WithKMSKey(*awsKMSKey),
+		fs.WithServerSideEncryption(*awsServerSideEncryption),
+		fs.WithRegion(*awsRegion),
+		fs.WithBucket(*awsBucket),
+	)
 	if err != nil {
 		return errors.Wrap(err, "filesystem remote config")
 	}

@@ -326,20 +326,22 @@ func (r *realStore) Stop() {
 
 func buildSQLFromQuery(resourceID uuid.UUID, query Query) (string, []interface{}) {
 	numTags, authorID := len(query.Tags), query.AuthorID
-	switch {
-	case numTags == 0 && authorID == nil:
+
+	if numTags == 0 && (authorID == nil || *authorID == "") {
 		return defaultSelectQuery, []interface{}{resourceID.String()}
-	case numTags > 0 && authorID == nil:
+	}
+
+	if numTags > 0 && (authorID == nil || *authorID == "") {
 		return defaultSelectQueryTags, []interface{}{
 			resourceID.String(),
 			pq.Array(query.Tags),
 		}
-	default:
-		return defaultSelectQueryTagsAuthorID, []interface{}{
-			resourceID.String(),
-			*authorID,
-			pq.Array(query.Tags),
-		}
+	}
+
+	return defaultSelectQueryTagsAuthorID, []interface{}{
+		resourceID.String(),
+		*authorID,
+		pq.Array(query.Tags),
 	}
 }
 

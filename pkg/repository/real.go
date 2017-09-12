@@ -108,7 +108,6 @@ func (r *realRepository) insertLedgerWithParentID(doc models.Ledger, parentID uu
 	}
 
 	if err = r.store.Insert(entity); err != nil {
-		level.Error(r.logger).Log("type", "insert", "err", err.Error())
 		return models.Ledger{}, err
 	}
 
@@ -179,12 +178,14 @@ func (r *realRepository) GetContent(resourceID uuid.UUID, options Query) (conten
 	var doc models.Ledger
 	doc, err = r.GetLedger(resourceID, options)
 	if err != nil {
+		level.Error(r.logger).Log("action", "content", "case", "get", "err", err.Error())
 		return
 	}
 
 	var file fs.File
 	file, err = r.fs.Open(doc.ResourceAddress())
 	if err != nil {
+		level.Error(r.logger).Log("action", "content", "case", "open", "err", err.Error(), "resource", doc.ResourceAddress())
 		if fs.ErrNotFound(err) {
 			err = errNotFound{err}
 			return

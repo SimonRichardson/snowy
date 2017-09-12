@@ -360,7 +360,7 @@ func TestRemoteFilesystemWithEncryption_Integration(t *testing.T) {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
 
-		if fsys.Remove(path); err != nil {
+		if err := fsys.Remove(path); err != nil {
 			t.Fatal(err)
 		}
 
@@ -573,7 +573,7 @@ func createFile(t *testing.T, fsys Filesystem, b []byte) (File, func()) {
 	return file, func() {
 		file.Close()
 
-		if fsys.Remove(path); err != nil {
+		if err := fsys.Remove(path); err != nil {
 			t.Fatal(err)
 		}
 

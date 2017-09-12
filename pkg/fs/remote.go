@@ -373,7 +373,7 @@ func newCryptoS3Client(service *s3.S3,
 }
 
 func (c *cryptoS3Client) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
-	return c.decrypt.GetObject(input)
+	return c.service.GetObject(input)
 }
 
 func (c *cryptoS3Client) CopyObject(input *s3.CopyObjectInput) (*s3.CopyObjectOutput, error) {
@@ -392,7 +392,7 @@ func (c *cryptoS3Client) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutpu
 	input.SetSSEKMSKeyId(c.kmsKey)
 	input.SetServerSideEncryption(c.sse)
 
-	return c.encrypt.PutObject(input)
+	return c.service.PutObject(input)
 }
 
 type s3Client struct {
