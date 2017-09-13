@@ -3,7 +3,7 @@ package models
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -86,7 +86,7 @@ func ContentAddress(bytes []byte) (string, error) {
 	if _, err := hash.Write(bytes); err != nil {
 		return "", err
 	}
-	return base64.URLEncoding.EncodeToString(hash.Sum(nil)), nil
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 // ContentOption defines a option for generating a content
