@@ -337,12 +337,13 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
 
 			doc, err := models.BuildLedger(
+				models.WithResourceID(resourceID),
 				models.WithName(name),
 				models.WithAuthorID(authorID),
 				models.WithTags(tags),
@@ -391,7 +392,7 @@ func TestPostAPI(t *testing.T) {
 			MustWriteField(writer, contentFormFile, "application/octet-stream", conBytes)
 			MustWriteField(writer, documentFormFile, "application/json", docBytes)
 
-			if err := writer.Close(); err != nil {
+			if err = writer.Close(); err != nil {
 				t.Fatal(err)
 			}
 
@@ -493,7 +494,7 @@ func TestPostAPI(t *testing.T) {
 			MustWriteField(writer, contentFormFile, "application/octet-stream", conBytes)
 			MustWriteField(writer, documentFormFile, "application/json", docBytes)
 
-			if err := writer.Close(); err != nil {
+			if err = writer.Close(); err != nil {
 				t.Fatal(err)
 			}
 
@@ -914,6 +915,7 @@ func TestPutAPI(t *testing.T) {
 			}
 
 			doc, err := models.BuildLedger(
+				models.WithResourceID(resourceID),
 				models.WithName(name),
 				models.WithAuthorID(authorID),
 				models.WithTags(tags),
