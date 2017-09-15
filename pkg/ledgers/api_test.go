@@ -507,12 +507,13 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
 
 			doc, err := models.BuildLedger(
+				models.WithResourceID(resourceID),
 				models.WithName(name),
 				models.WithAuthorID(authorID),
 				models.WithTags(tags),
@@ -875,6 +876,7 @@ func TestPutAPI(t *testing.T) {
 			}
 
 			doc, err := models.BuildLedger(
+				models.WithResourceID(resourceID),
 				models.WithName(name),
 				models.WithAuthorID(authorID),
 				models.WithTags(tags),

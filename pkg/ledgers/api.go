@@ -189,7 +189,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we collect the document for the result.
 	qr := AppendQueryResult{Errors: a.errors, Params: qp}
-	qr.ResourceID = resource.ID()
+	qr.ResourceID = resource.ResourceID()
 
 	// Finish
 	qr.Duration = time.Since(begin).String()
