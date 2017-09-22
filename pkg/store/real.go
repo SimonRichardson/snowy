@@ -16,74 +16,74 @@ import (
 )
 
 const (
-	defaultSelectQuery = `SELECT id, 
-	parent_id, 
-	name, 
-	resource_id, 
-	resource_address, 
-	resource_size, 
-	resource_content_type, 
-	author_id, 
-	tags, 
-	created_on, 
-	deleted_on 
-FROM   ledgers 
-WHERE  resource_id = $1 
-ORDER  BY created_on DESC, 
+	defaultSelectQuery = `SELECT id,
+	parent_id,
+	name,
+	resource_id,
+	resource_address,
+	resource_size,
+	resource_content_type,
+	author_id,
+	tags,
+	created_on,
+	deleted_on
+FROM   ledgers
+WHERE  resource_id = $1
+ORDER  BY created_on DESC,
 		 resource_address DESC;`
-	defaultInsertQuery = `INSERT INTO ledgers 
-	(parent_id, 
-	 name, 
-	 resource_id, 
-	 resource_address, 
-	 resource_size, 
-	 resource_content_type, 
-	 author_id, 
-	 tags, 
-	 created_on, 
-	 deleted_on) 
-VALUES      ($1, 
-	 $2, 
-	 $3, 
-	 $4, 
-	 $5, 
-	 $6, 
-	 $7, 
-	 $8, 
-	 $9, 
+	defaultInsertQuery = `INSERT INTO ledgers
+	(parent_id,
+	 name,
+	 resource_id,
+	 resource_address,
+	 resource_size,
+	 resource_content_type,
+	 author_id,
+	 tags,
+	 created_on,
+	 deleted_on)
+VALUES      ($1,
+	 $2,
+	 $3,
+	 $4,
+	 $5,
+	 $6,
+	 $7,
+	 $8,
+	 $9,
 	 $10);`
-	defaultSelectQueryTags = `SELECT id, 
-	parent_id, 
-	name, 
-	resource_id, 
-	resource_address, 
-	resource_size, 
-	resource_content_type, 
-	author_id, 
-	tags, 
-	created_on, 
-	deleted_on 
-FROM   ledgers 
-WHERE  resource_id = $1 
-	AND tags && $2 
-ORDER  BY created_on DESC, 
+	defaultSelectQueryTags = `SELECT id,
+	parent_id,
+	name,
+	resource_id,
+	resource_address,
+	resource_size,
+	resource_content_type,
+	author_id,
+	tags,
+	created_on,
+	deleted_on
+FROM   ledgers
+WHERE  resource_id = $1
+	AND tags && $2
+ORDER  BY created_on DESC,
 		 resource_address DESC;`
-	defaultSelectQueryTagsAuthorID = `SELECT id, 
-	parent_id, 
-	name, 
-	resource_id, 
-	resource_address, 
-	resource_size, 
-	resource_content_type, 
-	author_id, 
-	tags, 
-	created_on, 
-	deleted_on 
-FROM   ledgers 
-WHERE  resource_id = $1 
-	AND author_id = $2 
-	AND tags && $3 
-ORDER  BY created_on DESC, 
+	defaultSelectQueryTagsAuthorID = `SELECT id,
+	parent_id,
+	name,
+	resource_id,
+	resource_address,
+	resource_size,
+	resource_content_type,
+	author_id,
+	tags,
+	created_on,
+	deleted_on
+FROM   ledgers
+WHERE  resource_id = $1
+	AND author_id = $2
+	AND tags && $3
+ORDER  BY created_on DESC,
 		 resource_address DESC;`
 	defaultDropQuery = `TRUNCATE TABLE ledgers;`
 )
@@ -115,7 +115,7 @@ func NewRealStore(config *RealConfig, logger log.Logger) Store {
 	}
 }
 
-func (r *realStore) Get(resource uuid.UUID, query Query) (Entity, error) {
+func (r *realStore) Select(resource uuid.UUID, query Query) (Entity, error) {
 	var (
 		entity          Entity
 		statement, args = buildSQLFromQuery(resource, query)
@@ -188,7 +188,7 @@ func (r *realStore) Insert(entity Entity) error {
 	})
 }
 
-func (r *realStore) GetMultiple(resource uuid.UUID, query Query) ([]Entity, error) {
+func (r *realStore) SelectRevisions(resource uuid.UUID, query Query) ([]Entity, error) {
 	var (
 		statement, args = buildSQLFromQuery(resource, query)
 		rows, err       = r.db.Query(statement, args...)

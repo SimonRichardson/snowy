@@ -12,7 +12,7 @@ func TestNopStore(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		store := NewNopStore()
-		_, err := store.Get(uuid.New(), Query{})
+		_, err := store.Select(uuid.New(), Query{})
 
 		if expected, actual := true, err == nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -40,7 +40,7 @@ func TestNopStore(t *testing.T) {
 				return false
 			}
 
-			_, err := store.Get(res, Query{})
+			_, err := store.Select(res, Query{})
 			return err == nil
 		}
 
@@ -57,7 +57,7 @@ func TestNopStore(t *testing.T) {
 				return false
 			}
 
-			entities, err := store.GetMultiple(res, Query{Tags: make([]string, 0)})
+			entities, err := store.SelectRevisions(res, Query{Tags: make([]string, 0)})
 			if err != nil {
 				return false
 			}
@@ -82,7 +82,7 @@ func TestNopStore(t *testing.T) {
 				return false
 			}
 
-			entities, err := store.GetMultiple(res, Query{
+			entities, err := store.SelectRevisions(res, Query{
 				Tags: tags,
 			})
 			if err != nil {

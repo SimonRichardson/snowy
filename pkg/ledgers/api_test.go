@@ -128,7 +128,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, nil)
+			repo.EXPECT().SelectLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -181,7 +181,7 @@ func TestGetAPI(t *testing.T) {
 				repository.WithQueryAuthorID(""),
 			)
 
-			repo.EXPECT().GetLedger(uid, query).Times(1).Return(doc, nil)
+			repo.EXPECT().SelectLedger(uid, query).Times(1).Return(doc, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
@@ -229,7 +229,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errNotFound{errors.New("failure")})
+			repo.EXPECT().SelectLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -277,7 +277,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errors.New("failure"))
+			repo.EXPECT().SelectLedger(uid, repository.BuildEmptyQuery()).Times(1).Return(doc, errors.New("failure"))
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -1002,7 +1002,7 @@ func TestPutAPI(t *testing.T) {
 	})
 }
 
-func TestGetMultipleAPI(t *testing.T) {
+func TestSelectRevisionsAPI(t *testing.T) {
 	t.Parallel()
 
 	t.Run("get with no resource_id", func(t *testing.T) {
@@ -1023,10 +1023,10 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/", server.URL))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/", server.URL))
 			if err != nil {
 				t.Error(err)
 			}
@@ -1058,10 +1058,10 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, "bad"))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, "bad"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1105,12 +1105,12 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, nil)
+			repo.EXPECT().SelectLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, nil)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1154,7 +1154,7 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
 			query, _ := repository.BuildQuery(
@@ -1162,9 +1162,9 @@ func TestGetMultipleAPI(t *testing.T) {
 				repository.WithQueryAuthorID(""),
 			)
 
-			repo.EXPECT().GetLedgers(uid, query).Times(1).Return(docs, nil)
+			repo.EXPECT().SelectLedgers(uid, query).Times(1).Return(docs, nil)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s&query.tags=%s", server.URL, uid, tags.String()))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1208,12 +1208,12 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "500").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, errors.New("bad"))
+			repo.EXPECT().SelectLedgers(uid, repository.BuildEmptyQuery()).Times(1).Return(docs, errors.New("bad"))
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
 				t.Fatal(err)
 			}

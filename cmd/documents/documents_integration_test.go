@@ -131,7 +131,7 @@ func TestLedgerGet(t *testing.T) {
 	}
 }
 
-func TestLedgerGetMultiple(t *testing.T) {
+func TestLedgerSelectRevisions(t *testing.T) {
 	var (
 		serverURL  = setupDocuments("8082")
 		ledgersURL = fmt.Sprintf("%s/ledgers/", serverURL)
@@ -173,7 +173,7 @@ func TestLedgerGetMultiple(t *testing.T) {
 	}
 
 	getMultiple := func(resourceID string) []string {
-		res, err := http.Get(fmt.Sprintf("%smultiple/?resource_id=%s", ledgersURL, resourceID))
+		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", ledgersURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -280,7 +280,7 @@ func TestLedgerAudit(t *testing.T) {
 	}
 
 	getMultiple := func(resourceID string) []string {
-		res, err := http.Get(fmt.Sprintf("%smultiple/?resource_id=%s", ledgersURL, resourceID))
+		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", ledgersURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -457,7 +457,7 @@ func TestContentsAudit(t *testing.T) {
 	}
 
 	getMultiple := func(resourceID string) []byte {
-		res, err := http.Get(fmt.Sprintf("%smultiple/?resource_id=%s", contentsURL, resourceID))
+		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", contentsURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
 		}

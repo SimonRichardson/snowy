@@ -95,7 +95,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			repository.WithQueryAuthorID(""),
 		)
 
-		repo.EXPECT().GetLedger(uid, query).Times(1).Return(outputDoc, nil)
+		repo.EXPECT().SelectLedger(uid, query).Times(1).Return(outputDoc, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
@@ -104,11 +104,11 @@ func TestDocumentation_Flow(t *testing.T) {
 		defer resp.Body.Close()
 	})
 
-	t.Run("get multiple", func(t *testing.T) {
+	t.Run("get revisions", func(t *testing.T) {
 		clients.EXPECT().Inc().Times(1)
 		clients.EXPECT().Dec().Times(1)
 
-		duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+		duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
 		query, _ := repository.BuildQuery(
@@ -116,11 +116,11 @@ func TestDocumentation_Flow(t *testing.T) {
 			repository.WithQueryAuthorID(""),
 		)
 
-		repo.EXPECT().GetLedgers(uid, query).Times(1).Return([]models.Ledger{
+		repo.EXPECT().SelectLedgers(uid, query).Times(1).Return([]models.Ledger{
 			outputDoc,
 		}, nil)
 
-		resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
+		resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s&query.tags=%s", server.URL, uid, strings.Join(tags, ",")))
 		if err != nil {
 			t.Fatal(err)
 		}

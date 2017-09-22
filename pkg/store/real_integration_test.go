@@ -76,7 +76,7 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		_, err := store.Get(uuid.New(), Query{})
+		_, err := store.Select(uuid.New(), Query{})
 		if expected, actual := true, err != nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
@@ -145,7 +145,7 @@ func TestRealStore_Integration(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entity, err := store.Get(resourceID, Query{})
+			entity, err := store.Select(resourceID, Query{})
 			if err != nil {
 				return false
 			}
@@ -204,7 +204,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entities, err := store.GetMultiple(resourceID, Query{Tags: make([]string, 0)})
+			entities, err := store.SelectRevisions(resourceID, Query{Tags: make([]string, 0)})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -245,7 +245,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := store.GetMultiple(resourceID, Query{
+			got, err := store.SelectRevisions(resourceID, Query{
 				Tags: tags.Slice(),
 			})
 			if err != nil {
@@ -261,7 +261,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("multiple puts then query exact match", func(t *testing.T) {
+	t.Run("revisions puts then query exact match", func(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
@@ -293,7 +293,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 				want[(len(want)-1)-k] = entity
 			}
 
-			got, err := store.GetMultiple(resourceID, Query{
+			got, err := store.SelectRevisions(resourceID, Query{
 				Tags: tags.Slice(),
 			})
 			if err != nil {
@@ -340,7 +340,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 				want[(len(want)-1)-k] = entity
 			}
 
-			got, err := store.GetMultiple(resourceID, Query{
+			got, err := store.SelectRevisions(resourceID, Query{
 				Tags: splitTags(tags.Slice()),
 			})
 			if err != nil {
@@ -384,7 +384,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			}
 
 			authID := authorID.String()
-			got, err := store.GetMultiple(resourceID, Query{
+			got, err := store.SelectRevisions(resourceID, Query{
 				Tags:     tags.Slice(),
 				AuthorID: &authID,
 			})
@@ -401,7 +401,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("multiple puts then query exact match with AuthorID", func(t *testing.T) {
+	t.Run("revisions puts then query exact match with AuthorID", func(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
@@ -434,7 +434,7 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 			}
 
 			authID := fmt.Sprintf("0%s", authorID.String())
-			got, err := store.GetMultiple(resourceID, Query{
+			got, err := store.SelectRevisions(resourceID, Query{
 				Tags:     tags.Slice(),
 				AuthorID: &authID,
 			})

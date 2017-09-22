@@ -18,8 +18,8 @@ import (
 
 // These are the query API URL paths.
 const (
-	APIPathPostQuery = "/"
-	APIPathPutQuery  = "/"
+	APIPathInsertQuery = "/"
+	APIPathAppendQuery = "/"
 )
 
 const (
@@ -73,17 +73,17 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Routing table
 	method, path := r.Method, r.URL.Path
 	switch {
-	case method == "POST" && path == APIPathPostQuery:
-		a.handlePost(w, r)
-	case method == "PUT" && path == APIPathPutQuery:
-		a.handlePut(w, r)
+	case method == "POST" && path == APIPathInsertQuery:
+		a.handleInsert(w, r)
+	case method == "PUT" && path == APIPathAppendQuery:
+		a.handleAppend(w, r)
 	default:
 		// Nothing found
 		a.errors.NotFound(w, r)
 	}
 }
 
-func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleInsert(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -109,7 +109,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var fqp InsertFileQueryParams
-		if err := fqp.DecodeFrom(fileHeader.Header, queryRequired); err != nil {
+		if err = fqp.DecodeFrom(fileHeader.Header, queryRequired); err != nil {
 			badRequestError <- err
 			return
 		}
@@ -121,7 +121,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var lqp InsertFileQueryParams
-		if err := lqp.DecodeFrom(documentHeader.Header, queryRequired); err != nil {
+		if err = lqp.DecodeFrom(documentHeader.Header, queryRequired); err != nil {
 			badRequestError <- err
 			return
 		}
@@ -140,7 +140,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if _, err := a.repository.PutContent(content); err != nil {
+		if _, err = a.repository.PutContent(content); err != nil {
 			internalError <- err
 			return
 		}
@@ -173,7 +173,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleAppend(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -199,7 +199,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var fqp InsertFileQueryParams
-		if err := fqp.DecodeFrom(fileHeader.Header, queryRequired); err != nil {
+		if err = fqp.DecodeFrom(fileHeader.Header, queryRequired); err != nil {
 			badRequestError <- err
 			return
 		}
@@ -211,7 +211,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var lqp InsertFileQueryParams
-		if err := lqp.DecodeFrom(documentHeader.Header, queryRequired); err != nil {
+		if err = lqp.DecodeFrom(documentHeader.Header, queryRequired); err != nil {
 			badRequestError <- err
 			return
 		}

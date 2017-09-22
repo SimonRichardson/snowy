@@ -21,8 +21,8 @@ func NewVirtualStore() Store {
 	}
 }
 
-func (r *virtualStore) Get(resourceID uuid.UUID, query Query) (Entity, error) {
-	entities, err := r.GetMultiple(resourceID, query)
+func (r *virtualStore) Select(resourceID uuid.UUID, query Query) (Entity, error) {
+	entities, err := r.SelectRevisions(resourceID, query)
 	if err != nil {
 		return Entity{}, err
 	}
@@ -41,7 +41,7 @@ func (r *virtualStore) Insert(entity Entity) error {
 	return nil
 }
 
-func (r *virtualStore) GetMultiple(resourceID uuid.UUID, query Query) ([]Entity, error) {
+func (r *virtualStore) SelectRevisions(resourceID uuid.UUID, query Query) ([]Entity, error) {
 	if entities, ok := r.entities[resourceID.String()]; ok {
 		// Filter by authorID before filtering by tags
 		if query.AuthorID != nil && *query.AuthorID != "" {

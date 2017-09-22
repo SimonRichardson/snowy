@@ -19,10 +19,10 @@ import (
 
 // These are the query API URL paths.
 const (
-	APIPathGetQuery         = "/"
-	APIPathPostQuery        = "/"
-	APIPathPutQuery         = "/"
-	APIPathGetMultipleQuery = "/multiple/"
+	APIPathSelectQuery          = "/"
+	APIPathInsertQuery          = "/"
+	APIPathAppendQuery          = "/"
+	APIPathSelectRevisionsQuery = "/revisions/"
 )
 
 // API serves the query API
@@ -69,21 +69,21 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Routing table
 	method, path := r.Method, r.URL.Path
 	switch {
-	case method == "GET" && path == APIPathGetQuery:
-		a.handleGet(w, r)
-	case method == "POST" && path == APIPathPostQuery:
-		a.handlePost(w, r)
-	case method == "PUT" && path == APIPathPutQuery:
-		a.handlePut(w, r)
-	case method == "GET" && path == APIPathGetMultipleQuery:
-		a.handleGetMultiple(w, r)
+	case method == "GET" && path == APIPathSelectQuery:
+		a.handleSelect(w, r)
+	case method == "POST" && path == APIPathInsertQuery:
+		a.handleInsert(w, r)
+	case method == "PUT" && path == APIPathAppendQuery:
+		a.handleAppend(w, r)
+	case method == "GET" && path == APIPathSelectRevisionsQuery:
+		a.handleSelectRevisions(w, r)
 	default:
 		// Nothing found
 		a.errors.NotFound(w, r)
 	}
 }
 
-func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleSelect(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -105,7 +105,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc, err := a.repository.GetLedger(qp.ResourceID, options)
+	doc, err := a.repository.SelectLedger(qp.ResourceID, options)
 	if err != nil {
 		if repository.ErrNotFound(err) {
 			a.errors.NotFound(w, r)
@@ -124,7 +124,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	qr.EncodeTo(w)
 }
 
-func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleInsert(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -160,7 +160,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	qr.EncodeTo(w)
 }
 
-func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleAppend(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -196,7 +196,7 @@ func (a *API) handlePut(w http.ResponseWriter, r *http.Request) {
 	qr.EncodeTo(w)
 }
 
-func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleSelectRevisions(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -218,7 +218,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ledgers, err := a.repository.GetLedgers(qp.ResourceID, options)
+	ledgers, err := a.repository.SelectLedgers(qp.ResourceID, options)
 	if err != nil {
 		a.errors.InternalServerError(w, r, err.Error())
 		return

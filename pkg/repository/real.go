@@ -32,9 +32,9 @@ func NewRealRepository(fs fs.Filesystem, store store.Store, logger log.Logger) R
 	}
 }
 
-// GetLedger returns a Ledger corresponding to the resource ID. If no
+// SelectLedger returns a Ledger corresponding to the resource ID. If no
 // ledger exists it will return an error.
-func (r *realRepository) GetLedger(resourceID uuid.UUID, options Query) (models.Ledger, error) {
+func (r *realRepository) SelectLedger(resourceID uuid.UUID, options Query) (models.Ledger, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
 		store.WithQueryAuthorID(options.AuthorID),
@@ -43,7 +43,7 @@ func (r *realRepository) GetLedger(resourceID uuid.UUID, options Query) (models.
 		return models.Ledger{}, err
 	}
 
-	entity, err := r.store.Get(resourceID, query)
+	entity, err := r.store.Select(resourceID, query)
 	if err != nil {
 		if store.ErrNotFound(err) {
 			return models.Ledger{}, errNotFound{err}
@@ -82,7 +82,7 @@ func (r *realRepository) InsertLedger(doc models.Ledger) (models.Ledger, error) 
 // ledgers into the repository then it will return an error.
 func (r *realRepository) AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error) {
 	// We don't care what we get back, just that it exists.
-	entity, err := r.GetLedger(resourceID, Query{})
+	entity, err := r.SelectLedger(resourceID, Query{})
 	if err != nil {
 		return models.Ledger{}, err
 	}
@@ -127,11 +127,11 @@ func (r *realRepository) insertLedgerWithParentID(doc models.Ledger, parentID uu
 	)
 }
 
-// GetLedgers returns a set of Ledgers corresponding to a resourceID,
+// SelectLedgers returns a set of Ledgers corresponding to a resourceID,
 // with some additional qualifiers. If no ledgers are found it will return
 // an empty slice. If there is an error parsing the ledgers then it will
 // return an error.
-func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error) {
+func (r *realRepository) SelectLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error) {
 	query, err := store.BuildQuery(
 		store.WithQueryTags(options.Tags),
 		store.WithQueryAuthorID(options.AuthorID),
@@ -140,7 +140,7 @@ func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]mode
 		return nil, err
 	}
 
-	entities, err := r.store.GetMultiple(resourceID, query)
+	entities, err := r.store.SelectRevisions(resourceID, query)
 	if err != nil {
 		return nil, err
 	}
@@ -174,9 +174,9 @@ func (r *realRepository) GetLedgers(resourceID uuid.UUID, options Query) ([]mode
 // links to the content is managed by the ledger storage. If there is an error
 // during the saving of the content to the underlying storage it will then
 // return an error.
-func (r *realRepository) GetContent(resourceID uuid.UUID, options Query) (content models.Content, err error) {
+func (r *realRepository) SelectContent(resourceID uuid.UUID, options Query) (content models.Content, err error) {
 	var doc models.Ledger
-	doc, err = r.GetLedger(resourceID, options)
+	doc, err = r.SelectLedger(resourceID, options)
 	if err != nil {
 		level.Error(r.logger).Log("action", "content", "case", "get", "err", err.Error())
 		return
@@ -246,9 +246,9 @@ func (r *realRepository) PutContent(content models.Content) (res models.Content,
 // links to the content is managed by the ledger storage. If there is an error
 // during the saving of the content to the underlying storage it will then
 // return an error.
-func (r *realRepository) GetContents(resourceID uuid.UUID, options Query) (contents []models.Content, err error) {
+func (r *realRepository) SelectContents(resourceID uuid.UUID, options Query) (contents []models.Content, err error) {
 	var docs []models.Ledger
-	docs, err = r.GetLedgers(resourceID, options)
+	docs, err = r.SelectLedgers(resourceID, options)
 	if err != nil {
 		return
 	}

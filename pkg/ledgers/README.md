@@ -20,7 +20,7 @@ Date generated on: 2017-09-10T19:32:41+01:00
 
             Content-Type: application/json
             X-Duration: 68.492µs
-            X-Query-Author-Id: 
+            X-Query-Author-Id:
             X-Query-Tags: abc,def,g
             X-Resource-Id: 13077bb5-d804-448a-8079-ffa0bc448d39
 
@@ -43,7 +43,7 @@ Date generated on: 2017-09-10T19:32:41+01:00
                 ]
             }
 
-# GET /multiple/
+# GET /revisions/
 
 + Request
     + Parameters
@@ -61,7 +61,7 @@ Date generated on: 2017-09-10T19:32:41+01:00
 
             Content-Type: application/json
             X-Duration: 42.629µs
-            X-Query-Author-Id: 
+            X-Query-Author-Id:
             X-Query-Tags: abc,def,g
             X-Resource-Id: 13077bb5-d804-448a-8079-ffa0bc448d39
 

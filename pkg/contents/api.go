@@ -17,9 +17,9 @@ import (
 
 // These are the query API URL paths.
 const (
-	APIPathGetQuery         = "/"
-	APIPathPostQuery        = "/"
-	APIPathGetMultipleQuery = "/multiple/"
+	APIPathSelectQuery          = "/"
+	APIPathInsertQuery          = "/"
+	APIPathSelectRevisionsQuery = "/revisions/"
 )
 
 // API serves the query API
@@ -83,19 +83,19 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Routing table
 	method, path := r.Method, r.URL.Path
 	switch {
-	case method == "GET" && path == APIPathGetQuery:
-		a.handleGet(w, r)
-	case (method == "PUT" || method == "POST") && path == APIPathPostQuery:
-		a.handlePost(w, r)
-	case method == "GET" && path == APIPathGetMultipleQuery:
-		a.handleGetMultiple(w, r)
+	case method == "GET" && path == APIPathSelectQuery:
+		a.handleSelect(w, r)
+	case (method == "PUT" || method == "POST") && path == APIPathInsertQuery:
+		a.handleInsert(w, r)
+	case method == "GET" && path == APIPathSelectRevisionsQuery:
+		a.handleSelectRevisions(w, r)
 	default:
 		// Nothing found
 		a.errors.NotFound(w, r)
 	}
 }
 
-func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleSelect(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -123,7 +123,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 		result        = make(chan models.Content)
 	)
 	go func() {
-		content, err := a.repository.GetContent(qp.ResourceID, options)
+		content, err := a.repository.SelectContent(qp.ResourceID, options)
 		if err != nil {
 			if repository.ErrNotFound(err) {
 				notFound <- struct{}{}
@@ -151,7 +151,7 @@ func (a *API) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleInsert(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -206,7 +206,7 @@ func (a *API) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleSelectRevisions(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
 
@@ -233,7 +233,7 @@ func (a *API) handleGetMultiple(w http.ResponseWriter, r *http.Request) {
 		result        = make(chan []models.Content)
 	)
 	go func() {
-		contents, err := a.repository.GetContents(qp.ResourceID, options)
+		contents, err := a.repository.SelectContents(qp.ResourceID, options)
 		if err != nil {
 			internalError <- err
 			return

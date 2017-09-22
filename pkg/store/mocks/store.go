@@ -7,7 +7,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	store "github.com/trussle/snowy/pkg/store"
 	uuid "github.com/trussle/snowy/pkg/uuid"
-	reflect "reflect"
 )
 
 // MockStore is a mock of Store interface
@@ -42,33 +41,7 @@ func (_m *MockStore) Drop() error {
 
 // Drop indicates an expected call of Drop
 func (_mr *MockStoreMockRecorder) Drop() *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Drop", reflect.TypeOf((*MockStore)(nil).Drop))
-}
-
-// Get mocks base method
-func (_m *MockStore) Get(_param0 uuid.UUID, _param1 store.Query) (store.Entity, error) {
-	ret := _m.ctrl.Call(_m, "Get", _param0, _param1)
-	ret0, _ := ret[0].(store.Entity)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Get indicates an expected call of Get
-func (_mr *MockStoreMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Get", reflect.TypeOf((*MockStore)(nil).Get), arg0, arg1)
-}
-
-// GetMultiple mocks base method
-func (_m *MockStore) GetMultiple(_param0 uuid.UUID, _param1 store.Query) ([]store.Entity, error) {
-	ret := _m.ctrl.Call(_m, "GetMultiple", _param0, _param1)
-	ret0, _ := ret[0].([]store.Entity)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMultiple indicates an expected call of GetMultiple
-func (_mr *MockStoreMockRecorder) GetMultiple(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetMultiple", reflect.TypeOf((*MockStore)(nil).GetMultiple), arg0, arg1)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Drop")
 }
 
 // Insert mocks base method
@@ -80,7 +53,7 @@ func (_m *MockStore) Insert(_param0 store.Entity) error {
 
 // Insert indicates an expected call of Insert
 func (_mr *MockStoreMockRecorder) Insert(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Insert", reflect.TypeOf((*MockStore)(nil).Insert), arg0)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Insert", arg0)
 }
 
 // Run mocks base method
@@ -92,7 +65,33 @@ func (_m *MockStore) Run() error {
 
 // Run indicates an expected call of Run
 func (_mr *MockStoreMockRecorder) Run() *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Run", reflect.TypeOf((*MockStore)(nil).Run))
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Run")
+}
+
+// Select mocks base method
+func (_m *MockStore) Select(_param0 uuid.UUID, _param1 store.Query) (store.Entity, error) {
+	ret := _m.ctrl.Call(_m, "Select", _param0, _param1)
+	ret0, _ := ret[0].(store.Entity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Select indicates an expected call of Select
+func (_mr *MockStoreMockRecorder) Select(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Select", arg0, arg1)
+}
+
+// SelectRevisions mocks base method
+func (_m *MockStore) SelectRevisions(_param0 uuid.UUID, _param1 store.Query) ([]store.Entity, error) {
+	ret := _m.ctrl.Call(_m, "SelectRevisions", _param0, _param1)
+	ret0, _ := ret[0].([]store.Entity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectRevisions indicates an expected call of SelectRevisions
+func (_mr *MockStoreMockRecorder) SelectRevisions(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "SelectRevisions", arg0, arg1)
 }
 
 // Stop mocks base method
@@ -102,5 +101,5 @@ func (_m *MockStore) Stop() {
 
 // Stop indicates an expected call of Stop
 func (_mr *MockStoreMockRecorder) Stop() *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Stop", reflect.TypeOf((*MockStore)(nil).Stop))
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Stop")
 }

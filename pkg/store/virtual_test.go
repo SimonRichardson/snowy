@@ -13,7 +13,7 @@ func TestVirtualStore(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		store := NewVirtualStore()
-		_, err := store.Get(uuid.New(), Query{})
+		_, err := store.Select(uuid.New(), Query{})
 
 		if expected, actual := true, err != nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -38,7 +38,7 @@ func TestVirtualStore(t *testing.T) {
 			v.entities[id.String()] = make([]Entity, 0)
 		}
 
-		_, err := store.Get(id, Query{})
+		_, err := store.Select(id, Query{})
 
 		if expected, actual := true, err != nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -70,7 +70,7 @@ func TestVirtualStore(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entity, err := store.Get(res, Query{})
+			entity, err := store.Select(res, Query{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -91,7 +91,7 @@ func TestVirtualStore(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entity, err := store.Get(res, Query{})
+			entity, err := store.Select(res, Query{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -140,7 +140,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entities, err := store.GetMultiple(uuid.New(), Query{
+			entities, err := store.SelectRevisions(uuid.New(), Query{
 				Tags: make([]string, 0),
 			})
 			if err != nil {
@@ -163,7 +163,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entities, err := store.GetMultiple(res, Query{
+			entities, err := store.SelectRevisions(res, Query{
 				Tags: make([]string, 0),
 			})
 			if err != nil {
@@ -190,7 +190,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := store.GetMultiple(res, Query{
+			got, err := store.SelectRevisions(res, Query{
 				Tags: tags,
 			})
 			if err != nil {
@@ -206,7 +206,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("multiple puts then query exact match", func(t *testing.T) {
+	t.Run("revisions puts then query exact match", func(t *testing.T) {
 		store := NewVirtualStore()
 
 		fn := func(res uuid.UUID, tags Tags) bool {
@@ -222,7 +222,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				want[k] = entity
 			}
 
-			got, err := store.GetMultiple(res, Query{
+			got, err := store.SelectRevisions(res, Query{
 				Tags: tags,
 			})
 			if err != nil {
@@ -253,7 +253,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				want[k] = entity
 			}
 
-			got, err := store.GetMultiple(res, Query{
+			got, err := store.SelectRevisions(res, Query{
 				Tags: splitTags(tags.Slice()),
 			})
 			if err != nil {
@@ -279,7 +279,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entities, err := store.GetMultiple(res, Query{
+			entities, err := store.SelectRevisions(res, Query{
 				Tags: []string{"b"},
 			})
 			if err != nil {
@@ -307,7 +307,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := store.GetMultiple(res, Query{
+			got, err := store.SelectRevisions(res, Query{
 				Tags:     tags,
 				AuthorID: &authorID,
 			})
@@ -341,7 +341,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				want[k] = entity
 			}
 
-			got, err := store.GetMultiple(res, Query{
+			got, err := store.SelectRevisions(res, Query{
 				Tags:     splitTags(tags.Slice()),
 				AuthorID: &authorID,
 			})

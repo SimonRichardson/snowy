@@ -1,5 +1,11 @@
 PATH_SNOWY = github.com/trussle/snowy
 
+UNAME_S := $(shell uname -s)
+SED ?= sed -i
+ifeq ($(UNAME_S),Darwin)
+	SED += '' --
+endif
+
 .PHONY: all
 all:
 	go get github.com/Masterminds/glide
@@ -21,7 +27,7 @@ pkg/repository/mocks/repository.go:
 
 pkg/metrics/mocks/metrics.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go ${PATH_SNOWY}/pkg/metrics Gauge,HistogramVec,Counter
-	sed -i '' -- 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
+	$(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
 
 pkg/metrics/mocks/observer.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/observer.go github.com/prometheus/client_golang/prometheus Observer

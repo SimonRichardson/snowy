@@ -17,16 +17,16 @@ type Query struct {
 // Store represents a API over a persistent store.
 type Store interface {
 
-	// Get returns a stored ledger from the datastore based on the
+	// Select returns a stored ledger from the datastore based on the
 	// query options as qualifiers, minus the actual content
-	Get(resourceID uuid.UUID, options Query) (Entity, error)
+	Select(resourceID uuid.UUID, options Query) (Entity, error)
 
 	// Insert inserts a entity with in the datastore.
 	Insert(Entity) error
 
-	// GetMultiple returns a set of stored ledgers from the datastore based
+	// SelectRevisions returns a set of stored ledgers from the datastore based
 	// on the query options as qualifiers, minus the actual content.
-	GetMultiple(resourceID uuid.UUID, options Query) ([]Entity, error)
+	SelectRevisions(resourceID uuid.UUID, options Query) ([]Entity, error)
 
 	// Drop removes all of the stored ledgers
 	Drop() error

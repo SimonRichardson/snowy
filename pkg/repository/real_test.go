@@ -16,7 +16,7 @@ import (
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
-func TestGetLedger(t *testing.T) {
+func TestSelectLedger(t *testing.T) {
 	t.Parallel()
 
 	t.Run("get ledger with invalid id", func(t *testing.T) {
@@ -31,10 +31,10 @@ func TestGetLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetLedger(uid, Query{})
+			_, err := repo.SelectLedger(uid, Query{})
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -59,10 +59,10 @@ func TestGetLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetLedger(uid, Query{})
+			_, err := repo.SelectLedger(uid, Query{})
 			if expected, actual := false, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -87,10 +87,10 @@ func TestGetLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{ID: id}, nil)
 
-			doc, err := repo.GetLedger(uid, Query{})
+			doc, err := repo.SelectLedger(uid, Query{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -232,7 +232,7 @@ func TestAppendLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(resourceID, store.Query{}).
+				Select(resourceID, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
 			_, err := repo.AppendLedger(resourceID, doc)
@@ -277,7 +277,7 @@ func TestAppendLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(resourceID, store.Query{}).
+				Select(resourceID, store.Query{}).
 				Return(entity, nil)
 			mock.EXPECT().
 				Insert(entity).
@@ -325,7 +325,7 @@ func TestAppendLedger(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(resourceID, store.Query{}).
+				Select(resourceID, store.Query{}).
 				Return(entity, nil)
 			mock.EXPECT().
 				Insert(entity).
@@ -349,7 +349,7 @@ func TestAppendLedger(t *testing.T) {
 	})
 }
 
-func TestGetLedgers(t *testing.T) {
+func TestSelectLedgers(t *testing.T) {
 	t.Parallel()
 
 	t.Run("get ledgers with invalid id", func(t *testing.T) {
@@ -364,10 +364,10 @@ func TestGetLedgers(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return([]store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetLedgers(uid, Query{})
+			_, err := repo.SelectLedgers(uid, Query{})
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -392,10 +392,10 @@ func TestGetLedgers(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return([]store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetLedgers(uid, Query{})
+			_, err := repo.SelectLedgers(uid, Query{})
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -420,10 +420,10 @@ func TestGetLedgers(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return([]store.Entity{store.Entity{ID: id}}, nil)
 
-			doc, err := repo.GetLedgers(uid, Query{})
+			doc, err := repo.SelectLedgers(uid, Query{})
 			if err != nil {
 				t.Error(err)
 			}
@@ -445,7 +445,7 @@ func TestGetLedgers(t *testing.T) {
 	})
 }
 
-func TestGetContent(t *testing.T) {
+func TestSelectContent(t *testing.T) {
 	t.Parallel()
 
 	t.Run("get content with no ledger", func(t *testing.T) {
@@ -460,10 +460,10 @@ func TestGetContent(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{}, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetContent(uid, Query{})
+			_, err := repo.SelectContent(uid, Query{})
 
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -489,10 +489,10 @@ func TestGetContent(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{}, errors.New("not found"))
 
-			_, err := repo.GetContent(uid, Query{})
+			_, err := repo.SelectContent(uid, Query{})
 
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -518,12 +518,12 @@ func TestGetContent(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{
 					ResourceID: uid,
 				}, nil)
 
-			_, err := repo.GetContent(uid, Query{})
+			_, err := repo.SelectContent(uid, Query{})
 
 			if expected, actual := false, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -558,13 +558,13 @@ func TestGetContent(t *testing.T) {
 			}
 
 			mock.EXPECT().
-				Get(uid, store.Query{}).
+				Select(uid, store.Query{}).
 				Return(store.Entity{
 					ResourceID:      uid,
 					ResourceAddress: uid.String(),
 				}, nil)
 
-			content, err := repo.GetContent(uid, Query{})
+			content, err := repo.SelectContent(uid, Query{})
 			if expected, actual := true, err == nil; expected != actual {
 				t.Errorf("expected: %t, actual: %t", expected, actual)
 			}
@@ -583,7 +583,7 @@ func TestGetContent(t *testing.T) {
 	})
 }
 
-func TestGetContents(t *testing.T) {
+func TestSelectContents(t *testing.T) {
 	t.Parallel()
 
 	t.Run("get contents with no ledger", func(t *testing.T) {
@@ -598,10 +598,10 @@ func TestGetContents(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return(nil, errNotFound{errors.New("not found")})
 
-			_, err := repo.GetContents(uid, Query{})
+			_, err := repo.SelectContents(uid, Query{})
 
 			if expected, actual := true, ErrNotFound(err); expected != actual {
 				t.Fatalf("expected: %t, actual: %t", expected, actual)
@@ -627,10 +627,10 @@ func TestGetContents(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return(nil, errors.New("not found"))
 
-			_, err := repo.GetContents(uid, Query{})
+			_, err := repo.SelectContents(uid, Query{})
 
 			if expected, actual := false, err == nil; expected != actual {
 				t.Fatalf("expected: %t, actual: %t", expected, actual)
@@ -656,14 +656,14 @@ func TestGetContents(t *testing.T) {
 			)
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return([]store.Entity{
 					store.Entity{
 						ResourceID: uid,
 					},
 				}, nil)
 
-			_, err := repo.GetContents(uid, Query{})
+			_, err := repo.SelectContents(uid, Query{})
 
 			if expected, actual := true, err == nil; expected != actual {
 				t.Fatalf("expected: %t, actual: %t", expected, actual)
@@ -698,7 +698,7 @@ func TestGetContents(t *testing.T) {
 			}
 
 			mock.EXPECT().
-				GetMultiple(uid, store.Query{}).
+				SelectRevisions(uid, store.Query{}).
 				Return([]store.Entity{
 					store.Entity{
 						ResourceID:      uid,
@@ -706,7 +706,7 @@ func TestGetContents(t *testing.T) {
 					},
 				}, nil)
 
-			contents, err := repo.GetContents(uid, Query{})
+			contents, err := repo.SelectContents(uid, Query{})
 			if expected, actual := true, err == nil; expected != actual {
 				t.Fatalf("expected: %t, actual: %t", expected, actual)
 			}

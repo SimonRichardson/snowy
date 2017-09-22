@@ -57,22 +57,22 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Input (value) -> 
-            let 
+        Input (value) ->
+            let
                 q = UUID.decode value
                 c = case q of
                     Ok x -> queryLedger x
                     Err _ -> Cmd.none
             in
                 ( { model | query = q }, c )
-        
+
         SetTableState (value) ->
             ( { model | tableState = value }, Cmd.none )
 
         RecordLedger (Ok ledgers) ->
             ( { model | ledgers = ledgers }, Cmd.none )
-        
-        RecordLedger (Err err) -> 
+
+        RecordLedger (Err err) ->
             let
                 m = case err of
                     Http.BadStatus response -> response.body
@@ -96,8 +96,8 @@ view { ledgers, tableState, query, error } =
             [ h1 [ h1ViewStyle ] [ text "Ledgers" ]
             , input [ placeholder "Search by ResourceID", onInput Input, inputViewStyle ] []
             , div [ Tuple.first instructionsText ] [ text <| Tuple.second instructionsText ]
-            , div [ tableViewStyle ] 
-                [ Table.view config tableState ledgers 
+            , div [ tableViewStyle ]
+                [ Table.view config tableState ledgers
                 ]
             ]
 
@@ -107,21 +107,21 @@ config =
         { toId = .name
         , toMsg = SetTableState
         , columns =
-            [ Table.stringColumn  "Name" .name 
+            [ Table.stringColumn  "Name" .name
             , Table.stringColumn  "ParentID" .parent_id
             , Table.stringColumn  "ResourceID" .resource_id
             , Table.stringColumn  "ResourceAddress" .resource_address
             , Table.intColumn     "ResourceSize" .resource_size
             , Table.stringColumn  "ResourceContentType" .resource_content_type
             , Table.stringColumn  "AuthorID" .author_id
-            , Table.stringColumn  "Tags" <| join "," << .tags 
+            , Table.stringColumn  "Tags" <| join "," << .tags
             , Table.stringColumn  "CreatedOn" .created_on
             , Table.stringColumn  "DeletedOn" .deleted_on
             ]
         }
 
 h1ViewStyle : Attribute Msg
-h1ViewStyle = 
+h1ViewStyle =
     style
         [ ("width", "100%")
         , ("height", "40px")
@@ -149,7 +149,7 @@ inputViewStyle =
 instructionsViewStyle : Attribute Msg
 instructionsViewStyle =
     style
-        [ ("display", "none") 
+        [ ("display", "none")
         ]
 
 errorViewStyle : Attribute Msg
@@ -187,10 +187,10 @@ queryLedger : String -> Cmd Msg
 queryLedger resource =
     let
         url =
-            "/ledgers/multiple/?resource_id=" ++ resource
+            "/ledgers/revisions/?resource_id=" ++ resource
     in
         Http.send RecordLedger ( Http.get url decodeLedgers )
-        
+
 decodeLedgers : Decode.Decoder (List Ledger)
 decodeLedgers =
     Decode.list decodeLedger

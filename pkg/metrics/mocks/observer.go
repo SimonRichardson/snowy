@@ -5,7 +5,6 @@ package mocks
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockObserver is a mock of Observer interface
@@ -38,5 +37,5 @@ func (_m *MockObserver) Observe(_param0 float64) {
 
 // Observe indicates an expected call of Observe
 func (_mr *MockObserverMockRecorder) Observe(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "Observe", reflect.TypeOf((*MockObserver)(nil).Observe), arg0)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Observe", arg0)
 }

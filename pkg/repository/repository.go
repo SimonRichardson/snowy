@@ -20,9 +20,9 @@ type Query struct {
 // provides a highlevel interface for simple interaction.
 type Repository interface {
 
-	// GetLedger returns a Ledger corresponding to resourceID. If no ledger
+	// SelectLedger returns a Ledger corresponding to resourceID. If no ledger
 	// exists it will return an error.
-	GetLedger(resourceID uuid.UUID, options Query) (models.Ledger, error)
+	SelectLedger(resourceID uuid.UUID, options Query) (models.Ledger, error)
 
 	// InsertLedger inserts ledgers into the repository. If there is an
 	// error inserting ledgers into the repository then it will return an
@@ -34,23 +34,23 @@ type Repository interface {
 	// ledgers into the repository then it will return an error.
 	AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error)
 
-	// GetLedgers returns a set of Ledgers corresponding to a resourceID,
+	// SelectLedgers returns a set of Ledgers corresponding to a resourceID,
 	// with some additional qualifiers. If no ledgers are found it will return
 	// an empty slice. If there is an error parsing the ledgers then it will
 	// return an error.
-	GetLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error)
+	SelectLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error)
 
-	// GetContent returns a content corresponding to the resourceID. If no
+	// SelectContent returns a content corresponding to the resourceID. If no
 	// ledger or content exists, it will return an error.
-	GetContent(resourceID uuid.UUID, options Query) (models.Content, error)
+	SelectContent(resourceID uuid.UUID, options Query) (models.Content, error)
 
 	// PutContent inserts content into the repository. If there is an error
 	// putting content into the repository then it will return an error.
 	PutContent(content models.Content) (models.Content, error)
 
-	// GetContents returns a set of content corresponding to the resourceID. If no
+	// SelectContents returns a set of content corresponding to the resourceID. If no
 	// ledger or content exists, it will return an error.
-	GetContents(resourceID uuid.UUID, options Query) ([]models.Content, error)
+	SelectContents(resourceID uuid.UUID, options Query) ([]models.Content, error)
 
 	// Close the underlying ledger store and returns an error if it fails.
 	Close() error

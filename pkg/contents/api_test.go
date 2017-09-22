@@ -135,7 +135,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, nil)
+			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -188,7 +188,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, errNotFound{errors.New("failure")})
+			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -241,7 +241,7 @@ func TestGetAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContent(uid, Query()).Times(1).Return(content, errors.New("failure"))
+			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, errors.New("failure"))
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -262,10 +262,10 @@ func TestGetAPI(t *testing.T) {
 	})
 }
 
-func TestGetMultipleAPI(t *testing.T) {
+func TestSelectRevisionsAPI(t *testing.T) {
 	t.Parallel()
 
-	t.Run("get multiple with no resource_id", func(t *testing.T) {
+	t.Run("get revisions with no resource_id", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -286,10 +286,10 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/", server.URL))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/", server.URL))
 			if err != nil {
 				t.Error(err)
 			}
@@ -303,7 +303,7 @@ func TestGetMultipleAPI(t *testing.T) {
 		}
 	})
 
-	t.Run("get multiple with invalid resource_id", func(t *testing.T) {
+	t.Run("get revisions with invalid resource_id", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -324,10 +324,10 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, "bad"))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, "bad"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -345,7 +345,7 @@ func TestGetMultipleAPI(t *testing.T) {
 		}
 	})
 
-	t.Run("get multiple with resource_id", func(t *testing.T) {
+	t.Run("get revisions with resource_id", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -375,12 +375,12 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContents(UUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
+			repo.EXPECT().SelectContents(UUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -419,12 +419,12 @@ func TestGetMultipleAPI(t *testing.T) {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
-			duration.EXPECT().WithLabelValues("GET", "/multiple/", "500").Return(observer).Times(1)
+			duration.EXPECT().WithLabelValues("GET", "/revisions/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().GetContents(UUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
+			repo.EXPECT().SelectContents(UUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
 
-			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_id=%s", server.URL, uid))
+			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
 				t.Fatal(err)
 			}
