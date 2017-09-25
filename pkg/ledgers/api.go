@@ -23,6 +23,8 @@ const (
 	APIPathInsertQuery          = "/"
 	APIPathAppendQuery          = "/"
 	APIPathSelectRevisionsQuery = "/revisions/"
+	APIPathForkQuery            = "/fork/"
+	APIPathForkRevisionsQuery   = "/fork/revisions/"
 )
 
 // API serves the query API
@@ -77,6 +79,10 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleAppend(w, r)
 	case method == "GET" && path == APIPathSelectRevisionsQuery:
 		a.handleSelectRevisions(w, r)
+	case method == "PUT" && path == APIPathForkQuery:
+		a.handleFork(w, r)
+	case method == "GET" && path == APIPathForkRevisionsQuery:
+		a.handleForkRevisions(w, r)
 	default:
 		// Nothing found
 		a.errors.NotFound(w, r)
@@ -196,6 +202,42 @@ func (a *API) handleAppend(w http.ResponseWriter, r *http.Request) {
 	qr.EncodeTo(w)
 }
 
+func (a *API) handleFork(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp ForkQueryParams
+	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
+		a.errors.BadRequest(w, r, err.Error())
+		return
+	}
+
+	doc, err := ingestLedger(r.Body, func() models.DocOption {
+		return models.WithNewResourceID()
+	})
+	if err != nil {
+		a.errors.BadRequest(w, r, err.Error())
+		return
+	}
+
+	resource, err := a.repository.ForkLedger(qp.ResourceID, doc)
+	if err != nil {
+		a.errors.InternalServerError(w, r, err.Error())
+		return
+	}
+
+	// Make sure we collect the document for the result.
+	qr := ForkQueryResult{Errors: a.errors, Params: qp}
+	qr.ResourceID = resource.ResourceID()
+
+	// Finish
+	qr.Duration = time.Since(begin).String()
+	qr.EncodeTo(w)
+}
+
 func (a *API) handleSelectRevisions(w http.ResponseWriter, r *http.Request) {
 	// useful metrics
 	begin := time.Now()
@@ -225,7 +267,35 @@ func (a *API) handleSelectRevisions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the documents for the result.
-	qr := SelectMultipleQueryResult{Errors: a.errors, Params: qp}
+	qr := SelectRevisionsQueryResult{Errors: a.errors, Params: qp}
+	qr.Ledgers = ledgers
+
+	// Finish
+	qr.Duration = time.Since(begin).String()
+	qr.EncodeTo(w)
+}
+
+func (a *API) handleForkRevisions(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp ForkQueryParams
+	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
+		a.errors.BadRequest(w, r, err.Error())
+		return
+	}
+
+	ledgers, err := a.repository.SelectForkLedgers(qp.ResourceID)
+	if err != nil {
+		a.errors.InternalServerError(w, r, err.Error())
+		return
+	}
+
+	// Make sure we collect the documents for the result.
+	qr := ForkRevisionsQueryResult{Errors: a.errors, Params: qp}
 	qr.Ledgers = ledgers
 
 	// Finish

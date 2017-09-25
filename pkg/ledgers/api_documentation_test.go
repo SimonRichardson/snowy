@@ -52,6 +52,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		server  = httptest.NewServer(capture)
 
 		uid         = uuid.New()
+		forkUID     = uuid.New()
 		tags        = []string{"abc", "def", "g"}
 		inputDoc, _ = models.BuildLedger(
 			models.WithAuthorID(uid.String()),
@@ -63,6 +64,17 @@ func TestDocumentation_Flow(t *testing.T) {
 		)
 		outputDoc, _ = models.BuildLedger(
 			models.WithResourceID(uid),
+			models.WithResourceAddress("abcdefghij"),
+			models.WithResourceSize(10),
+			models.WithResourceContentType("application/octet-stream"),
+			models.WithAuthorID(uuid.New().String()),
+			models.WithName("document-name"),
+			models.WithTags(tags),
+			models.WithCreatedOn(time.Now()),
+			models.WithDeletedOn(time.Time{}),
+		)
+		outputForkDoc, _ = models.BuildLedger(
+			models.WithResourceID(forkUID),
 			models.WithResourceAddress("abcdefghij"),
 			models.WithResourceSize(10),
 			models.WithResourceContentType("application/octet-stream"),
@@ -179,6 +191,35 @@ func TestDocumentation_Flow(t *testing.T) {
 		}
 
 		resp, err := Put(fmt.Sprintf("%s?resource_id=%s", server.URL, uid), "application/json", bytes.NewReader(b))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+	})
+
+	t.Run("fork", func(t *testing.T) {
+		clients.EXPECT().Inc().Times(1)
+		clients.EXPECT().Dec().Times(1)
+
+		duration.EXPECT().WithLabelValues("PUT", "/fork/", "200").Return(observer).Times(1)
+		observer.EXPECT().Observe(Float64()).Times(1)
+
+		repo.EXPECT().ForkLedger(uid, Ledger(inputDoc)).Return(outputForkDoc, nil).Times(1)
+
+		b, err := json.Marshal(struct {
+			Name     string   `json:"name"`
+			AuthorID string   `json:"author_id"`
+			Tags     []string `json:"tags"`
+		}{
+			Name:     "document-name",
+			AuthorID: uid.String(),
+			Tags:     []string{"abc", "def", "g"},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		resp, err := Put(fmt.Sprintf("%s/fork/?resource_id=%s", server.URL, uid), "application/json", bytes.NewReader(b))
 		if err != nil {
 			t.Fatal(err)
 		}

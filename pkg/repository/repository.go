@@ -34,11 +34,21 @@ type Repository interface {
 	// ledgers into the repository then it will return an error.
 	AppendLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error)
 
+	// ForkLedger adds a new ledger as a branch revision. If there is no head
+	// ledger, it will return an error. If there is an error appending
+	// ledgers into the repository then it will return an error.
+	ForkLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error)
+
 	// SelectLedgers returns a set of Ledgers corresponding to a resourceID,
 	// with some additional qualifiers. If no ledgers are found it will return
 	// an empty slice. If there is an error parsing the ledgers then it will
 	// return an error.
 	SelectLedgers(resourceID uuid.UUID, options Query) ([]models.Ledger, error)
+
+	// SelectForkLedgers adds a new ledger as a branch revision. If there is no
+	// head ledger, it will return an error. If there is an error appending
+	// ledgers into the repository then it will return an error.
+	SelectForkLedgers(resourceID uuid.UUID) ([]models.Ledger, error)
 
 	// SelectContent returns a content corresponding to the resourceID. If no
 	// ledger or content exists, it will return an error.

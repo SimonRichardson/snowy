@@ -172,7 +172,7 @@ func TestLedgerSelectRevisions(t *testing.T) {
 		return ledger.ResourceID
 	}
 
-	getMultiple := func(resourceID string) []string {
+	getRevisions := func(resourceID string) []string {
 		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", ledgersURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
@@ -202,7 +202,7 @@ func TestLedgerSelectRevisions(t *testing.T) {
 	}
 
 	resourceID := post()
-	ledgerName := getMultiple(resourceID)
+	ledgerName := getRevisions(resourceID)
 
 	if expected, actual := inputModel.Name, ledgerName[0]; expected != actual {
 		t.Errorf("expected: %q, actual: %q", expected, actual)
@@ -279,7 +279,7 @@ func TestLedgerAudit(t *testing.T) {
 		return ledger.ResourceID
 	}
 
-	getMultiple := func(resourceID string) []string {
+	getRevisions := func(resourceID string) []string {
 		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", ledgersURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
@@ -321,7 +321,7 @@ func TestLedgerAudit(t *testing.T) {
 		put(resourceID, model)
 		models[k] = model
 	}
-	ledgerName := getMultiple(resourceID)
+	ledgerName := getRevisions(resourceID)
 
 	if expected, actual := len(models)+1, len(ledgerName); expected != actual {
 		t.Errorf("expected: %d, actual: %d", expected, actual)
@@ -456,7 +456,7 @@ func TestContentsAudit(t *testing.T) {
 		return ledger.ResourceID, payload
 	}
 
-	getMultiple := func(resourceID string) []byte {
+	getRevisions := func(resourceID string) []byte {
 		res, err := http.Get(fmt.Sprintf("%srevisions/?resource_id=%s", contentsURL, resourceID))
 		if err != nil {
 			t.Fatal(err)
@@ -504,7 +504,7 @@ func TestContentsAudit(t *testing.T) {
 		contents[i] = content
 	}
 
-	fileBytes := getMultiple(resourceID)
+	fileBytes := getRevisions(resourceID)
 
 	reader, err := zip.NewReader(bytes.NewReader(fileBytes), int64(len(fileBytes)))
 	if err != nil {

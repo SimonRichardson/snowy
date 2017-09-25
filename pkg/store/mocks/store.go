@@ -81,6 +81,19 @@ func (_mr *MockStoreMockRecorder) Select(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Select", arg0, arg1)
 }
 
+// SelectForkRevisions mocks base method
+func (_m *MockStore) SelectForkRevisions(_param0 uuid.UUID) ([]store.Entity, error) {
+	ret := _m.ctrl.Call(_m, "SelectForkRevisions", _param0)
+	ret0, _ := ret[0].([]store.Entity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectForkRevisions indicates an expected call of SelectForkRevisions
+func (_mr *MockStoreMockRecorder) SelectForkRevisions(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "SelectForkRevisions", arg0)
+}
+
 // SelectRevisions mocks base method
 func (_m *MockStore) SelectRevisions(_param0 uuid.UUID, _param1 store.Query) ([]store.Entity, error) {
 	ret := _m.ctrl.Call(_m, "SelectRevisions", _param0, _param1)

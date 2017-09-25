@@ -17,6 +17,9 @@ func (nop) Insert(entity Entity) error                               { return ni
 func (nop) SelectRevisions(resourceID uuid.UUID, query Query) ([]Entity, error) {
 	return make([]Entity, 0), nil
 }
+func (nop) SelectForkRevisions(resourceID uuid.UUID) ([]Entity, error) {
+	return make([]Entity, 0), nil
+}
 func (nop) Run() error  { return nil }
 func (nop) Stop()       {}
 func (nop) Drop() error { return nil }

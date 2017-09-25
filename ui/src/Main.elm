@@ -108,7 +108,6 @@ config =
         , toMsg = SetTableState
         , columns =
             [ Table.stringColumn  "Name" .name
-            , Table.stringColumn  "ParentID" .parent_id
             , Table.stringColumn  "ResourceID" .resource_id
             , Table.stringColumn  "ResourceAddress" .resource_address
             , Table.intColumn     "ResourceSize" .resource_size
@@ -170,7 +169,6 @@ errorViewStyle =
 
 type alias Ledger =
     { name : String
-    , parent_id : String
     , resource_id : String
     , resource_address : String
     , resource_size : Int
@@ -199,7 +197,6 @@ decodeLedger : Decode.Decoder Ledger
 decodeLedger =
     Pipeline.decode Ledger
         |> Pipeline.required "name" Decode.string
-        |> Pipeline.required "parent_id" Decode.string
         |> Pipeline.required "resource_id" Decode.string
         |> Pipeline.required "resource_address" Decode.string
         |> Pipeline.required "resource_size" Decode.int

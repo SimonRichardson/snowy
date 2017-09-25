@@ -105,7 +105,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		defer resp.Body.Close()
 	})
 
-	t.Run("getMultiple", func(t *testing.T) {
+	t.Run("getRevisions", func(t *testing.T) {
 		clients.EXPECT().Inc().Times(1)
 		clients.EXPECT().Dec().Times(1)
 

@@ -315,7 +315,7 @@ func TestSelectQueryResult(t *testing.T) {
 	})
 }
 
-func TestSelectMultipleQueryResult(t *testing.T) {
+func TestSelectRevisionsQueryResult(t *testing.T) {
 	t.Parallel()
 
 	emptyDocs, err := json.Marshal(make([]models.Ledger, 0))
@@ -341,7 +341,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
+			res := SelectRevisionsQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			headers := recorder.Header()
@@ -372,7 +372,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
+			res := SelectRevisionsQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return recorder.Code == 200
@@ -401,7 +401,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
+			res := SelectRevisionsQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.EncodeTo(recorder)
 
 			return string(recorder.Body.Bytes()) == string(emptyDocs)+"\n"
@@ -438,7 +438,7 @@ func TestSelectMultipleQueryResult(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res := SelectMultipleQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
+			res := SelectRevisionsQueryResult{Errors: errs.NewError(log.NewNopLogger()), Params: qp}
 			res.Ledgers = docs
 			res.EncodeTo(recorder)
 
@@ -615,6 +615,125 @@ func TestAppendQueryParams(t *testing.T) {
 		fn := func(uid uuid.UUID) bool {
 			var (
 				qp AppendQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			h.Set("Content-Type", "application/json")
+
+			err = qp.DecodeFrom(u, h, queryRequired)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+			return uid.Equals(qp.ResourceID)
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestForkQueryParams(t *testing.T) {
+	t.Parallel()
+
+	t.Run("DecodeFrom with required empty url", func(t *testing.T) {
+		var (
+			qp ForkQueryParams
+
+			u, err = url.Parse("")
+			h      = make(http.Header, 0)
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with optional empty url", func(t *testing.T) {
+		var (
+			qp ForkQueryParams
+
+			u, err = url.Parse("")
+			h      = make(http.Header, 0)
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryOptional)
+
+		if expected, actual := true, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid resource_id", func(t *testing.T) {
+		var (
+			qp ForkQueryParams
+
+			u, err = url.Parse("/?resource_id=123asd")
+			h      = make(http.Header, 0)
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		h.Set("Content-Type", "application/json")
+
+		err = qp.DecodeFrom(u, h, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
+		fn := func(uid uuid.UUID, contentType ASCII) bool {
+			var (
+				qp ForkQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
+				h      = make(http.Header, 0)
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			h.Set("Content-Type", contentType.String())
+
+			err = qp.DecodeFrom(u, h, queryRequired)
+
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("DecodeFrom with valid resource_id", func(t *testing.T) {
+		fn := func(uid uuid.UUID) bool {
+			var (
+				qp ForkQueryParams
 
 				u, err = url.Parse(fmt.Sprintf("/?resource_id=%s", uid.String()))
 				h      = make(http.Header, 0)

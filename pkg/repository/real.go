@@ -87,21 +87,34 @@ func (r *realRepository) AppendLedger(resourceID uuid.UUID, doc models.Ledger) (
 		return models.Ledger{}, err
 	}
 
-	return r.insertLedgerWithParentID(doc, entity.ParentID())
+	return r.insertLedgerWithParentID(doc, entity.ID())
+}
+
+// ForkLedger adds a new ledger as a revision. If there is no head
+// ledger, it will return an error. If there is an error appending
+// ledgers into the repository then it will return an error.
+func (r *realRepository) ForkLedger(resourceID uuid.UUID, doc models.Ledger) (models.Ledger, error) {
+	// We don't care what we get back, just that it exists.
+	entity, err := r.SelectLedger(resourceID, Query{})
+	if err != nil {
+		return models.Ledger{}, err
+	}
+
+	return r.insertLedgerWithParentID(doc, entity.ID())
 }
 
 func (r *realRepository) insertLedgerWithParentID(doc models.Ledger, parentID uuid.UUID) (models.Ledger, error) {
 	entity, err := store.BuildEntity(
-		store.BuildEntityWithParentID(parentID),
-		store.BuildEntityWithName(doc.Name()),
-		store.BuildEntityWithResourceID(doc.ResourceID()),
-		store.BuildEntityWithResourceAddress(doc.ResourceAddress()),
-		store.BuildEntityWithResourceSize(doc.ResourceSize()),
-		store.BuildEntityWithResourceContentType(doc.ResourceContentType()),
-		store.BuildEntityWithAuthorID(doc.AuthorID()),
-		store.BuildEntityWithTags(doc.Tags()),
-		store.BuildEntityWithCreatedOn(doc.CreatedOn()),
-		store.BuildEntityWithDeletedOn(time.Time{}),
+		store.WithParentID(parentID),
+		store.WithName(doc.Name()),
+		store.WithResourceID(doc.ResourceID()),
+		store.WithResourceAddress(doc.ResourceAddress()),
+		store.WithResourceSize(doc.ResourceSize()),
+		store.WithResourceContentType(doc.ResourceContentType()),
+		store.WithAuthorID(doc.AuthorID()),
+		store.WithTags(doc.Tags()),
+		store.WithCreatedOn(doc.CreatedOn()),
+		store.WithDeletedOn(time.Time{}),
 	)
 	if err != nil {
 		return models.Ledger{}, err
@@ -141,6 +154,41 @@ func (r *realRepository) SelectLedgers(resourceID uuid.UUID, options Query) ([]m
 	}
 
 	entities, err := r.store.SelectRevisions(resourceID, query)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]models.Ledger, len(entities))
+	for k, entity := range entities {
+		doc, err := models.BuildLedger(
+			models.WithID(entity.ID),
+			models.WithParentID(entity.ParentID),
+			models.WithName(entity.Name),
+			models.WithResourceID(entity.ResourceID),
+			models.WithResourceAddress(entity.ResourceAddress),
+			models.WithResourceSize(entity.ResourceSize),
+			models.WithResourceContentType(entity.ResourceContentType),
+			models.WithAuthorID(entity.AuthorID),
+			models.WithTags(entity.Tags),
+			models.WithCreatedOn(entity.CreatedOn),
+			models.WithDeletedOn(entity.DeletedOn),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		res[k] = doc
+	}
+
+	return res, nil
+}
+
+// SelectForkLedgers returns a set of Ledgers corresponding to a resourceID,
+// with some additional qualifiers. If no ledgers are found it will return
+// an empty slice. If there is an error parsing the ledgers then it will
+// return an error.
+func (r *realRepository) SelectForkLedgers(resourceID uuid.UUID) ([]models.Ledger, error) {
+	entities, err := r.store.SelectForkRevisions(resourceID)
 	if err != nil {
 		return nil, err
 	}

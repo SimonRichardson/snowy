@@ -24,17 +24,17 @@ func TestBuildingEntity(t *testing.T) {
 		) bool {
 			now := time.Now()
 			entity, err := BuildEntity(
-				BuildEntityWithID(id),
-				BuildEntityWithParentID(parentID),
-				BuildEntityWithName(name),
-				BuildEntityWithResourceID(resourceID),
-				BuildEntityWithResourceAddress(resourceAddress),
-				BuildEntityWithResourceSize(resourceSize),
-				BuildEntityWithResourceContentType(resourceContentType),
-				BuildEntityWithAuthorID(authorID),
-				BuildEntityWithTags(tags),
-				BuildEntityWithCreatedOn(now),
-				BuildEntityWithDeletedOn(time.Time{}),
+				WithID(id),
+				WithParentID(parentID),
+				WithName(name),
+				WithResourceID(resourceID),
+				WithResourceAddress(resourceAddress),
+				WithResourceSize(resourceSize),
+				WithResourceContentType(resourceContentType),
+				WithAuthorID(authorID),
+				WithTags(tags),
+				WithCreatedOn(now),
+				WithDeletedOn(time.Time{}),
 			)
 			if err != nil {
 				t.Fatal(err)

@@ -28,6 +28,10 @@ type Store interface {
 	// on the query options as qualifiers, minus the actual content.
 	SelectRevisions(resourceID uuid.UUID, options Query) ([]Entity, error)
 
+	// SelectForkRevisions returns a set of stored ledgers from the datastore
+	// based on the query options as qualifiers, minus the actual content.
+	SelectForkRevisions(resourceID uuid.UUID) ([]Entity, error)
+
 	// Drop removes all of the stored ledgers
 	Drop() error
 

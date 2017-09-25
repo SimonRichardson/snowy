@@ -58,6 +58,19 @@ func (_mr *MockRepositoryMockRecorder) Close() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Close")
 }
 
+// ForkLedger mocks base method
+func (_m *MockRepository) ForkLedger(_param0 uuid.UUID, _param1 models.Ledger) (models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "ForkLedger", _param0, _param1)
+	ret0, _ := ret[0].(models.Ledger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForkLedger indicates an expected call of ForkLedger
+func (_mr *MockRepositoryMockRecorder) ForkLedger(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ForkLedger", arg0, arg1)
+}
+
 // InsertLedger mocks base method
 func (_m *MockRepository) InsertLedger(_param0 models.Ledger) (models.Ledger, error) {
 	ret := _m.ctrl.Call(_m, "InsertLedger", _param0)
@@ -108,6 +121,19 @@ func (_m *MockRepository) SelectContents(_param0 uuid.UUID, _param1 repository.Q
 // SelectContents indicates an expected call of SelectContents
 func (_mr *MockRepositoryMockRecorder) SelectContents(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "SelectContents", arg0, arg1)
+}
+
+// SelectForkLedgers mocks base method
+func (_m *MockRepository) SelectForkLedgers(_param0 uuid.UUID) ([]models.Ledger, error) {
+	ret := _m.ctrl.Call(_m, "SelectForkLedgers", _param0)
+	ret0, _ := ret[0].([]models.Ledger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectForkLedgers indicates an expected call of SelectForkLedgers
+func (_mr *MockRepositoryMockRecorder) SelectForkLedgers(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "SelectForkLedgers", arg0)
 }
 
 // SelectLedger mocks base method

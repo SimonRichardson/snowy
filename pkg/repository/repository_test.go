@@ -51,6 +51,13 @@ func TestBuildingQuery(t *testing.T) {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
 	})
+
+	t.Run("empty query", func(t *testing.T) {
+		query := BuildEmptyQuery()
+		if expected, actual := emptyAuthID, *query.AuthorID; expected != actual {
+			t.Errorf("expected: %q, actual: %q", expected, actual)
+		}
+	})
 }
 
 func TestNotFound(t *testing.T) {

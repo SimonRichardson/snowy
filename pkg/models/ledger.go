@@ -89,7 +89,6 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(struct {
 		Name                string    `json:"name"`
-		ParentID            uuid.UUID `json:"parent_id"`
 		ResourceID          uuid.UUID `json:"resource_id"`
 		ResourceAddress     string    `json:"resource_address"`
 		ResourceSize        int64     `json:"resource_size"`
@@ -100,7 +99,6 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 		DeletedOn           string    `json:"deleted_on"`
 	}{
 		Name:                d.name,
-		ParentID:            d.parentID,
 		ResourceID:          d.resourceID,
 		ResourceAddress:     d.resourceAddress,
 		ResourceSize:        d.resourceSize,
@@ -116,7 +114,6 @@ func (d Ledger) MarshalJSON() ([]byte, error) {
 func (d *Ledger) UnmarshalJSON(b []byte) error {
 	var res struct {
 		Name                string    `json:"name"`
-		ParentID            uuid.UUID `json:"parent_id"`
 		ResourceID          uuid.UUID `json:"resource_id"`
 		ResourceAddress     string    `json:"resource_address"`
 		ResourceSize        int64     `json:"resource_size"`
@@ -133,7 +130,6 @@ func (d *Ledger) UnmarshalJSON(b []byte) error {
 	var err error
 
 	d.name = res.Name
-	d.parentID = res.ParentID
 	d.resourceID = res.ResourceID
 	d.resourceAddress = res.ResourceAddress
 	d.resourceSize = res.ResourceSize

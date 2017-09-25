@@ -110,16 +110,16 @@ func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	}
 }
 
-// SelectMultipleQueryResult contains statistics about the query.
-type SelectMultipleQueryResult struct {
+// SelectRevisionsQueryResult contains statistics about the query.
+type SelectRevisionsQueryResult struct {
 	Errors   errs.Error
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Ledgers  []models.Ledger   `json:"ledger"`
 }
 
-// EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
-func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+// EncodeTo encodes the SelectRevisionsQueryResult to the HTTP response writer.
+func (qr *SelectRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, defaultContentType)
 	w.Header().Set(httpHeaderDuration, qr.Duration)
 	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
@@ -185,6 +185,83 @@ func (qr *AppendQueryResult) EncodeTo(w http.ResponseWriter) {
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// ForkQueryParams defines all the dimensions of a query.
+type ForkQueryParams struct {
+	ResourceID uuid.UUID `json:"resource_id"`
+}
+
+// DecodeFrom populates a ForkQueryParams from a URL.
+func (qp *ForkQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
+	// Required depending on the query behavior
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
+		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	}
+
+	var (
+		err        error
+		resourceID = u.Query().Get("resource_id")
+	)
+	if rb == queryRequired && resourceID == "" {
+		return errors.New("error reading 'resource_id' (required) query")
+	}
+	if resourceID != "" {
+		if qp.ResourceID, err = uuid.Parse(resourceID); err != nil {
+			return errors.Wrap(err, "error parsing 'resource_id' (required) query")
+		}
+	}
+
+	return nil
+}
+
+// ForkQueryResult contains statistics about the query.
+type ForkQueryResult struct {
+	Errors     errs.Error
+	Params     ForkQueryParams `json:"query"`
+	Duration   string          `json:"duration"`
+	ResourceID uuid.UUID       `json:"resource_id"`
+}
+
+// EncodeTo encodes the ForkQueryResult to the HTTP response writer.
+func (qr *ForkQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
+	w.Header().Set(httpHeaderDuration, qr.Duration)
+	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
+
+	if err := json.NewEncoder(w).Encode(struct {
+		ResourceID uuid.UUID `json:"resource_id"`
+	}{
+		ResourceID: qr.ResourceID,
+	}); err != nil {
+		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// ForkRevisionsQueryResult contains statistics about the query.
+type ForkRevisionsQueryResult struct {
+	Errors   errs.Error
+	Params   ForkQueryParams `json:"query"`
+	Duration string          `json:"duration"`
+	Ledgers  []models.Ledger `json:"ledger"`
+}
+
+// EncodeTo encodes the ForkRevisionsQueryResult to the HTTP response writer.
+func (qr *ForkRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, defaultContentType)
+	w.Header().Set(httpHeaderDuration, qr.Duration)
+	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
+
+	// Make sure that we encode empty ledgers correctly (i.e. they're not
+	// null in the json output)
+	docs := qr.Ledgers
+	if qr.Ledgers == nil {
+		docs = make([]models.Ledger, 0)
+	}
+
+	if err := json.NewEncoder(w).Encode(docs); err != nil {
 		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -246,7 +246,7 @@ func (a *API) handleSelectRevisions(w http.ResponseWriter, r *http.Request) {
 		a.errors.Error(w, err.Error(), http.StatusInternalServerError)
 	case contents := <-result:
 		// Make sure we collect the content for the result.
-		qr := SelectMultipleQueryResult{Errors: a.errors, Params: qp}
+		qr := SelectRevisionsQueryResult{Errors: a.errors, Params: qp}
 		qr.Contents = contents
 
 		// Finish

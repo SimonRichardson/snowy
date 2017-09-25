@@ -349,6 +349,161 @@ func TestAppendLedger(t *testing.T) {
 	})
 }
 
+func TestForkLedger(t *testing.T) {
+	t.Parallel()
+
+	t.Run("fork ledger with exists store failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn = time.Now()
+				doc, _    = models.BuildLedger(
+					models.WithName(name),
+					models.WithResourceID(resourceID),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Select(resourceID, store.Query{}).
+				Return(store.Entity{}, errNotFound{errors.New("not found")})
+
+			_, err := repo.ForkLedger(resourceID, doc)
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("fork ledger with insert store failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(resourceID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn = time.Now()
+				entity    = store.Entity{
+					Name:       name,
+					ResourceID: resourceID,
+					AuthorID:   authorID,
+					Tags:       tags,
+					CreatedOn:  createdOn,
+					DeletedOn:  time.Time{},
+				}
+				doc, _ = models.BuildLedger(
+					models.WithName(name),
+					models.WithResourceID(resourceID),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Select(resourceID, store.Query{}).
+				Return(entity, nil)
+			mock.EXPECT().
+				Insert(entity).
+				Return(errNotFound{errors.New("not found")})
+
+			_, err := repo.ForkLedger(resourceID, doc)
+			if expected, actual := true, ErrNotFound(err); expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("fork ledger", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, resourceID, parentID, forkedID uuid.UUID, authorID, name string, tags []string) bool {
+			var (
+				createdOn    = time.Now()
+				parentEntity = store.Entity{
+					ID:         id,
+					Name:       name,
+					ResourceID: resourceID,
+					ParentID:   parentID,
+					AuthorID:   authorID,
+					Tags:       tags,
+					CreatedOn:  createdOn,
+					DeletedOn:  time.Time{},
+				}
+				forkedEntity = store.Entity{
+					ID:         uuid.New(),
+					Name:       name,
+					ResourceID: forkedID,
+					ParentID:   id,
+					AuthorID:   authorID,
+					Tags:       tags,
+					CreatedOn:  createdOn,
+					DeletedOn:  time.Time{},
+				}
+				doc, _ = models.BuildLedger(
+					models.WithResourceID(forkedID),
+					models.WithParentID(parentID),
+					models.WithName(name),
+					models.WithAuthorID(authorID),
+					models.WithTags(tags),
+					models.WithCreatedOn(createdOn),
+					models.WithDeletedOn(time.Time{}),
+				)
+
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				Select(resourceID, store.Query{}).
+				Return(parentEntity, nil)
+			mock.EXPECT().
+				Insert(Entity(forkedEntity)).
+				Return(nil)
+
+			res, err := repo.ForkLedger(resourceID, doc)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := forkedID.String(), res.ResourceID().String(); expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
 func TestSelectLedgers(t *testing.T) {
 	t.Parallel()
 
@@ -424,6 +579,102 @@ func TestSelectLedgers(t *testing.T) {
 				Return([]store.Entity{store.Entity{ID: id}}, nil)
 
 			doc, err := repo.SelectLedgers(uid, Query{})
+			if err != nil {
+				t.Error(err)
+			}
+
+			if expected, actual := 1, len(doc); expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			if expected, actual := id, doc[0].ID(); expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestSelectForkLedgers(t *testing.T) {
+	t.Parallel()
+
+	t.Run("get ledgers with invalid id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				SelectForkRevisions(uid).
+				Return([]store.Entity{}, errNotFound{errors.New("not found")})
+
+			_, err := repo.SelectForkLedgers(uid)
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get ledgers with store error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				SelectForkRevisions(uid).
+				Return([]store.Entity{}, errors.New("not found"))
+
+			_, err := repo.SelectForkLedgers(uid)
+			if expected, actual := false, err == nil; expected != actual {
+				t.Errorf("expected: %t, actual: %t", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get ledgers", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID) bool {
+			var (
+				fsys = fs.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			mock.EXPECT().
+				SelectForkRevisions(uid).
+				Return([]store.Entity{store.Entity{ID: id}}, nil)
+
+			doc, err := repo.SelectForkLedgers(uid)
 			if err != nil {
 				t.Error(err)
 			}
@@ -805,3 +1056,25 @@ func TestPutContent(t *testing.T) {
 		}
 	})
 }
+
+type entityMatcher struct {
+	doc store.Entity
+}
+
+func (m entityMatcher) Matches(x interface{}) bool {
+	d, ok := x.(store.Entity)
+	if !ok {
+		return false
+	}
+
+	return m.doc.ParentID.Equals(d.ParentID) &&
+		m.doc.Name == d.Name &&
+		m.doc.AuthorID == d.AuthorID &&
+		reflect.DeepEqual(m.doc.Tags, d.Tags)
+}
+
+func (entityMatcher) String() string {
+	return "is entity"
+}
+
+func Entity(doc store.Entity) gomock.Matcher { return entityMatcher{doc} }

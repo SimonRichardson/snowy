@@ -37,88 +37,88 @@ func BuildEntity(opts ...EntityOption) (Entity, error) {
 	return entity, nil
 }
 
-// BuildEntityWithID adds a type of id to the entity.
-func BuildEntityWithID(id uuid.UUID) EntityOption {
+// WithID adds a type of id to the entity.
+func WithID(id uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ID = id
 		return nil
 	}
 }
 
-// BuildEntityWithParentID adds a type of parent id to the entity.
-func BuildEntityWithParentID(parentID uuid.UUID) EntityOption {
+// WithParentID adds a type of parent id to the entity.
+func WithParentID(parentID uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ParentID = parentID
 		return nil
 	}
 }
 
-// BuildEntityWithName adds a type of name to the entity.
-func BuildEntityWithName(name string) EntityOption {
+// WithName adds a type of name to the entity.
+func WithName(name string) EntityOption {
 	return func(entity *Entity) error {
 		entity.Name = name
 		return nil
 	}
 }
 
-// BuildEntityWithResourceID adds a type of resourceID to the entity.
-func BuildEntityWithResourceID(resourceID uuid.UUID) EntityOption {
+// WithResourceID adds a type of resourceID to the entity.
+func WithResourceID(resourceID uuid.UUID) EntityOption {
 	return func(entity *Entity) error {
 		entity.ResourceID = resourceID
 		return nil
 	}
 }
 
-// BuildEntityWithResourceAddress adds a type of resourceAddress to the entity.
-func BuildEntityWithResourceAddress(resourceAddress string) EntityOption {
+// WithResourceAddress adds a type of resourceAddress to the entity.
+func WithResourceAddress(resourceAddress string) EntityOption {
 	return func(entity *Entity) error {
 		entity.ResourceAddress = resourceAddress
 		return nil
 	}
 }
 
-// BuildEntityWithResourceSize adds a type of resourceSize to the entity.
-func BuildEntityWithResourceSize(resourceSize int64) EntityOption {
+// WithResourceSize adds a type of resourceSize to the entity.
+func WithResourceSize(resourceSize int64) EntityOption {
 	return func(entity *Entity) error {
 		entity.ResourceSize = resourceSize
 		return nil
 	}
 }
 
-// BuildEntityWithResourceContentType adds a type of resourceContentType to the entity.
-func BuildEntityWithResourceContentType(resourceContentType string) EntityOption {
+// WithResourceContentType adds a type of resourceContentType to the entity.
+func WithResourceContentType(resourceContentType string) EntityOption {
 	return func(entity *Entity) error {
 		entity.ResourceContentType = resourceContentType
 		return nil
 	}
 }
 
-// BuildEntityWithAuthorID adds a type of authorID to the entity.
-func BuildEntityWithAuthorID(authorID string) EntityOption {
+// WithAuthorID adds a type of authorID to the entity.
+func WithAuthorID(authorID string) EntityOption {
 	return func(entity *Entity) error {
 		entity.AuthorID = authorID
 		return nil
 	}
 }
 
-// BuildEntityWithTags adds a type of tags to the entity.
-func BuildEntityWithTags(tags []string) EntityOption {
+// WithTags adds a type of tags to the entity.
+func WithTags(tags []string) EntityOption {
 	return func(entity *Entity) error {
 		entity.Tags = tags
 		return nil
 	}
 }
 
-// BuildEntityWithCreatedOn adds a type of createdOn to the entity.
-func BuildEntityWithCreatedOn(createdOn time.Time) EntityOption {
+// WithCreatedOn adds a type of createdOn to the entity.
+func WithCreatedOn(createdOn time.Time) EntityOption {
 	return func(entity *Entity) error {
 		entity.CreatedOn = createdOn
 		return nil
 	}
 }
 
-// BuildEntityWithDeletedOn adds a type of deletedOn to the entity.
-func BuildEntityWithDeletedOn(deletedOn time.Time) EntityOption {
+// WithDeletedOn adds a type of deletedOn to the entity.
+func WithDeletedOn(deletedOn time.Time) EntityOption {
 	return func(entity *Entity) error {
 		entity.DeletedOn = deletedOn
 		return nil

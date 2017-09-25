@@ -92,8 +92,7 @@ func TestLedger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return output.ParentID() == parentID &&
-				output.Name() == name &&
+			return output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
 				output.ResourceAddress() == resourceAddress &&
 				output.ResourceSize() == resourceSize &&
@@ -141,8 +140,7 @@ func TestLedger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return output.ParentID() == parentID &&
-				output.Name() == name &&
+			return output.Name() == name &&
 				output.ResourceID().Equals(resourceID) &&
 				output.ResourceAddress() == resourceAddress &&
 				output.ResourceSize() == resourceSize &&

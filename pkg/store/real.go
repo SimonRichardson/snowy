@@ -65,7 +65,7 @@ VALUES      ($1,
 	deleted_on
 FROM   ledgers
 WHERE  resource_id = $1
-	AND tags && $2
+	AND (tags = '{}' OR tags && $2)
 ORDER  BY created_on DESC,
 		 resource_address DESC;`
 	defaultSelectQueryTagsAuthorID = `SELECT id,
@@ -82,9 +82,40 @@ ORDER  BY created_on DESC,
 FROM   ledgers
 WHERE  resource_id = $1
 	AND author_id = $2
-	AND tags && $3
+	AND (tags = '{}' OR tags && $3)
 ORDER  BY created_on DESC,
 		 resource_address DESC;`
+	defaultForkSelectQuery = `WITH recursive tree AS
+	(
+				 SELECT id,
+								ARRAY[]::UUID[] AS ancestors
+				 FROM   ledgers
+				 WHERE  parent_id = $1
+				 UNION ALL
+				 SELECT ledgers.id,
+								tree.ancestors
+											 || ledgers.parent_id
+				 FROM   ledgers,
+								tree
+				 WHERE  ledgers.parent_id = tree.id
+	)
+	SELECT *
+	FROM   tree
+	WHERE  id = $2;`
+	defaultForkSelectRevisionsQuery = `SELECT id,
+	parent_id,
+	name,
+	resource_id,
+	resource_address,
+	resource_size,
+	resource_content_type,
+	author_id,
+	tags,
+	created_on,
+	deleted_on
+FROM   ledgers
+WHERE id = ANY($1)
+ORDER  BY created_on ASC;`
 	defaultDropQuery = `TRUNCATE TABLE ledgers;`
 )
 
@@ -197,6 +228,83 @@ func (r *realStore) SelectRevisions(resource uuid.UUID, query Query) ([]Entity, 
 		return nil, err
 	}
 
+	defer rows.Close()
+
+	var res []Entity
+	for rows.Next() {
+		var (
+			entity Entity
+
+			id, parentID, resourceID string
+		)
+		err := rows.Scan(
+			&id,
+			&parentID,
+			&entity.Name,
+			&resourceID,
+			&entity.ResourceAddress,
+			&entity.ResourceSize,
+			&entity.ResourceContentType,
+			&entity.AuthorID,
+			pq.Array(&entity.Tags),
+			&entity.CreatedOn,
+			&entity.DeletedOn,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, errNotFound{err}
+			}
+			return nil, err
+		}
+
+		// We have to manually extract the UUID, as database/sql doesn't provide this
+		// for us.
+		if entity.ID, err = uuid.Parse(id); err != nil {
+			return nil, err
+		}
+		if entity.ParentID, err = uuid.Parse(parentID); err != nil {
+			return nil, err
+		}
+		if entity.ResourceID, err = uuid.Parse(resourceID); err != nil {
+			return nil, err
+		}
+
+		res = append(res, entity)
+	}
+
+	return res, rows.Err()
+}
+
+func (r *realStore) SelectForkRevisions(resourceID uuid.UUID) ([]Entity, error) {
+	entity, err := r.Select(resourceID, Query{})
+	if err != nil {
+		if ErrNotFound(err) {
+			return make([]Entity, 0), nil
+		}
+		return nil, err
+	}
+
+	var (
+		ancestors = r.db.QueryRow(defaultForkSelectQuery, uuid.Empty.String(), entity.ID.String())
+
+		id          string
+		ancestorIDs []string
+	)
+	err = ancestors.Scan(
+		&id,
+		pq.Array(&ancestorIDs),
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errNotFound{err}
+		}
+		return nil, err
+	}
+
+	rows, err := r.db.Query(defaultForkSelectRevisionsQuery, pq.Array(append(ancestorIDs, entity.ID.String())))
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 
 	var res []Entity

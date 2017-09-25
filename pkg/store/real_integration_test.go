@@ -161,6 +161,121 @@ func TestRealStore_Integration(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("select fork revisions not found failure", func(t *testing.T) {
+		store := runStore(config)
+		defer store.Stop()
+
+		entities, err := store.SelectForkRevisions(uuid.New())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if expected, actual := 0, len(entities); expected != actual {
+			t.Errorf("expected: %d, actual: %d", expected, actual)
+		}
+	})
+
+	t.Run("select fork revisions", func(t *testing.T) {
+		store := runStore(config)
+		defer store.Stop()
+
+		fn := func() bool {
+			var (
+				resourceID     = uuid.New()
+				firstAuthorID  = uuid.New().String()
+				secondAuthorID = uuid.New().String()
+			)
+
+			if err := store.Insert(Entity{
+				ParentID:            uuid.Empty,
+				ResourceID:          uuid.New(),
+				ResourceAddress:     "address",
+				ResourceSize:        0,
+				ResourceContentType: "application/octet-stream",
+				AuthorID:            uuid.New().String(),
+				Name:                "name",
+				Tags:                []string{},
+				CreatedOn:           time.Now().Add(-time.Minute),
+				DeletedOn:           time.Time{},
+			}); err != nil {
+				t.Fatal(err)
+			}
+
+			if err := store.Insert(Entity{
+				ParentID:            uuid.Empty,
+				ResourceID:          resourceID,
+				ResourceAddress:     "address",
+				ResourceSize:        0,
+				ResourceContentType: "application/octet-stream",
+				AuthorID:            firstAuthorID,
+				Name:                "name",
+				Tags:                []string{},
+				CreatedOn:           time.Now().Add(-time.Minute),
+				DeletedOn:           time.Time{},
+			}); err != nil {
+				t.Fatal(err)
+			}
+
+			entity, err := store.Select(resourceID, Query{AuthorID: &firstAuthorID})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Fork
+			if err := store.Insert(Entity{
+				ParentID:            entity.ID,
+				ResourceID:          resourceID,
+				ResourceAddress:     "address",
+				ResourceSize:        0,
+				ResourceContentType: "application/octet-stream",
+				AuthorID:            secondAuthorID,
+				Name:                "name",
+				Tags:                []string{},
+				CreatedOn:           time.Now(),
+				DeletedOn:           time.Time{},
+			}); err != nil {
+				t.Fatal(err)
+			}
+
+			entities, err := store.SelectForkRevisions(resourceID)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expected, actual := 2, len(entities); expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+			if expected, actual := firstAuthorID, entities[0].AuthorID; expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+			if expected, actual := secondAuthorID, entities[1].AuthorID; expected != actual {
+				t.Errorf("expected: %q, actual: %q", expected, actual)
+			}
+
+			return true
+		}
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("transaction db failure", func(t *testing.T) {
+		store := runStore(config)
+		defer store.Stop()
+
+		real := store.(*realStore)
+		db := real.db
+		real.db = nil
+
+		err := store.Insert(Entity{})
+
+		real.db = db
+
+		if expected, actual := true, err != nil; expected != actual {
+			t.Errorf("expected: %t, actual: %t", expected, actual)
+		}
+	})
 }
 
 func TestRealStore_IntegrationQuery(t *testing.T) {

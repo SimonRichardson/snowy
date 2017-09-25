@@ -127,6 +127,38 @@ func TestVirtualStore(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("fork revisions", func(t *testing.T) {
+		store := NewVirtualStore()
+
+		var (
+			a = Entity{ID: uuid.New(), ParentID: uuid.Empty, ResourceID: uuid.New(), CreatedOn: time.Now().Add(-time.Minute)}
+			b = Entity{ID: uuid.New(), ParentID: a.ID, ResourceID: a.ResourceID, CreatedOn: time.Now().Add(-time.Second)}
+			c = Entity{ID: uuid.New(), ParentID: b.ID, ResourceID: uuid.New(), CreatedOn: time.Now()}
+		)
+
+		store.Insert(a)
+		store.Insert(b)
+		store.Insert(c)
+
+		res, err := store.SelectForkRevisions(c.ResourceID)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if expected, actual := 3, len(res); expected != actual {
+			t.Errorf("expected: %d, actual: %d", expected, actual)
+		}
+		if expected, actual := a.ID, res[0].ID; expected != actual {
+			t.Errorf("expected: %s, actual: %s", expected, actual)
+		}
+		if expected, actual := b.ID, res[1].ID; expected != actual {
+			t.Errorf("expected: %s, actual: %s", expected, actual)
+		}
+		if expected, actual := c.ID, res[2].ID; expected != actual {
+			t.Errorf("expected: %s, actual: %s", expected, actual)
+		}
+	})
 }
 
 func TestVirtualStoreWithQuery(t *testing.T) {

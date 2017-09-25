@@ -7,11 +7,15 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 .PHONY: all
-all:
+all: install
+	$(MAKE) clean build
+
+.PHONY: install
+install:
 	go get github.com/Masterminds/glide
 	go get github.com/mjibson/esc
+	go get github.com/mattn/goveralls
 	glide install
-	$(MAKE) clean build
 
 .PHONY: build
 build: dist/documents
@@ -67,6 +71,14 @@ coverage-tests:
 .PHONY: coverage-view
 coverage-view:
 	go tool cover -html=bin/coverage.out
+
+.PHONY: coverage
+coverage:
+	docker-compose run -e TRAVIS_BRANCH=${TRAVIS_BRANCH} -e GIT_BRANCH=${GIT_BRANCH} \
+		documents \
+		/bin/sh -c 'apk update && apk add make && apk add git && \
+		go get github.com/mattn/goveralls && \
+		/go/bin/goveralls -repotoken=${COVERALLS_REPO_TOKEN} -ignore=pkg/ui/static.go -package=./pkg/... -flags=--tags=integration -service=travis-ci'
 
 .PHONY: build-ui
 build-ui: ui/scripts/snowy.js pkg/ui/static.go

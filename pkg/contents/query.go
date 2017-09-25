@@ -148,16 +148,16 @@ func (qr *InsertQueryResult) EncodeTo(w http.ResponseWriter) {
 	}
 }
 
-// SelectMultipleQueryResult contains statistics about the query.
-type SelectMultipleQueryResult struct {
+// SelectRevisionsQueryResult contains statistics about the query.
+type SelectRevisionsQueryResult struct {
 	Errors   errs.Error
 	Params   SelectQueryParams `json:"query"`
 	Duration string            `json:"duration"`
 	Contents []models.Content  `json:"contents"`
 }
 
-// EncodeTo encodes the SelectMultipleQueryResult to the HTTP response writer.
-func (qr *SelectMultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+// EncodeTo encodes the SelectRevisionsQueryResult to the HTTP response writer.
+func (qr *SelectRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
 	w.Header().Set(httpHeaderContentType, "application/zip")
 	w.Header().Set(httpHeaderContentDisposition, fmt.Sprintf("attachment; filename=%s.zip", qr.Params.ResourceID))
 	w.Header().Set(httpHeaderContentTransferEncoding, "binary")
