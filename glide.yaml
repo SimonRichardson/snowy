@@ -25,3 +25,4 @@ import:
   - package: github.com/pborman/uuid
   - package: github.com/golang/mock/gomock
   - package: github.com/SimonRichardson/betwixt
+  - package: github.com/trussle/fsys

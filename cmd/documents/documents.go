@@ -13,8 +13,8 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/trussle/fsys"
 	"github.com/trussle/snowy/pkg/contents"
-	"github.com/trussle/snowy/pkg/fs"
 	"github.com/trussle/snowy/pkg/journals"
 	"github.com/trussle/snowy/pkg/ledgers"
 	"github.com/trussle/snowy/pkg/repository"
@@ -143,29 +143,29 @@ func runDocuments(args []string) error {
 	level.Debug(logger).Log("API", fmt.Sprintf("%s://%s", apiNetwork, apiAddress))
 
 	// Filesystem setup.
-	remoteConfig, err := fs.BuildConfig(
-		fs.WithEncryption(*awsEncryption),
-		fs.WithID(*awsID),
-		fs.WithSecret(*awsSecret),
-		fs.WithToken(*awsToken),
-		fs.WithKMSKey(*awsKMSKey),
-		fs.WithServerSideEncryption(*awsServerSideEncryption),
-		fs.WithRegion(*awsRegion),
-		fs.WithBucket(*awsBucket),
+	remoteConfig, err := fsys.BuildConfig(
+		fsys.WithEncryption(*awsEncryption),
+		fsys.WithID(*awsID),
+		fsys.WithSecret(*awsSecret),
+		fsys.WithToken(*awsToken),
+		fsys.WithKMSKey(*awsKMSKey),
+		fsys.WithServerSideEncryption(*awsServerSideEncryption),
+		fsys.WithRegion(*awsRegion),
+		fsys.WithBucket(*awsBucket),
 	)
 	if err != nil {
 		return errors.Wrap(err, "filesystem remote config")
 	}
 
-	fysConfig, err := fs.Build(
-		fs.With(*filesystem),
-		fs.WithConfig(remoteConfig),
+	fysConfig, err := fsys.Build(
+		fsys.With(*filesystem),
+		fsys.WithConfig(remoteConfig),
 	)
 	if err != nil {
 		return errors.Wrap(err, "filesystem config")
 	}
 
-	fsys, err := fs.New(fysConfig)
+	fsys, err := fsys.New(fysConfig)
 	if err != nil {
 		return errors.Wrap(err, "filesystem")
 	}

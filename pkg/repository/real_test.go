@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/fsys"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
 	storeMocks "github.com/trussle/snowy/pkg/store/mocks"
@@ -25,7 +25,7 @@ func TestSelectLedger(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -53,7 +53,7 @@ func TestSelectLedger(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -81,7 +81,7 @@ func TestSelectLedger(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -135,7 +135,7 @@ func TestInsertLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -181,7 +181,7 @@ func TestInsertLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -226,7 +226,7 @@ func TestAppendLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -271,7 +271,7 @@ func TestAppendLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -319,7 +319,7 @@ func TestAppendLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -367,7 +367,7 @@ func TestForkLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -412,7 +412,7 @@ func TestForkLedger(t *testing.T) {
 					models.WithCreatedOn(createdOn),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -474,7 +474,7 @@ func TestForkLedger(t *testing.T) {
 					models.WithDeletedOn(time.Time{}),
 				)
 
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -513,7 +513,7 @@ func TestSelectLedgers(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -541,7 +541,7 @@ func TestSelectLedgers(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -569,7 +569,7 @@ func TestSelectLedgers(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -609,7 +609,7 @@ func TestSelectForkLedgers(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -637,7 +637,7 @@ func TestSelectForkLedgers(t *testing.T) {
 
 		fn := func(uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -665,7 +665,7 @@ func TestSelectForkLedgers(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -705,7 +705,7 @@ func TestSelectContent(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -734,7 +734,7 @@ func TestSelectContent(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -763,7 +763,7 @@ func TestSelectContent(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -794,7 +794,7 @@ func TestSelectContent(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID, body []byte) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -843,7 +843,7 @@ func TestSelectContents(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -872,7 +872,7 @@ func TestSelectContents(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -901,7 +901,7 @@ func TestSelectContents(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -934,7 +934,7 @@ func TestSelectContents(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID, body []byte) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -989,7 +989,7 @@ func TestPutContent(t *testing.T) {
 
 		fn := func(id, uid uuid.UUID, address string) bool {
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)
@@ -1026,7 +1026,7 @@ func TestPutContent(t *testing.T) {
 			}
 
 			var (
-				fsys = fs.NewVirtualFilesystem()
+				fsys = fsys.NewVirtualFilesystem()
 				mock = storeMocks.NewMockStore(ctrl)
 				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
 			)

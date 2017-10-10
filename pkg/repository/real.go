@@ -6,7 +6,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/trussle/snowy/pkg/fs"
+	"github.com/trussle/fsys"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
 	"github.com/trussle/snowy/pkg/uuid"
@@ -17,14 +17,14 @@ const (
 )
 
 type realRepository struct {
-	fs     fs.Filesystem
+	fs     fsys.Filesystem
 	store  store.Store
 	logger log.Logger
 }
 
 // NewRealRepository creates a store that backs on to a real filesystem, with the
 // correct dependencies.
-func NewRealRepository(fs fs.Filesystem, store store.Store, logger log.Logger) Repository {
+func NewRealRepository(fs fsys.Filesystem, store store.Store, logger log.Logger) Repository {
 	return &realRepository{
 		fs:     fs,
 		store:  store,
@@ -230,11 +230,11 @@ func (r *realRepository) SelectContent(resourceID uuid.UUID, options Query) (con
 		return
 	}
 
-	var file fs.File
+	var file fsys.File
 	file, err = r.fs.Open(doc.ResourceAddress())
 	if err != nil {
 		level.Error(r.logger).Log("action", "content", "case", "open", "err", err.Error(), "resource", doc.ResourceAddress())
-		if fs.ErrNotFound(err) {
+		if fsys.ErrNotFound(err) {
 			err = errNotFound{err}
 			return
 		}
@@ -269,13 +269,13 @@ func (r *realRepository) PutContent(content models.Content) (res models.Content,
 		return
 	}
 
-	var file fs.File
+	var file fsys.File
 	file, err = r.fs.Create(content.Address())
 	if err != nil {
 		return
 	}
 
-	if err = file.WriteContentType(content.ContentType()); err != nil {
+	if err = file.SetContentType(content.ContentType()); err != nil {
 		return
 	}
 
@@ -312,10 +312,10 @@ func (r *realRepository) SelectContents(resourceID uuid.UUID, options Query) (co
 	)
 	for _, k := range docs {
 		go func(doc models.Ledger) {
-			var file fs.File
+			var file fsys.File
 			file, err = r.fs.Open(doc.ResourceAddress())
 			if err != nil {
-				if fs.ErrNotFound(err) {
+				if fsys.ErrNotFound(err) {
 					notFound <- struct{}{}
 					return
 				}
