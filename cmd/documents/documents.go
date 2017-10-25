@@ -6,8 +6,8 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"syscall"
 
+	"github.com/SimonRichardson/flagset"
 	"github.com/SimonRichardson/gexec"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -50,41 +50,32 @@ const (
 func runDocuments(args []string) error {
 	// flags for the documents command
 	var (
-		flagset = flag.NewFlagSet("documents", flag.ExitOnError)
+		flags = flagset.NewFlagSet("documents", flag.ExitOnError)
 
-		debug                   = flagset.Bool("debug", false, "debug logging")
-		apiAddr                 = flagset.String("api", defaultAPIAddr, "listen address for query API")
-		filesystem              = flagset.String("filesystem", defaultFilesystem, "type of filesystem backing (local, remote, virtual, nop)")
-		datastore               = flagset.String("persistence", defaultPersistence, "type of persistence backing (real, virtual, nop)")
-		awsEncryption           = flagset.Bool("aws.encryption", defaultAWSEncryption, "AWS configuration encryption")
-		awsKMSKey               = flagset.String("aws.kmskey", defaultAWSKMSKey, "AWS configuration KMS Key")
-		awsServerSideEncryption = flagset.String("aws.sse", defaultAWSServerSideEncryption, "AWS configuration ServerSideEncryption")
-		awsID                   = flagset.String("aws.id", defaultAWSID, "AWS configuration id")
-		awsSecret               = flagset.String("aws.secret", defaultAWSSecret, "AWS configuration secret")
-		awsToken                = flagset.String("aws.token", defaultAWSToken, "AWS configuration token")
-		awsRegion               = flagset.String("aws.region", defaultAWSRegion, "AWS configuration region")
-		awsBucket               = flagset.String("aws.bucket", defaultAWSBucket, "AWS configuration bucket")
-		dbHost                  = flagset.String("db.hostname", defaultDBHostname, "Host name for connecting to the the datastore")
-		dbPort                  = flagset.Int("db.port", defaultDBPort, "Port for connecting to the the datastore")
-		dbUsername              = flagset.String("db.username", defaultDBUsername, "Username for connecting to the datastore")
-		dbPassword              = flagset.String("db.password", defaultDBPassword, "Password for connecting to the datastore")
-		dbName                  = flagset.String("db.name", defaultDBName, "Name of the database with in the datastore")
-		dbSSLMode               = flagset.String("db.sslmode", defaultDBSSLMode, "SSL mode for connecting to the datastore")
-		metricsRegistration     = flagset.Bool("metrics.registration", defaultMetricsRegistration, "Registration of metrics on launch")
-		uiLocal                 = flagset.Bool("ui.local", defaultUILocal, "Ignores embedded files and goes straight to the filesystem")
+		debug                   = flags.Bool("debug", false, "debug logging")
+		apiAddr                 = flags.String("api", defaultAPIAddr, "listen address for query API")
+		filesystem              = flags.String("filesystem", defaultFilesystem, "type of filesystem backing (local, remote, virtual, nop)")
+		datastore               = flags.String("persistence", defaultPersistence, "type of persistence backing (real, virtual, nop)")
+		awsEncryption           = flags.Bool("aws.encryption", defaultAWSEncryption, "AWS configuration encryption")
+		awsKMSKey               = flags.String("aws.kmskey", defaultAWSKMSKey, "AWS configuration KMS Key")
+		awsServerSideEncryption = flags.String("aws.sse", defaultAWSServerSideEncryption, "AWS configuration ServerSideEncryption")
+		awsID                   = flags.String("aws.id", defaultAWSID, "AWS configuration id")
+		awsSecret               = flags.String("aws.secret", defaultAWSSecret, "AWS configuration secret")
+		awsToken                = flags.String("aws.token", defaultAWSToken, "AWS configuration token")
+		awsRegion               = flags.String("aws.region", defaultAWSRegion, "AWS configuration region")
+		awsBucket               = flags.String("aws.bucket", defaultAWSBucket, "AWS configuration bucket")
+		dbHost                  = flags.String("db.hostname", defaultDBHostname, "Host name for connecting to the the datastore")
+		dbPort                  = flags.Int("db.port", defaultDBPort, "Port for connecting to the the datastore")
+		dbUsername              = flags.String("db.username", defaultDBUsername, "Username for connecting to the datastore")
+		dbPassword              = flags.String("db.password", defaultDBPassword, "Password for connecting to the datastore")
+		dbName                  = flags.String("db.name", defaultDBName, "Name of the database with in the datastore")
+		dbSSLMode               = flags.String("db.sslmode", defaultDBSSLMode, "SSL mode for connecting to the datastore")
+		metricsRegistration     = flags.Bool("metrics.registration", defaultMetricsRegistration, "Registration of metrics on launch")
+		uiLocal                 = flags.Bool("ui.local", defaultUILocal, "Ignores embedded files and goes straight to the filesystem")
 	)
 
-	var envArgs []string
-	flagset.VisitAll(func(flag *flag.Flag) {
-		key := envName(flag.Name)
-		if value, ok := syscall.Getenv(key); ok {
-			envArgs = append(envArgs, fmt.Sprintf("-%s=%s", flag.Name, value))
-		}
-	})
-
-	flagsetArgs := append(args, envArgs...)
-	flagset.Usage = usageFor(flagset, "documents [flags]")
-	if err := flagset.Parse(flagsetArgs); err != nil {
+	flags.Usage = usageFor(flags, "documents [flags]")
+	if err := flags.Parse(args); err != nil {
 		return nil
 	}
 
