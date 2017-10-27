@@ -195,7 +195,7 @@ func runDocuments(args []string) error {
 	}()
 
 	// Execution group.
-	var g gexec.Group
+	g := gexec.NewGroup()
 	gexec.Block(g)
 	{
 		// Store manages and maintains the underlying dataStore.
