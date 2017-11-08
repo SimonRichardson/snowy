@@ -16,6 +16,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
+	"github.com/trussle/harness/generators"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
@@ -152,7 +153,7 @@ func TestGetAPI(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		fn := func(uid uuid.UUID, tags Tags) bool {
+		fn := func(uid uuid.UUID, tags generators.ASCIISlice) bool {
 			var (
 				clients  = metricMocks.NewMockGauge(ctrl)
 				duration = metricMocks.NewMockHistogramVec(ctrl)
@@ -395,7 +396,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name string, tags Tags) bool {
+		fn := func(name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -451,7 +452,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID, contentType string, tags Tags) bool {
+		fn := func(name, authorID string, contentType generators.ASCII, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -475,7 +476,7 @@ func TestPostAPI(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			resp, err := http.Post(server.URL, contentType, bytes.NewReader(b))
+			resp, err := http.Post(server.URL, contentType.String(), bytes.NewReader(b))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -507,7 +508,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -586,7 +587,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID string, tags Tags) bool {
+		fn := func(name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -695,7 +696,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID ASCII) bool {
+		fn := func(resourceID generators.ASCII) bool {
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
 
@@ -814,7 +815,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -870,7 +871,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -949,7 +950,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -1132,7 +1133,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		fn := func(uid uuid.UUID, tags Tags) bool {
+		fn := func(uid uuid.UUID, tags generators.ASCIISlice) bool {
 			var (
 				clients  = metricMocks.NewMockGauge(ctrl)
 				duration = metricMocks.NewMockHistogramVec(ctrl)
@@ -1239,7 +1240,7 @@ func TestNotFoundAPI(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		fn := func(resource ASCII) bool {
+		fn := func(resource generators.ASCII) bool {
 			var (
 				clients  = metricMocks.NewMockGauge(ctrl)
 				duration = metricMocks.NewMockHistogramVec(ctrl)

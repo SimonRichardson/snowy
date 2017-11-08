@@ -1,4 +1,4 @@
-// +build integration
+//1// +build integration
 
 package store
 
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -94,7 +95,7 @@ func TestRealStore_Integration(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -126,7 +127,7 @@ func TestRealStore_Integration(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID, name string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -299,8 +300,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -339,8 +340,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -383,8 +384,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -430,8 +431,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -477,8 +478,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 
@@ -523,8 +524,8 @@ func TestRealStore_IntegrationQuery(t *testing.T) {
 		fn := func(parentID, resourceID uuid.UUID,
 			resourceAddress string,
 			resourceSize int64,
-			resourceContentType, authorID, name ASCII,
-			tags Tags,
+			resourceContentType, authorID, name generators.ASCII,
+			tags generators.ASCIISlice,
 		) bool {
 			defer store.Drop()
 

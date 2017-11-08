@@ -8,6 +8,7 @@ import (
 
 	"github.com/lib/pq"
 
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -154,7 +155,7 @@ func TestSQLBuilder(t *testing.T) {
 	})
 
 	t.Run("select with tags", func(t *testing.T) {
-		fn := func(resourceID uuid.UUID, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, tags generators.ASCIISlice) bool {
 			statement, args := buildSQLFromQuery(resourceID, Query{
 				Tags: tags.Slice(),
 			})
@@ -170,7 +171,7 @@ func TestSQLBuilder(t *testing.T) {
 	})
 
 	t.Run("select with tags and empty authorID", func(t *testing.T) {
-		fn := func(resourceID uuid.UUID, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, tags generators.ASCIISlice) bool {
 			s := ""
 			statement, args := buildSQLFromQuery(resourceID, Query{
 				Tags:     tags.Slice(),
@@ -188,7 +189,7 @@ func TestSQLBuilder(t *testing.T) {
 	})
 
 	t.Run("select with tags", func(t *testing.T) {
-		fn := func(resourceID uuid.UUID, tags Tags, authorID ASCII) bool {
+		fn := func(resourceID uuid.UUID, tags generators.ASCIISlice, authorID generators.ASCII) bool {
 			s := authorID.String()
 			statement, args := buildSQLFromQuery(resourceID, Query{
 				Tags:     tags.Slice(),

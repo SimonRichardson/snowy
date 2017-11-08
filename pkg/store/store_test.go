@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
+	"github.com/trussle/harness/generators"
 )
 
 func TestBuildingStore(t *testing.T) {
@@ -114,7 +115,7 @@ func TestBuildingQuery(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(tags Tags, authorID string) bool {
+		fn := func(tags generators.ASCIISlice, authorID string) bool {
 			query, err := BuildQuery(
 				WithQueryTags(tags.Slice()),
 				WithQueryAuthorID(&authorID),
@@ -220,31 +221,6 @@ func TestNotFound(t *testing.T) {
 	})
 }
 
-// Tags creates a series of tags that are ascii compliant.
-type Tags []string
-
-// Generate allows Tags to be used within quickcheck scenarios.
-func (Tags) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]string, size)
-	)
-
-	for k := range res {
-		str := make([]byte, r.Intn(50)+1)
-		for k := range str {
-			str[k] = chars[r.Intn(len(chars)-1)]
-		}
-		res[k] = string(str)
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a Tags) Slice() []string {
-	return a
-}
-
 func equals(a, b []Entity) bool {
 	if len(a) != len(b) {
 		return false
@@ -306,29 +282,4 @@ func splitTags(a []string) []string {
 		return a
 	}
 	return a[:len(a)/2]
-}
-
-// ASCII creates a series of tags that are ascii compliant.
-type ASCII []byte
-
-// Generate allows ASCII to be used within quickcheck scenarios.
-func (ASCII) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]byte, size)
-	)
-
-	for k := range res {
-		res[k] = byte(chars[r.Intn(len(chars)-1)])
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a ASCII) Slice() []byte {
-	return a
-}
-
-func (a ASCII) String() string {
-	return string(a)
 }

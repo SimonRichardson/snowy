@@ -2,16 +2,14 @@ package journals
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/textproto"
 	"net/url"
-	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"testing/quick"
 
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -19,7 +17,7 @@ func TestInsertQueryParams(t *testing.T) {
 	t.Parallel()
 
 	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
-		fn := func(uid uuid.UUID, contentType ASCII) bool {
+		fn := func(uid uuid.UUID, contentType generators.ASCII) bool {
 			var (
 				qp InsertQueryParams
 
@@ -305,7 +303,7 @@ func TestAppendQueryParams(t *testing.T) {
 	})
 
 	t.Run("DecodeFrom with invalid content-type", func(t *testing.T) {
-		fn := func(uid uuid.UUID, contentType ASCII) bool {
+		fn := func(uid uuid.UUID, contentType generators.ASCII) bool {
 			var (
 				qp AppendQueryParams
 
@@ -358,58 +356,4 @@ func TestAppendQueryParams(t *testing.T) {
 			t.Error(err)
 		}
 	})
-}
-
-// Tags creates a series of tags that are ascii compliant.
-type Tags []string
-
-// Generate allows Tags to be used within quickcheck scenarios.
-func (Tags) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]string, size)
-	)
-
-	for k := range res {
-		str := make([]byte, r.Intn(50)+1)
-		for k := range str {
-			str[k] = chars[r.Intn(len(chars)-1)]
-		}
-		res[k] = string(str)
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a Tags) Slice() []string {
-	return a
-}
-
-func (a Tags) String() string {
-	return strings.Join(a.Slice(), ",")
-}
-
-// ASCII creates a series of tags that are ascii compliant.
-type ASCII []byte
-
-// Generate allows ASCII to be used within quickcheck scenarios.
-func (ASCII) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]byte, size)
-	)
-
-	for k := range res {
-		res[k] = byte(chars[r.Intn(len(chars)-1)])
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a ASCII) Slice() []byte {
-	return a
-}
-
-func (a ASCII) String() string {
-	return string(a)
 }

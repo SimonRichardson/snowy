@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"math/rand"
 	"reflect"
 	"sort"
 	"testing"
 	"testing/quick"
 
 	"github.com/pkg/errors"
+	"github.com/trussle/harness/generators"
 )
 
 func TestBuildingQuery(t *testing.T) {
@@ -15,7 +15,7 @@ func TestBuildingQuery(t *testing.T) {
 
 	t.Run("build", func(t *testing.T) {
 
-		fn := func(tags Tags, authorID string) bool {
+		fn := func(tags generators.ASCIISlice, authorID string) bool {
 			query, err := BuildQuery(
 				WithQueryTags(tags.Slice()),
 				WithQueryAuthorID(authorID),
@@ -126,31 +126,6 @@ func TestNotFound(t *testing.T) {
 			t.Error(err)
 		}
 	})
-}
-
-// Tags creates a series of tags that are ascii compliant.
-type Tags []string
-
-// Generate allows Tags to be used within quickcheck scenarios.
-func (Tags) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]string, size)
-	)
-
-	for k := range res {
-		str := make([]byte, r.Intn(50)+1)
-		for k := range str {
-			str[k] = chars[r.Intn(len(chars)-1)]
-		}
-		res[k] = string(str)
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a Tags) Slice() []string {
-	return a
 }
 
 func sortTags(tags []string) []string {

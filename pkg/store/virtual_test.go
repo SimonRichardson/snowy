@@ -5,6 +5,7 @@ import (
 	"testing/quick"
 	"time"
 
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -213,7 +214,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 	t.Run("put then query exact match", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID, tags Tags) bool {
+		fn := func(res uuid.UUID, tags generators.ASCIISlice) bool {
 			entity := Entity{
 				ResourceID: res,
 				Tags:       tags.Slice(),
@@ -241,7 +242,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 	t.Run("revisions puts then query exact match", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID, tags Tags) bool {
+		fn := func(res uuid.UUID, tags generators.ASCIISlice) bool {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
@@ -272,7 +273,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 	t.Run("puts then query partial match", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID, tags Tags) bool {
+		fn := func(res uuid.UUID, tags generators.ASCIISlice) bool {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{
@@ -329,7 +330,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 	t.Run("put then query exact match with author ID", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(res uuid.UUID, authorID string, tags generators.ASCIISlice) bool {
 			entity := Entity{
 				ResourceID: res,
 				AuthorID:   authorID,
@@ -359,7 +360,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 	t.Run("puts then query partial match with authorID", func(t *testing.T) {
 		store := NewVirtualStore()
 
-		fn := func(res uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(res uuid.UUID, authorID string, tags generators.ASCIISlice) bool {
 			want := make([]Entity, 10)
 			for k := range want {
 				entity := Entity{

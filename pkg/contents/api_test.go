@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
+	"github.com/trussle/harness/generators"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
@@ -653,7 +654,7 @@ func TestNotFoundAPI(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		fn := func(resource ASCII) bool {
+		fn := func(resource generators.ASCII) bool {
 			var (
 				clients      = metricMocks.NewMockGauge(ctrl)
 				writtenBytes = metricMocks.NewMockCounter(ctrl)

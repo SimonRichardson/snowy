@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -20,7 +21,7 @@ func TestBuildingEntity(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			now := time.Now()
 			entity, err := BuildEntity(

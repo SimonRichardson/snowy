@@ -3,11 +3,9 @@ package contents
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"strconv"
 	"testing"
 	"testing/quick"
@@ -565,29 +563,4 @@ func bytesEqual(a, b []byte) bool {
 	}
 
 	return true
-}
-
-// ASCII creates a series of tags that are ascii compliant.
-type ASCII []byte
-
-// Generate allows ASCII to be used within quickcheck scenarios.
-func (ASCII) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]byte, size)
-	)
-
-	for k := range res {
-		res[k] = byte(chars[r.Intn(len(chars)-1)])
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a ASCII) Slice() []byte {
-	return a
-}
-
-func (a ASCII) String() string {
-	return string(a)
 }

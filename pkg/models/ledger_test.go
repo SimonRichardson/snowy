@@ -2,14 +2,13 @@ package models
 
 import (
 	"encoding/json"
-	"math/rand"
 	"reflect"
-	"strings"
 	"testing"
 	"testing/quick"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/trussle/harness/generators"
 	"github.com/trussle/snowy/pkg/uuid"
 )
 
@@ -23,7 +22,7 @@ func TestLedger(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			now := time.Now()
 			output := Ledger{
@@ -65,7 +64,7 @@ func TestLedger(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			now := time.Now().Round(time.Second)
 			input := Ledger{
@@ -175,7 +174,7 @@ func TestLedger(t *testing.T) {
 	})
 
 	t.Run("json unmarshal with malformed created_on", func(t *testing.T) {
-		fn := func(name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(name string, resourceID uuid.UUID, authorID string, tags generators.ASCIISlice) bool {
 			now := time.Now().Round(time.Second)
 			input := struct {
 				Name       string    `json:"name"`
@@ -213,7 +212,7 @@ func TestLedger(t *testing.T) {
 	})
 
 	t.Run("json unmarshal with malformed deleted_on", func(t *testing.T) {
-		fn := func(name string, resourceID uuid.UUID, authorID string, tags Tags) bool {
+		fn := func(name string, resourceID uuid.UUID, authorID string, tags generators.ASCIISlice) bool {
 			now := time.Now().Round(time.Second)
 			input := struct {
 				Name       string    `json:"name"`
@@ -261,7 +260,7 @@ func TestLedgerBuild(t *testing.T) {
 			resourceAddress string,
 			resourceSize int64,
 			resourceContentType, authorID string,
-			tags Tags,
+			tags generators.ASCIISlice,
 		) bool {
 			now := time.Now()
 			doc, err := BuildLedger(
@@ -325,33 +324,4 @@ func TestLedgerBuild(t *testing.T) {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
 	})
-}
-
-// Tags creates a series of tags that are ascii compliant.
-type Tags []string
-
-// Generate allows Tags to be used within quickcheck scenarios.
-func (Tags) Generate(r *rand.Rand, size int) reflect.Value {
-	var (
-		chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		res   = make([]string, size)
-	)
-
-	for k := range res {
-		str := make([]byte, r.Intn(50)+1)
-		for k := range str {
-			str[k] = chars[r.Intn(len(chars)-1)]
-		}
-		res[k] = string(str)
-	}
-
-	return reflect.ValueOf(res)
-}
-
-func (a Tags) Slice() []string {
-	return a
-}
-
-func (a Tags) String() string {
-	return strings.Join(a.Slice(), ",")
 }

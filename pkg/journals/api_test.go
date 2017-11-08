@@ -19,6 +19,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
+	"github.com/trussle/harness/generators"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
@@ -128,7 +129,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name string, tags Tags, conBytes []byte) bool {
+		fn := func(name string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -198,7 +199,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID, contentType string, tags Tags, conBytes []byte) bool {
+		fn := func(name, authorID string, contentType generators.ASCII, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -234,7 +235,7 @@ func TestPostAPI(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			resp, err := http.Post(server.URL, contentType, &buffer)
+			resp, err := http.Post(server.URL, contentType.String(), &buffer)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -268,7 +269,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name string, tags Tags) bool {
+		fn := func(name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -337,7 +338,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -442,7 +443,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -532,7 +533,7 @@ func TestPostAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -700,7 +701,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -770,7 +771,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID, contentType string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID, contentType string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 {
 				return true
 			}
@@ -840,7 +841,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name string, tags Tags) bool {
+		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
 				return true
 			}
@@ -909,7 +910,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -1014,7 +1015,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -1104,7 +1105,7 @@ func TestPutAPI(t *testing.T) {
 			server = httptest.NewServer(api)
 		)
 
-		fn := func(resourceID uuid.UUID, name, authorID string, tags Tags, conBytes []byte) bool {
+		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
 				return true
 			}
@@ -1176,7 +1177,7 @@ func TestNotFoundAPI(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		fn := func(resource ASCII) bool {
+		fn := func(resource generators.ASCII) bool {
 			var (
 				clients      = metricMocks.NewMockGauge(ctrl)
 				writtenBytes = metricMocks.NewMockCounter(ctrl)
