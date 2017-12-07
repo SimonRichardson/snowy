@@ -78,7 +78,7 @@ coverage:
 		documents \
 		/bin/sh -c 'apk update && apk add make && apk add git && \
 		go get github.com/mattn/goveralls && \
-		/go/bin/goveralls -repotoken=${COVERALLS_REPO_TOKEN} -ignore=pkg/ui/static.go -package=./pkg/... -flags=--tags=integration -service=travis-ci'
+		/go/bin/goveralls -repotoken=${COVERALLS_REPO_TOKEN} -ignore=pkg/ui/*.go,pkg/*/mocks/*.go -package=./pkg/... -flags=--tags=integration -service=travis-ci'
 
 .PHONY: build-ui
 build-ui: ui/scripts/snowy.js pkg/ui/static.go
