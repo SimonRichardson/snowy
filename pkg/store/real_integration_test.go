@@ -1,4 +1,4 @@
-//1// +build integration
+// +build integration
 
 package store
 
