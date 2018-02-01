@@ -1,5 +1,5 @@
-hash: 17f2e0cfb03c35c03142e36301609794824f482a6812ae696fe6a1b13b1ae414
-updated: 2018-02-01T11:55:09.955850024Z
+hash: 419e1ae598dd532583ff0ebf024200858efa7405acac84aca4d8b80c49212ed7
+updated: 2018-02-01T16:30:22.549251958Z
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -66,8 +66,6 @@ imports:
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
-- name: github.com/pborman/uuid
-  version: 1b00554d822231195d1babd97ff4a781231955c9
 - name: github.com/pkg/errors
   version: c605e284fe17294bda444b34710735b29d1a9d90
 - name: github.com/prometheus/client_golang
@@ -92,7 +90,7 @@ imports:
 - name: github.com/prometheus/prometheus
   version: bc2e9459d817afb763199929e615ac9ea5928cb1
 - name: github.com/SimonRichardson/betwixt
-  version: 6bf309fe8d963cc635eeabbf73d82430c72761e5
+  version: 852e987230c38072f469eac90e58e7f0d9e88374
   subpackages:
   - pkg/entry
   - pkg/output
@@ -111,6 +109,6 @@ imports:
   subpackages:
   - generators
   - matchers
-testImports:
 - name: github.com/trussle/uuid
   version: 23bc856a10519000ea4c17b77520ab48c3d3bbfd
+testImports: []

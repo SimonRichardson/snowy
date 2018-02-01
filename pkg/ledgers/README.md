@@ -1,54 +1,14 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2018-02-01T15:32:06Z
-# GET /
-
-+ Request
-    + Parameters
-
-            query.tags ('abc,def,g')
-            resource_id ('25a94268-02f9-4274-8ab9-59baf16d0adb')
-
-    + Headers
-
-            Accept-Encoding: gzip
-            User-Agent: Go-http-client/1.1
-
-+ Response 200
-    + Headers
-
-            Content-Type: application/json
-            X-Duration: 71.532µs
-            X-Query-Author-Id: 
-            X-Query-Tags: abc,def,g
-            X-Resource-Id: 25a94268-02f9-4274-8ab9-59baf16d0adb
-
-    + Body
-
-            {
-                "author_id": "56972471-7b12-4984-a27f-338baf3e7362",
-                "created_on": "2018-02-01T15:32:06Z",
-                "deleted_on": "0001-01-01T00:00:00Z",
-                "name": "document-name",
-                "resource_address": "abcdefghij",
-                "resource_content_type": "application/octet-stream",
-                "resource_id": "25a94268-02f9-4274-8ab9-59baf16d0adb",
-                "resource_size": 10,
-                "tags": [
-                    "abc",
-                    "def",
-                    "g"
-                ]
-            }
-
+Date generated on: 2018-02-01T16:30:35Z
 # GET /revisions/
 
 + Request
     + Parameters
 
             query.tags ('abc,def,g')
-            resource_id ('25a94268-02f9-4274-8ab9-59baf16d0adb')
+            resource_id ('6021617c-16e4-4fa2-9c40-804dba95d6a6')
 
     + Headers
 
@@ -59,22 +19,22 @@ Date generated on: 2018-02-01T15:32:06Z
     + Headers
 
             Content-Type: application/json
-            X-Duration: 26.831µs
+            X-Duration: 26.855µs
             X-Query-Author-Id: 
             X-Query-Tags: abc,def,g
-            X-Resource-Id: 25a94268-02f9-4274-8ab9-59baf16d0adb
+            X-Resource-Id: 6021617c-16e4-4fa2-9c40-804dba95d6a6
 
     + Body
 
             [
                 {
-                    "author_id": "56972471-7b12-4984-a27f-338baf3e7362",
-                    "created_on": "2018-02-01T15:32:06Z",
+                    "author_id": "0d20392c-6855-4e03-905a-97fcf9313195",
+                    "created_on": "2018-02-01T16:30:35Z",
                     "deleted_on": "0001-01-01T00:00:00Z",
                     "name": "document-name",
                     "resource_address": "abcdefghij",
                     "resource_content_type": "application/octet-stream",
-                    "resource_id": "25a94268-02f9-4274-8ab9-59baf16d0adb",
+                    "resource_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6",
                     "resource_size": 10,
                     "tags": [
                         "abc",
@@ -97,16 +57,28 @@ Date generated on: 2018-02-01T15:32:06Z
             Content-Type: application/json
             User-Agent: Go-http-client/1.1
 
+    + Body
+
+            {
+                "author_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6",
+                "name": "document-name",
+                "tags": [
+                    "abc",
+                    "def",
+                    "g"
+                ]
+            }
+
 + Response 200
     + Headers
 
             Content-Type: application/json
-            X-Duration: 55.469µs
+            X-Duration: 46.426µs
 
     + Body
 
             {
-                "resource_id": "25a94268-02f9-4274-8ab9-59baf16d0adb"
+                "resource_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6"
             }
 
 # PUT /
@@ -114,7 +86,7 @@ Date generated on: 2018-02-01T15:32:06Z
 + Request
     + Parameters
 
-            resource_id ('25a94268-02f9-4274-8ab9-59baf16d0adb')
+            resource_id ('6021617c-16e4-4fa2-9c40-804dba95d6a6')
 
     + Headers
 
@@ -123,17 +95,29 @@ Date generated on: 2018-02-01T15:32:06Z
             Content-Type: application/json
             User-Agent: Go-http-client/1.1
 
+    + Body
+
+            {
+                "author_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6",
+                "name": "document-name",
+                "tags": [
+                    "abc",
+                    "def",
+                    "g"
+                ]
+            }
+
 + Response 200
     + Headers
 
             Content-Type: application/json
-            X-Duration: 39.242µs
-            X-Resource-Id: 25a94268-02f9-4274-8ab9-59baf16d0adb
+            X-Duration: 34.823µs
+            X-Resource-Id: 6021617c-16e4-4fa2-9c40-804dba95d6a6
 
     + Body
 
             {
-                "resource_id": "25a94268-02f9-4274-8ab9-59baf16d0adb"
+                "resource_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6"
             }
 
 # PUT /fork/
@@ -141,7 +125,7 @@ Date generated on: 2018-02-01T15:32:06Z
 + Request
     + Parameters
 
-            resource_id ('25a94268-02f9-4274-8ab9-59baf16d0adb')
+            resource_id ('6021617c-16e4-4fa2-9c40-804dba95d6a6')
 
     + Headers
 
@@ -150,16 +134,68 @@ Date generated on: 2018-02-01T15:32:06Z
             Content-Type: application/json
             User-Agent: Go-http-client/1.1
 
+    + Body
+
+            {
+                "author_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6",
+                "name": "document-name",
+                "tags": [
+                    "abc",
+                    "def",
+                    "g"
+                ]
+            }
+
 + Response 200
     + Headers
 
             Content-Type: application/json
-            X-Duration: 53.307µs
-            X-Resource-Id: 25a94268-02f9-4274-8ab9-59baf16d0adb
+            X-Duration: 32.534µs
+            X-Resource-Id: 6021617c-16e4-4fa2-9c40-804dba95d6a6
 
     + Body
 
             {
-                "resource_id": "8f166bc0-f481-4192-a94d-ddd738aff09d"
+                "resource_id": "409c7128-2214-4b2a-bea5-339adeb20282"
+            }
+
+# GET /
+
++ Request
+    + Parameters
+
+            query.tags ('abc,def,g')
+            resource_id ('6021617c-16e4-4fa2-9c40-804dba95d6a6')
+
+    + Headers
+
+            Accept-Encoding: gzip
+            User-Agent: Go-http-client/1.1
+
++ Response 200
+    + Headers
+
+            Content-Type: application/json
+            X-Duration: 56.071µs
+            X-Query-Author-Id: 
+            X-Query-Tags: abc,def,g
+            X-Resource-Id: 6021617c-16e4-4fa2-9c40-804dba95d6a6
+
+    + Body
+
+            {
+                "author_id": "0d20392c-6855-4e03-905a-97fcf9313195",
+                "created_on": "2018-02-01T16:30:35Z",
+                "deleted_on": "0001-01-01T00:00:00Z",
+                "name": "document-name",
+                "resource_address": "abcdefghij",
+                "resource_content_type": "application/octet-stream",
+                "resource_id": "6021617c-16e4-4fa2-9c40-804dba95d6a6",
+                "resource_size": 10,
+                "tags": [
+                    "abc",
+                    "def",
+                    "g"
+                ]
             }
 
