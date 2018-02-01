@@ -3,7 +3,7 @@ package store
 import (
 	"time"
 
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 // Entity represents a value with in the persistent store, that allows us to

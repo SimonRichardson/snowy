@@ -16,13 +16,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestStatus(t *testing.T) {
 	serverURL := setupDocuments("8080")
 
-	res, err := http.Get(fmt.Sprintf("%s/status/", serverURL))
+	res, err := http.Get(fmt.Sprintf("%s/status/health", serverURL))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestLedgerGet(t *testing.T) {
 
 		inputModel = ledgerInput{
 			Name:     "ledger-name",
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{"abc", "def", "g"},
 		}
 	)
@@ -138,7 +138,7 @@ func TestLedgerSelectRevisions(t *testing.T) {
 
 		inputModel = ledgerInput{
 			Name:     "ledger-name",
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{"abc", "def", "g"},
 		}
 	)
@@ -216,7 +216,7 @@ func TestLedgerAudit(t *testing.T) {
 
 		inputModel = ledgerInput{
 			Name:     "ledger-name",
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{"abc", "def", "g"},
 		}
 	)
@@ -315,7 +315,7 @@ func TestLedgerAudit(t *testing.T) {
 	for k := range models {
 		model := ledgerInput{
 			Name:     fmt.Sprintf("ledger-name-%d", k),
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{fmt.Sprintf("tag-%d", k)},
 		}
 		put(resourceID, model)
@@ -349,7 +349,7 @@ func TestContentsAudit(t *testing.T) {
 
 		inputModel = ledgerInput{
 			Name:     "ledger-name",
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{"abc", "def", "g"},
 		}
 	)
@@ -492,7 +492,7 @@ func TestContentsAudit(t *testing.T) {
 	for i := 1; i < len(models); i++ {
 		model := ledgerInput{
 			Name:     fmt.Sprintf("ledger-name-%d", i),
-			AuthorID: uuid.New().String(),
+			AuthorID: uuid.MustNew().String(),
 			Tags:     []string{fmt.Sprintf("tag-%d", i)},
 		}
 		content := make([]byte, 1024)

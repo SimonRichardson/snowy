@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/trussle/harness/matchers"
+
 	"github.com/SimonRichardson/betwixt"
 	"github.com/SimonRichardson/betwixt/pkg/output"
 	"github.com/go-kit/kit/log"
@@ -22,7 +24,7 @@ import (
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestDocumentation_Flow(t *testing.T) {
@@ -54,7 +56,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		capture = betwixt.New(api, outputs)
 		server  = httptest.NewServer(capture)
 
-		uid    = uuid.New()
+		uid    = uuid.MustNew()
 		source = make([]byte, rand.Intn(100)+50)
 	)
 	if _, err = rand.Read(source); err != nil {
@@ -85,7 +87,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			models.WithResourceAddress("abcdefghij"),
 			models.WithResourceSize(10),
 			models.WithResourceContentType("application/octet-stream"),
-			models.WithAuthorID(uuid.New().String()),
+			models.WithAuthorID(uuid.MustNew().String()),
 			models.WithName("document-name"),
 			models.WithTags(tags),
 			models.WithCreatedOn(time.Now()),
@@ -120,7 +122,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
 		writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
 		records.EXPECT().Inc().Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		repo.EXPECT().PutContent(Content(inputContent)).Return(outputContent, nil).Times(1)
 		repo.EXPECT().InsertLedger(Ledger(inputDoc)).Times(1).Return(outputDoc, nil)
@@ -164,7 +166,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
 		writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
 		records.EXPECT().Inc().Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		repo.EXPECT().PutContent(Content(inputContent)).Return(outputContent, nil).Times(1)
 		repo.EXPECT().AppendLedger(uid, Ledger(inputDoc)).Return(outputDoc, nil).Times(1)

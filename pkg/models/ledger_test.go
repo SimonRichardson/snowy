@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/trussle/harness/generators"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestLedger(t *testing.T) {

@@ -12,6 +12,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/trussle/harness/matchers"
+
 	"github.com/SimonRichardson/betwixt"
 	"github.com/SimonRichardson/betwixt/pkg/output"
 	"github.com/go-kit/kit/log"
@@ -19,7 +21,7 @@ import (
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestDocumentation_Flow(t *testing.T) {
@@ -50,7 +52,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		capture = betwixt.New(api, outputs)
 		server  = httptest.NewServer(capture)
 
-		uid    = uuid.New()
+		uid    = uuid.MustNew()
 		source = make([]byte, rand.Intn(100)+50)
 	)
 	if _, err = rand.Read(source); err != nil {
@@ -96,7 +98,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().SelectContent(UUID(uid), Query()).Times(1).Return(outputContent, nil)
+		repo.EXPECT().SelectContent(matchers.MatchUUID(uid), Query()).Times(1).Return(outputContent, nil)
 
 		resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, uid))
 		if err != nil {
@@ -112,7 +114,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 		observer.EXPECT().Observe(Float64()).Times(1)
 
-		repo.EXPECT().SelectContents(UUID(uid), Query()).Times(1).Return([]models.Content{
+		repo.EXPECT().SelectContents(matchers.MatchUUID(uid), Query()).Times(1).Return([]models.Content{
 			outputContent,
 		}, nil)
 

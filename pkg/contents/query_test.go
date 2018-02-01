@@ -13,7 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestSelectQueryParams(t *testing.T) {

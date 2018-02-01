@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/models"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 const (
@@ -81,8 +81,8 @@ type InsertQueryParams struct {
 
 // DecodeFrom populates a InsertQueryParams from a URL.
 func (qp *InsertQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
-	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
-		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != defaultContentType {
+		return errors.Errorf("expected %q content-type, got %q", defaultContentType, contentType)
 	}
 
 	return nil
@@ -146,8 +146,8 @@ type AppendQueryParams struct {
 // DecodeFrom populates a AppendQueryParams from a URL.
 func (qp *AppendQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
 	// Required depending on the query behavior
-	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
-		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != defaultContentType {
+		return errors.Errorf("expected %q content-type, got %q", defaultContentType, contentType)
 	}
 
 	var (
@@ -197,8 +197,8 @@ type ForkQueryParams struct {
 // DecodeFrom populates a ForkQueryParams from a URL.
 func (qp *ForkQueryParams) DecodeFrom(u *url.URL, h http.Header, rb queryBehavior) error {
 	// Required depending on the query behavior
-	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != "application/json" {
-		return errors.Errorf("expected 'application/json' content-type, got %q", contentType)
+	if contentType := h.Get("Content-Type"); rb == queryRequired && strings.ToLower(contentType) != defaultContentType {
+		return errors.Errorf("expected %q content-type, got %q", defaultContentType, contentType)
 	}
 
 	var (
@@ -236,32 +236,6 @@ func (qr *ForkQueryResult) EncodeTo(w http.ResponseWriter) {
 	}{
 		ResourceID: qr.ResourceID,
 	}); err != nil {
-		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// ForkRevisionsQueryResult contains statistics about the query.
-type ForkRevisionsQueryResult struct {
-	Errors   errs.Error
-	Params   ForkQueryParams `json:"query"`
-	Duration string          `json:"duration"`
-	Ledgers  []models.Ledger `json:"ledger"`
-}
-
-// EncodeTo encodes the ForkRevisionsQueryResult to the HTTP response writer.
-func (qr *ForkRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
-	w.Header().Set(httpHeaderContentType, defaultContentType)
-	w.Header().Set(httpHeaderDuration, qr.Duration)
-	w.Header().Set(httpHeaderResourceID, qr.Params.ResourceID.String())
-
-	// Make sure that we encode empty ledgers correctly (i.e. they're not
-	// null in the json output)
-	docs := qr.Ledgers
-	if qr.Ledgers == nil {
-		docs = make([]models.Ledger, 0)
-	}
-
-	if err := json.NewEncoder(w).Encode(docs); err != nil {
 		qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

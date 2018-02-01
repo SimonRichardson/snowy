@@ -10,7 +10,7 @@ import (
 	"testing/quick"
 
 	"github.com/trussle/harness/generators"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestInsertQueryParams(t *testing.T) {

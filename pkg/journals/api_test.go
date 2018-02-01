@@ -16,6 +16,8 @@ import (
 	"testing"
 	"testing/quick"
 
+	"github.com/trussle/harness/matchers"
+
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -23,7 +25,7 @@ import (
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestPostAPI(t *testing.T) {
@@ -50,7 +52,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Post(server.URL, "application/json", nil)
 			if err != nil {
@@ -92,7 +94,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			body := strings.NewReader("")
 			resp, err := http.Post(server.URL, "multipart/form-data", body)
@@ -138,7 +140,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -208,7 +210,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -278,7 +280,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -368,7 +370,7 @@ func TestPostAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
 			writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
 			records.EXPECT().Inc().Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().InsertLedger(Ledger(doc)).Return(doc, nil).Times(1)
 
@@ -470,7 +472,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().InsertLedger(Ledger(doc)).Return(doc, errors.New("bad")).Times(1)
 
@@ -551,7 +553,7 @@ func TestPostAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, errors.New("bad")).Times(1)
 
 			docBytes, err := json.Marshal(struct {
@@ -622,7 +624,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := Put(fmt.Sprintf("%s?resource_id=%s", server.URL, resourceID), "application/json", nil)
 			if err != nil {
@@ -664,7 +666,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			body := strings.NewReader("")
 			resp, err := Put(fmt.Sprintf("%s?resource_id=%s", server.URL, resourceID), "multipart/form-data", body)
@@ -710,7 +712,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -780,7 +782,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -850,7 +852,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			docBytes, err := json.Marshal(struct {
 				Name     string   `json:"name"`
@@ -940,7 +942,7 @@ func TestPutAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
 			writtenBytes.EXPECT().Add(float64(len(conBytes))).Times(1)
 			records.EXPECT().Inc().Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().AppendLedger(resourceID, Ledger(doc)).Return(doc, nil).Times(1)
 
@@ -1042,7 +1044,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 			repo.EXPECT().AppendLedger(resourceID, Ledger(doc)).Return(doc, errors.New("bad")).Times(1)
 
@@ -1123,7 +1125,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("PUT", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 			repo.EXPECT().PutContent(Content(content)).Return(content, errors.New("bad")).Times(1)
 
 			docBytes, err := json.Marshal(struct {
@@ -1194,7 +1196,7 @@ func TestNotFoundAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", fmt.Sprintf("/%s", resource), "404").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(fmt.Sprintf("%s/%s", server.URL, resource))
 			if err != nil {
@@ -1242,19 +1244,6 @@ var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
 func escapeQuotes(s string) string {
 	return quoteEscaper.Replace(s)
 }
-
-type float64Matcher struct{}
-
-func (float64Matcher) Matches(x interface{}) bool {
-	_, ok := x.(float64)
-	return ok
-}
-
-func (float64Matcher) String() string {
-	return "is float64"
-}
-
-func Float64() gomock.Matcher { return float64Matcher{} }
 
 type ledgerMatcher struct {
 	doc models.Ledger

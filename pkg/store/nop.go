@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 type nop struct{}

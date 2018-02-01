@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/trussle/harness/generators"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 const (
@@ -77,7 +77,7 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		_, err := store.Select(uuid.New(), Query{})
+		_, err := store.Select(uuid.MustNew(), Query{})
 		if expected, actual := true, err != nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
 		}
@@ -167,7 +167,7 @@ func TestRealStore_Integration(t *testing.T) {
 		store := runStore(config)
 		defer store.Stop()
 
-		entities, err := store.SelectForkRevisions(uuid.New())
+		entities, err := store.SelectForkRevisions(uuid.MustNew())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -183,18 +183,18 @@ func TestRealStore_Integration(t *testing.T) {
 
 		fn := func() bool {
 			var (
-				resourceID     = uuid.New()
-				firstAuthorID  = uuid.New().String()
-				secondAuthorID = uuid.New().String()
+				resourceID     = uuid.MustNew()
+				firstAuthorID  = uuid.MustNew().String()
+				secondAuthorID = uuid.MustNew().String()
 			)
 
 			if err := store.Insert(Entity{
 				ParentID:            uuid.Empty,
-				ResourceID:          uuid.New(),
+				ResourceID:          uuid.MustNew(),
 				ResourceAddress:     "address",
 				ResourceSize:        0,
 				ResourceContentType: "application/octet-stream",
-				AuthorID:            uuid.New().String(),
+				AuthorID:            uuid.MustNew().String(),
 				Name:                "name",
 				Tags:                []string{},
 				CreatedOn:           time.Now().Add(-time.Minute),

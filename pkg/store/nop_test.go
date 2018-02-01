@@ -4,7 +4,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestNopStore(t *testing.T) {
@@ -12,7 +12,7 @@ func TestNopStore(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		store := NewNopStore()
-		_, err := store.Select(uuid.New(), Query{})
+		_, err := store.Select(uuid.MustNew(), Query{})
 
 		if expected, actual := true, err == nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)

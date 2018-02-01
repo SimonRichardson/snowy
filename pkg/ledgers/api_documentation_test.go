@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/trussle/harness/matchers"
+
 	"github.com/SimonRichardson/betwixt"
 	"github.com/SimonRichardson/betwixt/pkg/output"
 	"github.com/go-kit/kit/log"
@@ -21,7 +23,7 @@ import (
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestDocumentation_Flow(t *testing.T) {
@@ -51,8 +53,8 @@ func TestDocumentation_Flow(t *testing.T) {
 		capture = betwixt.New(api, outputs)
 		server  = httptest.NewServer(capture)
 
-		uid         = uuid.New()
-		forkUID     = uuid.New()
+		uid         = uuid.MustNew()
+		forkUID     = uuid.MustNew()
 		tags        = []string{"abc", "def", "g"}
 		inputDoc, _ = models.BuildLedger(
 			models.WithAuthorID(uid.String()),
@@ -67,7 +69,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			models.WithResourceAddress("abcdefghij"),
 			models.WithResourceSize(10),
 			models.WithResourceContentType("application/octet-stream"),
-			models.WithAuthorID(uuid.New().String()),
+			models.WithAuthorID(uuid.MustNew().String()),
 			models.WithName("document-name"),
 			models.WithTags(tags),
 			models.WithCreatedOn(time.Now()),
@@ -78,7 +80,7 @@ func TestDocumentation_Flow(t *testing.T) {
 			models.WithResourceAddress("abcdefghij"),
 			models.WithResourceSize(10),
 			models.WithResourceContentType("application/octet-stream"),
-			models.WithAuthorID(uuid.New().String()),
+			models.WithAuthorID(uuid.MustNew().String()),
 			models.WithName("document-name"),
 			models.WithTags(tags),
 			models.WithCreatedOn(time.Now()),
@@ -100,7 +102,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		query, _ := repository.BuildQuery(
 			repository.WithQueryTags(tags),
@@ -121,7 +123,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		query, _ := repository.BuildQuery(
 			repository.WithQueryTags(tags),
@@ -144,7 +146,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		repo.EXPECT().InsertLedger(Ledger(inputDoc)).Times(1).Return(outputDoc, nil)
 
@@ -173,7 +175,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("PUT", "/", "200").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		repo.EXPECT().AppendLedger(uid, Ledger(inputDoc)).Return(outputDoc, nil).Times(1)
 
@@ -202,7 +204,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("PUT", "/fork/", "200").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		repo.EXPECT().ForkLedger(uid, Ledger(inputDoc)).Return(outputForkDoc, nil).Times(1)
 

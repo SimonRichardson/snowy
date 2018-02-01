@@ -9,7 +9,7 @@ import (
 	"github.com/trussle/fsys"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 const (

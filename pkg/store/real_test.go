@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/trussle/harness/generators"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestConfig(t *testing.T) {

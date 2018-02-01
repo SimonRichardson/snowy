@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 // Ledger encapsulates all values that are required to represent a ledger of
@@ -193,8 +193,9 @@ func WithName(name string) DocOption {
 // WithNewResourceID adds a new ResourceID to the ledger
 func WithNewResourceID() DocOption {
 	return func(doc *Ledger) error {
-		doc.resourceID = uuid.New()
-		return nil
+		var err error
+		doc.resourceID, err = uuid.New()
+		return err
 	}
 }
 

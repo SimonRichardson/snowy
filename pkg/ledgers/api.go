@@ -282,8 +282,8 @@ func (a *API) handleForkRevisions(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// Validate user input.
-	var qp ForkQueryParams
-	if err := qp.DecodeFrom(r.URL, r.Header, queryRequired); err != nil {
+	var qp SelectQueryParams
+	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
 		a.errors.BadRequest(w, r, err.Error())
 		return
 	}
@@ -295,7 +295,7 @@ func (a *API) handleForkRevisions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make sure we collect the documents for the result.
-	qr := ForkRevisionsQueryResult{Errors: a.errors, Params: qp}
+	qr := SelectRevisionsQueryResult{Errors: a.errors, Params: qp}
 	qr.Ledgers = ledgers
 
 	// Finish

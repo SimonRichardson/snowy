@@ -1,7 +1,7 @@
 # Snowy
 
 The following was automatically generated via [Betwixt](https://github.com/simonrichardson/betwixt).
-Date generated on: 2017-09-25T14:38:41+01:00
+Date generated on: 2018-02-01T15:32:06Z
 # POST /
 
 + Request
@@ -12,18 +12,18 @@ Date generated on: 2017-09-25T14:38:41+01:00
 
             Accept-Encoding: gzip
             Content-Length: 730
-            Content-Type: multipart/form-data; boundary=d4a83ceec0cc33055231d0307d839c30bab444329745d61698d6f4f32724
+            Content-Type: multipart/form-data; boundary=88d52577abeadc098a9dcd69fef3f707104936b176379590c7d6d04e43b2
             User-Agent: Go-http-client/1.1
 
 + Response 200
     + Headers
 
             Content-Type: multipart/form-data
-            X-Duration: 216.701µs
+            X-Duration: 167.703µs
 
     + Body
 
-            {"resource_id":"21a2f8eb-7f1f-4027-977e-c42e3d01b82e"}
+            {"resource_id":"2bfd5d00-f148-47b5-a4bc-f044a1f59d8e"}
 
 
 # PUT /
@@ -31,24 +31,24 @@ Date generated on: 2017-09-25T14:38:41+01:00
 + Request
     + Parameters
 
-            resource_id ('21a2f8eb-7f1f-4027-977e-c42e3d01b82e')
+            resource_id ('2bfd5d00-f148-47b5-a4bc-f044a1f59d8e')
 
     + Headers
 
             Accept-Encoding: gzip
             Content-Length: 730
-            Content-Type: multipart/form-data; boundary=609615d7e515fca9e1b573732d5d9f52b05ac0974f529f2fea1a76d54728
+            Content-Type: multipart/form-data; boundary=c88ab7086a1ef58d6f53af8af7bc0c4d3531ffd82e7bc22744b5082a9eb6
             User-Agent: Go-http-client/1.1
 
 + Response 200
     + Headers
 
             Content-Type: multipart/form-data
-            X-Duration: 136.386µs
-            X-Resource-Id: 21a2f8eb-7f1f-4027-977e-c42e3d01b82e
+            X-Duration: 154.859µs
+            X-Resource-Id: 2bfd5d00-f148-47b5-a4bc-f044a1f59d8e
 
     + Body
 
-            {"resource_id":"21a2f8eb-7f1f-4027-977e-c42e3d01b82e"}
+            {"resource_id":"2bfd5d00-f148-47b5-a4bc-f044a1f59d8e"}
 
 

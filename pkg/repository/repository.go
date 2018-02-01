@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/trussle/snowy/pkg/models"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 var (

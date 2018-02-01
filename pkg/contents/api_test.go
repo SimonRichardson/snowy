@@ -13,11 +13,12 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/golang/mock/gomock"
 	"github.com/trussle/harness/generators"
+	"github.com/trussle/harness/matchers"
 	metricMocks "github.com/trussle/snowy/pkg/metrics/mocks"
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/repository"
 	repoMocks "github.com/trussle/snowy/pkg/repository/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestGetAPI(t *testing.T) {
@@ -379,7 +380,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().SelectContents(UUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
+			repo.EXPECT().SelectContents(matchers.MatchUUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
 
 			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -423,7 +424,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "500").Return(observer).Times(1)
 			observer.EXPECT().Observe(Float64()).Times(1)
 
-			repo.EXPECT().SelectContents(UUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
+			repo.EXPECT().SelectContents(matchers.MatchUUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
 
 			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, uid))
 			if err != nil {
@@ -762,25 +763,6 @@ func (contentsMatcher) String() string {
 }
 
 func Contents(contents []models.Content) gomock.Matcher { return contentsMatcher{contents} }
-
-type uuidMatcher struct {
-	uuid uuid.UUID
-}
-
-func (m uuidMatcher) Matches(x interface{}) bool {
-	d, ok := x.(uuid.UUID)
-	if !ok {
-		return false
-	}
-
-	return m.uuid.Equals(d)
-}
-
-func (uuidMatcher) String() string {
-	return "is uuid"
-}
-
-func UUID(uuid uuid.UUID) gomock.Matcher { return uuidMatcher{uuid} }
 
 type queryMatcher struct{}
 

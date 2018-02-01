@@ -25,23 +25,25 @@ dist/documents:
 
 pkg/store/mocks/store.go:
 	mockgen -package=mocks -destination=pkg/store/mocks/store.go ${PATH_SNOWY}/pkg/store Store
+	@ $(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/store/mocks/store.go
 
 pkg/repository/mocks/repository.go:
 	mockgen -package=mocks -destination=pkg/repository/mocks/repository.go ${PATH_SNOWY}/pkg/repository Repository
+	@ $(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/repository/mocks/repository.go
 
 pkg/metrics/mocks/metrics.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/metrics.go ${PATH_SNOWY}/pkg/metrics Gauge,HistogramVec,Counter
-	$(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
+	@ $(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/metrics.go
 
 pkg/metrics/mocks/observer.go:
 	mockgen -package=mocks -destination=pkg/metrics/mocks/observer.go github.com/prometheus/client_golang/prometheus Observer
+	@ $(SED) 's/github.com\/trussle\/snowy\/vendor\///g' ./pkg/metrics/mocks/observer.go
 
 .PHONY: build-mocks
-build-mocks: FORCE
-	$(MAKE) pkg/store/mocks/store.go
-	$(MAKE) pkg/repository/mocks/repository.go
-	$(MAKE) pkg/metrics/mocks/metrics.go
-	$(MAKE) pkg/metrics/mocks/observer.go
+build-mocks: pkg/store/mocks/store.go \
+	pkg/repository/mocks/repository.go \
+	pkg/metrics/mocks/metrics.go \
+	pkg/metrics/mocks/observer.go
 
 .PHONY: clean
 clean: FORCE
@@ -85,7 +87,7 @@ build-ui: ui/scripts/snowy.js pkg/ui/static.go
 
 .PHONY: clean-ui
 clean-ui: FORCE
-	rm -f pkg/ui/static.go
+	@ rm -f pkg/ui/static.go
 	$(MAKE) -C ./ui clean
 
 ui/scripts/snowy.js:

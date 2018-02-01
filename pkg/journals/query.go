@@ -10,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 const (

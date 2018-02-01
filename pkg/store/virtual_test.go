@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/trussle/harness/generators"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestVirtualStore(t *testing.T) {
@@ -14,7 +14,7 @@ func TestVirtualStore(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		store := NewVirtualStore()
-		_, err := store.Select(uuid.New(), Query{})
+		_, err := store.Select(uuid.MustNew(), Query{})
 
 		if expected, actual := true, err != nil; expected != actual {
 			t.Errorf("expected: %t, actual: %t", expected, actual)
@@ -27,7 +27,7 @@ func TestVirtualStore(t *testing.T) {
 
 	t.Run("get when empty", func(t *testing.T) {
 		var (
-			id    = uuid.New()
+			id    = uuid.MustNew()
 			store = NewVirtualStore()
 		)
 
@@ -133,9 +133,9 @@ func TestVirtualStore(t *testing.T) {
 		store := NewVirtualStore()
 
 		var (
-			a = Entity{ID: uuid.New(), ParentID: uuid.Empty, ResourceID: uuid.New(), CreatedOn: time.Now().Add(-time.Minute)}
-			b = Entity{ID: uuid.New(), ParentID: a.ID, ResourceID: a.ResourceID, CreatedOn: time.Now().Add(-time.Second)}
-			c = Entity{ID: uuid.New(), ParentID: b.ID, ResourceID: uuid.New(), CreatedOn: time.Now()}
+			a = Entity{ID: uuid.MustNew(), ParentID: uuid.Empty, ResourceID: uuid.MustNew(), CreatedOn: time.Now().Add(-time.Minute)}
+			b = Entity{ID: uuid.MustNew(), ParentID: a.ID, ResourceID: a.ResourceID, CreatedOn: time.Now().Add(-time.Second)}
+			c = Entity{ID: uuid.MustNew(), ParentID: b.ID, ResourceID: uuid.MustNew(), CreatedOn: time.Now()}
 		)
 
 		store.Insert(a)
@@ -173,7 +173,7 @@ func TestVirtualStoreWithQuery(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			entities, err := store.SelectRevisions(uuid.New(), Query{
+			entities, err := store.SelectRevisions(uuid.MustNew(), Query{
 				Tags: make([]string, 0),
 			})
 			if err != nil {

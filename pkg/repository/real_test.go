@@ -13,7 +13,7 @@ import (
 	"github.com/trussle/snowy/pkg/models"
 	"github.com/trussle/snowy/pkg/store"
 	storeMocks "github.com/trussle/snowy/pkg/store/mocks"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 func TestSelectLedger(t *testing.T) {
@@ -455,7 +455,7 @@ func TestForkLedger(t *testing.T) {
 					DeletedOn:  time.Time{},
 				}
 				forkedEntity = store.Entity{
-					ID:         uuid.New(),
+					ID:         uuid.MustNew(),
 					Name:       name,
 					ResourceID: forkedID,
 					ParentID:   id,

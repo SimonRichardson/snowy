@@ -12,7 +12,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"github.com/trussle/snowy/pkg/uuid"
+	"github.com/trussle/uuid"
 )
 
 const (

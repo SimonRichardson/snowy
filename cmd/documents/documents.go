@@ -231,6 +231,8 @@ func runDocuments(args []string) error {
 			)))
 			mux.Handle("/status/", http.StripPrefix("/status", status.NewAPI(
 				log.With(logger, "component", "status_api"),
+				connectedClients.WithLabelValues("status"),
+				apiDuration,
 			)))
 			mux.Handle("/ui/", ui.NewAPI(*uiLocal, log.With(logger, "component", "ui")))
 
