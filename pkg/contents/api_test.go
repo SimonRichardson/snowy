@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -46,7 +47,7 @@ func TestGetAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(server.URL)
 			if err != nil {
@@ -84,7 +85,7 @@ func TestGetAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(fmt.Sprintf("%s?resource_id=%s", server.URL, "bad"))
 			if err != nil {
@@ -135,7 +136,7 @@ func TestGetAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/", "200").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, nil)
 
@@ -188,7 +189,7 @@ func TestGetAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/", "404").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, errNotFound{errors.New("failure")})
 
@@ -241,7 +242,7 @@ func TestGetAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().SelectContent(uid, Query()).Times(1).Return(content, errors.New("failure"))
 
@@ -289,7 +290,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(fmt.Sprintf("%s/revisions/", server.URL))
 			if err != nil {
@@ -327,7 +328,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "400").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(fmt.Sprintf("%s/revisions/?resource_id=%s", server.URL, "bad"))
 			if err != nil {
@@ -378,7 +379,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "200").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().SelectContents(matchers.MatchUUID(uid), Query()).Times(1).Return([]models.Content{content}, nil)
 
@@ -422,7 +423,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", "/revisions/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().SelectContents(matchers.MatchUUID(uid), Query()).Times(1).Return(nil, errNotFound{errors.New("failure")})
 
@@ -480,7 +481,7 @@ func TestPutAPI(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		resp, err := http.Post(server.URL, "plain/text", bytes.NewBuffer(b))
 		if err != nil {
@@ -516,7 +517,7 @@ func TestPutAPI(t *testing.T) {
 		clients.EXPECT().Dec().Times(1)
 
 		duration.EXPECT().WithLabelValues("POST", "/", "400").Return(observer).Times(1)
-		observer.EXPECT().Observe(Float64()).Times(1)
+		observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 		req, err := http.NewRequest("POST", server.URL, bytes.NewBuffer(b))
 		if err != nil {
@@ -569,7 +570,7 @@ func TestPutAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("POST", "/", "500").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().PutContent(Content(content)).Return(models.Content{}, errors.New("failure")).Times(1)
 
@@ -625,7 +626,7 @@ func TestPutAPI(t *testing.T) {
 			duration.EXPECT().WithLabelValues("POST", "/", "200").Return(observer).Times(1)
 			writtenBytes.EXPECT().Add(float64(len(b))).Times(1)
 			records.EXPECT().Inc().Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			repo.EXPECT().PutContent(Content(content)).Return(content, nil).Times(1)
 
@@ -672,7 +673,7 @@ func TestNotFoundAPI(t *testing.T) {
 			clients.EXPECT().Dec().Times(1)
 
 			duration.EXPECT().WithLabelValues("GET", fmt.Sprintf("/%s", resource), "404").Return(observer).Times(1)
-			observer.EXPECT().Observe(Float64()).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
 
 			resp, err := http.Get(fmt.Sprintf("%s/%s", server.URL, resource))
 			if err != nil {
@@ -689,18 +690,187 @@ func TestNotFoundAPI(t *testing.T) {
 	})
 }
 
-type float64Matcher struct{}
+func TestMultipleAPI(t *testing.T) {
+	t.Parallel()
 
-func (float64Matcher) Matches(x interface{}) bool {
-	_, ok := x.(float64)
-	return ok
+	t.Run("get multiple with no resource_id", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func() bool {
+			var (
+				clients      = metricMocks.NewMockGauge(ctrl)
+				writtenBytes = metricMocks.NewMockCounter(ctrl)
+				records      = metricMocks.NewMockCounter(ctrl)
+				duration     = metricMocks.NewMockHistogramVec(ctrl)
+				observer     = metricMocks.NewMockObserver(ctrl)
+				repo         = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/", server.URL))
+			if err != nil {
+				t.Error(err)
+			}
+			defer resp.Body.Close()
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get multiple with invalid resource_ids", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func() bool {
+			var (
+				clients      = metricMocks.NewMockGauge(ctrl)
+				writtenBytes = metricMocks.NewMockCounter(ctrl)
+				records      = metricMocks.NewMockCounter(ctrl)
+				duration     = metricMocks.NewMockHistogramVec(ctrl)
+				observer     = metricMocks.NewMockObserver(ctrl)
+				repo         = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "400").Return(observer).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_ids=%s", server.URL, "bad"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusBadRequest, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get multiple with resource_ids", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID, b []byte) bool {
+			var (
+				clients      = metricMocks.NewMockGauge(ctrl)
+				writtenBytes = metricMocks.NewMockCounter(ctrl)
+				records      = metricMocks.NewMockCounter(ctrl)
+				duration     = metricMocks.NewMockHistogramVec(ctrl)
+				observer     = metricMocks.NewMockObserver(ctrl)
+				repo         = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
+				server = httptest.NewServer(api)
+
+				content, err = models.BuildContent(
+					models.WithSize(int64(len(b))),
+					models.WithBytes(b),
+					models.WithReader(ioutil.NopCloser(bytes.NewReader(b))),
+				)
+			)
+			defer api.Close()
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "200").Return(observer).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
+
+			repo.EXPECT().SelectContent(matchers.MatchUUID(uid), Query()).Times(1).Return(content, nil)
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_ids=%s", server.URL, uid))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusOK, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("get with resource_ids but repo failure", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(uid uuid.UUID, bytes []byte) bool {
+			var (
+				clients      = metricMocks.NewMockGauge(ctrl)
+				writtenBytes = metricMocks.NewMockCounter(ctrl)
+				records      = metricMocks.NewMockCounter(ctrl)
+				duration     = metricMocks.NewMockHistogramVec(ctrl)
+				observer     = metricMocks.NewMockObserver(ctrl)
+				repo         = repoMocks.NewMockRepository(ctrl)
+
+				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
+				server = httptest.NewServer(api)
+			)
+			defer api.Close()
+
+			clients.EXPECT().Inc().Times(1)
+			clients.EXPECT().Dec().Times(1)
+
+			duration.EXPECT().WithLabelValues("GET", "/multiple/", "500").Return(observer).Times(1)
+			observer.EXPECT().Observe(matchers.MatchAnyFloat64()).Times(1)
+
+			repo.EXPECT().SelectContent(matchers.MatchUUID(uid), Query()).Times(1).Return(models.Content{}, errNotFound{errors.New("failure")})
+
+			resp, err := http.Get(fmt.Sprintf("%s/multiple/?resource_ids=%s", server.URL, uid))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if expected, actual := http.StatusInternalServerError, resp.StatusCode; expected != actual {
+				t.Errorf("expected: %d, actual: %d", expected, actual)
+			}
+
+			return true
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
 }
-
-func (float64Matcher) String() string {
-	return "is float64"
-}
-
-func Float64() gomock.Matcher { return float64Matcher{} }
 
 type errNotFound struct {
 	err error

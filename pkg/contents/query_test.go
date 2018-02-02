@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strconv"
+	"strings"
 	"testing"
 	"testing/quick"
 
@@ -543,6 +544,102 @@ func TestInsertQueryResult(t *testing.T) {
 			return output.Address() == address &&
 				output.Size() == size &&
 				output.ContentType() == contentType
+		}
+
+		if err := quick.Check(fn, nil); err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestMultipleQueryParams(t *testing.T) {
+	t.Parallel()
+
+	t.Run("DecodeFrom with required empty url", func(t *testing.T) {
+		var (
+			qp MultipleQueryParams
+
+			u, err = url.Parse("")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with optional empty url", func(t *testing.T) {
+		var (
+			qp MultipleQueryParams
+
+			u, err = url.Parse("")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryOptional)
+
+		if expected, actual := true, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with invalid resource_ids", func(t *testing.T) {
+		var (
+			qp MultipleQueryParams
+
+			u, err = url.Parse("/?resource_ids=123asd")
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = qp.DecodeFrom(u, queryRequired)
+
+		if expected, actual := false, err == nil; expected != actual {
+			t.Errorf("expected: %v, actual: %v", expected, actual)
+		}
+	})
+
+	t.Run("DecodeFrom with valid resource_ids", func(t *testing.T) {
+		fn := func(uids []uuid.UUID) bool {
+			if len(uids) < 1 {
+				return true
+			}
+			if len(uids) > 15 {
+				uids = uids[:15]
+			}
+
+			idents := make([]string, len(uids))
+			for k, v := range uids {
+				idents[k] = v.String()
+			}
+
+			var (
+				qp MultipleQueryParams
+
+				u, err = url.Parse(fmt.Sprintf("/?resource_ids=%s", strings.Join(idents, ",")))
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = qp.DecodeFrom(u, queryRequired)
+
+			if expected, actual := true, err == nil; expected != actual {
+				t.Errorf("expected: %v, actual: %v, err: %v", expected, actual, err)
+			}
+			for k, v := range qp.ResourceIDs {
+				if expected, actual := uids[k], v; !expected.Equals(actual) {
+					t.Errorf("expected: %v, actual: %v", expected, actual)
+				}
+			}
+			return true
 		}
 
 		if err := quick.Check(fn, nil); err != nil {

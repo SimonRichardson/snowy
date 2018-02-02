@@ -19,6 +19,7 @@ import (
 const (
 	APIPathSelectQuery          = "/"
 	APIPathInsertQuery          = "/"
+	APIPathMultipleQuery        = "/multiple/"
 	APIPathSelectRevisionsQuery = "/revisions/"
 )
 
@@ -87,6 +88,8 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.handleSelect(w, r)
 	case (method == "PUT" || method == "POST") && path == APIPathInsertQuery:
 		a.handleInsert(w, r)
+	case method == "GET" && path == APIPathMultipleQuery:
+		a.handleMultiple(w, r)
 	case method == "GET" && path == APIPathSelectRevisionsQuery:
 		a.handleSelectRevisions(w, r)
 	default:
@@ -199,6 +202,50 @@ func (a *API) handleInsert(w http.ResponseWriter, r *http.Request) {
 		// Make sure we collect the content for the result.
 		qr := InsertQueryResult{Errors: a.errors, Params: qp}
 		qr.Content = content
+
+		// Finish
+		qr.Duration = time.Since(begin).String()
+		qr.EncodeTo(w)
+	}
+}
+
+func (a *API) handleMultiple(w http.ResponseWriter, r *http.Request) {
+	// useful metrics
+	begin := time.Now()
+
+	defer r.Body.Close()
+
+	// Validate user input.
+	var qp MultipleQueryParams
+	if err := qp.DecodeFrom(r.URL, queryRequired); err != nil {
+		a.errors.BadRequest(w, r, err.Error())
+		return
+	}
+
+	var (
+		internalError = make(chan error)
+		result        = make(chan []models.Content)
+	)
+	go func() {
+		contents := make([]models.Content, len(qp.ResourceIDs))
+		for k, v := range qp.ResourceIDs {
+			c, err := a.repository.SelectContent(v, repository.BuildEmptyQuery())
+			if err != nil {
+				internalError <- err
+				return
+			}
+			contents[k] = c
+		}
+		result <- contents
+	}()
+
+	select {
+	case err := <-internalError:
+		a.errors.Error(w, err.Error(), http.StatusInternalServerError)
+	case contents := <-result:
+		// Make sure we collect the content for the result.
+		qr := MultipleQueryResult{Errors: a.errors, Params: qp}
+		qr.Contents = contents
 
 		// Finish
 		qr.Duration = time.Since(begin).String()

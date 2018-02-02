@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -176,15 +177,76 @@ func (qr *SelectRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
 			return
 		}
 
-		bytes, err := content.Bytes()
+		if _, err := io.Copy(file, content.Reader()); err != nil {
+			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	writer.Flush()
+}
+
+// MultipleQueryParams defines all the dimensions of a query.
+type MultipleQueryParams struct {
+	ResourceIDs []uuid.UUID `json:"resource_ids"`
+}
+
+// DecodeFrom populates a MultipleQueryParams from a URL.
+func (qp *MultipleQueryParams) DecodeFrom(u *url.URL, rb queryBehavior) error {
+	// Required depending on the query behavior
+	if rb == queryRequired {
+
+		resourceIDs := u.Query().Get("resource_ids")
+		if resourceIDs == "" {
+			return errors.New("error reading 'resource_ids' (required) query")
+		}
+
+		var idents []uuid.UUID
+		for _, id := range strings.Split(resourceIDs, ",") {
+			ident, err := uuid.Parse(id)
+			if err != nil {
+				return errors.Wrap(err, "error parsing 'resource_ids' (required) query")
+			}
+			idents = append(idents, ident)
+		}
+		qp.ResourceIDs = idents
+	}
+
+	return nil
+}
+
+// MultipleQueryResult contains statistics about the query.
+type MultipleQueryResult struct {
+	Errors   errs.Error
+	Params   MultipleQueryParams `json:"query"`
+	Duration string              `json:"duration"`
+	Contents []models.Content    `json:"contents"`
+}
+
+// EncodeTo encodes the MultipleQueryResult to the HTTP response writer.
+func (qr *MultipleQueryResult) EncodeTo(w http.ResponseWriter) {
+	w.Header().Set(httpHeaderContentType, "application/zip")
+	w.Header().Set(httpHeaderContentDisposition, "attachment; filename=multiple.zip")
+	w.Header().Set(httpHeaderContentTransferEncoding, "binary")
+	w.Header().Set(httpHeaderDuration, qr.Duration)
+
+	idents := make([]string, len(qr.Params.ResourceIDs))
+	for k, v := range qr.Params.ResourceIDs {
+		idents[k] = v.String()
+	}
+	w.Header().Set(httpHeaderResourceIDs, strings.Join(idents, ","))
+
+	writer := zip.NewWriter(w)
+	defer writer.Close()
+
+	for _, content := range qr.Contents {
+		file, err := writer.Create(content.Address())
 		if err != nil {
 			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if _, err := file.Write(bytes); err != nil {
+		if _, err := io.Copy(file, content.Reader()); err != nil {
 			qr.Errors.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
 	}
 
@@ -194,6 +256,7 @@ func (qr *SelectRevisionsQueryResult) EncodeTo(w http.ResponseWriter) {
 const (
 	httpHeaderDuration                = "X-Duration"
 	httpHeaderResourceID              = "X-ResourceID"
+	httpHeaderResourceIDs             = "X-ResourceIDs"
 	httpHeaderQueryTags               = "X-Query-Tags"
 	httpHeaderQueryAuthorID           = "X-Query-Author-ID"
 	httpHeaderContentType             = "Content-Type"
