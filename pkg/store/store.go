@@ -32,6 +32,9 @@ type Store interface {
 	// based on the query options as qualifiers, minus the actual content.
 	SelectForkRevisions(resourceID uuid.UUID) ([]Entity, error)
 
+	// Statistics returns some statistics about the ledgers
+	Statistics() (Statistics, error)
+
 	// Drop removes all of the stored ledgers
 	Drop() error
 

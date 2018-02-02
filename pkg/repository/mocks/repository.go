@@ -86,6 +86,19 @@ func (mr *MockRepositoryMockRecorder) InsertLedger(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertLedger", reflect.TypeOf((*MockRepository)(nil).InsertLedger), arg0)
 }
 
+// LedgerStatistics mocks base method
+func (m *MockRepository) LedgerStatistics() (models.LedgerStatistics, error) {
+	ret := m.ctrl.Call(m, "LedgerStatistics")
+	ret0, _ := ret[0].(models.LedgerStatistics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LedgerStatistics indicates an expected call of LedgerStatistics
+func (mr *MockRepositoryMockRecorder) LedgerStatistics() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LedgerStatistics", reflect.TypeOf((*MockRepository)(nil).LedgerStatistics))
+}
+
 // PutContent mocks base method
 func (m *MockRepository) PutContent(arg0 models.Content) (models.Content, error) {
 	ret := m.ctrl.Call(m, "PutContent", arg0)

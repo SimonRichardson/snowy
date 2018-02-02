@@ -116,7 +116,8 @@ ORDER  BY created_on DESC,
 FROM   ledgers
 WHERE id = ANY($1)
 ORDER  BY created_on ASC;`
-	defaultDropQuery = `TRUNCATE TABLE ledgers;`
+	defaultStatisticsQuery = `SELECT COUNT(*) FROM ledgers;`
+	defaultDropQuery       = `TRUNCATE TABLE ledgers;`
 )
 
 // RealConfig holds the options for connecting to the DB
@@ -376,6 +377,19 @@ func (r *realStore) Transaction(fn func(*sql.Tx) error) (err error) {
 
 	err = fn(txn)
 	return
+}
+
+func (r *realStore) Statistics() (Statistics, error) {
+	row := r.db.QueryRow(defaultStatisticsQuery)
+
+	var total int
+	if err := row.Scan(&total); err != nil {
+		return Statistics{}, err
+	}
+
+	return Statistics{
+		Total: total,
+	}, nil
 }
 
 // Drop removes all of the stored ledgers

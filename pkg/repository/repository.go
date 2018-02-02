@@ -50,6 +50,9 @@ type Repository interface {
 	// ledgers into the repository then it will return an error.
 	SelectForkLedgers(resourceID uuid.UUID) ([]models.Ledger, error)
 
+	// LedgerStatistics returns some statistics about the ledgers
+	LedgerStatistics() (models.LedgerStatistics, error)
+
 	// SelectContent returns a content corresponding to the resourceID. If no
 	// ledger or content exists, it will return an error.
 	SelectContent(resourceID uuid.UUID, options Query) (models.Content, error)

@@ -109,6 +109,19 @@ func (mr *MockStoreMockRecorder) SelectRevisions(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectRevisions", reflect.TypeOf((*MockStore)(nil).SelectRevisions), arg0, arg1)
 }
 
+// Statistics mocks base method
+func (m *MockStore) Statistics() (store.Statistics, error) {
+	ret := m.ctrl.Call(m, "Statistics")
+	ret0, _ := ret[0].(store.Statistics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Statistics indicates an expected call of Statistics
+func (mr *MockStoreMockRecorder) Statistics() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Statistics", reflect.TypeOf((*MockStore)(nil).Statistics))
+}
+
 // Stop mocks base method
 func (m *MockStore) Stop() {
 	m.ctrl.Call(m, "Stop")

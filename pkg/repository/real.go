@@ -218,6 +218,17 @@ func (r *realRepository) SelectForkLedgers(resourceID uuid.UUID) ([]models.Ledge
 	return res, nil
 }
 
+func (r *realRepository) LedgerStatistics() (models.LedgerStatistics, error) {
+	stats, err := r.store.Statistics()
+	if err != nil {
+		return models.LedgerStatistics{}, err
+	}
+
+	return models.LedgerStatistics{
+		TotalLedgers: stats.Total,
+	}, nil
+}
+
 // PutContent inserts content into the repository, this will make sure that
 // links to the content is managed by the ledger storage. If there is an error
 // during the saving of the content to the underlying storage it will then

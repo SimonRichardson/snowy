@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"net/url"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -64,4 +67,17 @@ func registerProfile(mux *http.ServeMux) {
 	mux.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
 	mux.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 	mux.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+}
+
+func interrupt(cancel <-chan struct{}, dst chan<- struct{}) error {
+	c := make(chan os.Signal)
+	signal.Notify(c, syscall.SIGUSR1, syscall.SIGUSR2)
+	for {
+		select {
+		case <-c:
+			dst <- struct{}{}
+		case <-cancel:
+			return errors.New("canceled")
+		}
+	}
 }

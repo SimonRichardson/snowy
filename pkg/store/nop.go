@@ -20,6 +20,9 @@ func (nop) SelectRevisions(resourceID uuid.UUID, query Query) ([]Entity, error) 
 func (nop) SelectForkRevisions(resourceID uuid.UUID) ([]Entity, error) {
 	return make([]Entity, 0), nil
 }
+func (nop) Statistics() (Statistics, error) {
+	return Statistics{}, nil
+}
 func (nop) Run() error  { return nil }
 func (nop) Stop()       {}
 func (nop) Drop() error { return nil }

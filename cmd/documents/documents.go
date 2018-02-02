@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/SimonRichardson/flagset"
 	"github.com/SimonRichardson/gexec"
@@ -204,6 +206,32 @@ func runDocuments(args []string) error {
 			return err
 		}, func(error) {
 			dataStore.Stop()
+		})
+	}
+	{
+		cancel := make(chan struct{})
+		g.Add(func() error {
+			dst := make(chan struct{})
+			go func() {
+				for {
+					select {
+					case <-dst:
+						stats, err := repository.LedgerStatistics()
+						if err != nil {
+							level.Error(logger).Log("err", err)
+							return
+						}
+
+						t := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
+						fmt.Fprintf(t, "Timestamp \tTotal \t\n")
+						fmt.Fprintf(t, "%s \t%d \t\n", time.Now().Format(time.RFC3339), stats.TotalLedgers)
+						t.Flush()
+					}
+				}
+			}()
+			return interrupt(cancel, dst)
+		}, func(error) {
+			close(cancel)
 		})
 	}
 	{

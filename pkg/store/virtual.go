@@ -137,6 +137,17 @@ func (r *virtualStore) SelectForkRevisions(resourceID uuid.UUID) ([]Entity, erro
 	return make([]Entity, 0), nil
 }
 
+func (r *virtualStore) Statistics() (Statistics, error) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+
+	var stats Statistics
+	for range r.entities {
+		stats.Total++
+	}
+	return stats, nil
+}
+
 // Run manages the store, keeping the store reliable.
 func (r *virtualStore) Run() error {
 	for {
