@@ -30,3 +30,10 @@ import:
   - package: github.com/trussle/fsys
   - package: github.com/trussle/harness
   - package: github.com/trussle/uuid
+  - package: github.com/c-bata/go-prompt
+  - package: github.com/pkg/term/termios
+  - package: github.com/olekukonko/tablewriter
+  - package: github.com/mattn/go-runewidth
+  - package: github.com/fatih/color
+  - package: github.com/mattn/go-colorable
+  - package: github.com/mattn/go-isatty

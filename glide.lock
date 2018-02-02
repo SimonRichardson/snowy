@@ -1,5 +1,5 @@
-hash: 419e1ae598dd532583ff0ebf024200858efa7405acac84aca4d8b80c49212ed7
-updated: 2018-02-01T16:30:22.549251958Z
+hash: 55794ace7aceba7044311a50bef9a339fefb5762474b2af5b9c97fc1c769805c
+updated: 2018-02-02T11:41:15.766324669Z
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -35,6 +35,10 @@ imports:
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
+- name: github.com/c-bata/go-prompt
+  version: c292a2f4b4fe8563883871456e19028ff9df0f26
+- name: github.com/fatih/color
+  version: 5df930a27be2502f99b292b7cc09ebad4d0891f4
 - name: github.com/go-ini/ini
   version: f280b3ba517bf5fc98922624f21fb0e7a92adaec
 - name: github.com/go-kit/kit
@@ -62,12 +66,24 @@ imports:
   version: 91f10e40ba0dd2d0bf9f93ec1d4077711a78df88
   subpackages:
   - oid
+- name: github.com/mattn/go-colorable
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+- name: github.com/mattn/go-isatty
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
+- name: github.com/mattn/go-runewidth
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
+- name: github.com/olekukonko/tablewriter
+  version: b8a9be070da40449e501c3c4730a889e42d87a9e
 - name: github.com/pkg/errors
   version: c605e284fe17294bda444b34710735b29d1a9d90
+- name: github.com/pkg/term
+  version: b1f72af2d63057363398bec5873d16a98b453312
+  subpackages:
+  - termios
 - name: github.com/prometheus/client_golang
   version: 94ff84a9a6ebb5e6eb9172897c221a64df3443bc
   subpackages:
@@ -111,4 +127,9 @@ imports:
   - matchers
 - name: github.com/trussle/uuid
   version: 23bc856a10519000ea4c17b77520ab48c3d3bbfd
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  repo: https://go.googlesource.com/sys
+  subpackages:
+  - unix
 testImports: []

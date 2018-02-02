@@ -18,10 +18,14 @@ install:
 	glide install
 
 .PHONY: build
-build: dist/documents
+build: dist/documents \
+	dist/prompt
 
 dist/documents:
 	go build -o dist/documents ${PATH_SNOWY}/cmd/documents
+
+dist/prompt:
+	go build -o dist/prompt ${PATH_SNOWY}/cmd/prompt
 
 pkg/store/mocks/store.go:
 	mockgen -package=mocks -destination=pkg/store/mocks/store.go ${PATH_SNOWY}/pkg/store Store
@@ -48,6 +52,7 @@ build-mocks: pkg/store/mocks/store.go \
 .PHONY: clean
 clean: FORCE
 	rm -f dist/documents
+	rm -f dist/prompt
 
 .PHONY: clean-mocks
 clean-mocks: FORCE
