@@ -1,5 +1,5 @@
-hash: 55794ace7aceba7044311a50bef9a339fefb5762474b2af5b9c97fc1c769805c
-updated: 2018-02-02T11:41:15.766324669Z
+hash: 04a7325a32756762d16bbf9d7f725f04894efedb86b309eb6c05a583f61f6db9
+updated: 2018-05-10T19:41:14.076956773+01:00
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -58,6 +58,8 @@ imports:
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - proto
+- name: github.com/gorilla/mux
+  version: ded0c29b24f96f46cf349e6701b099db601cf8ec
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/kr/logfmt

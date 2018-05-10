@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
@@ -29,6 +30,7 @@ const (
 
 // API serves the query API
 type API struct {
+	handler        http.Handler
 	repository     repository.Repository
 	logger         log.Logger
 	clients        metrics.Gauge
@@ -43,7 +45,7 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 	bytes, records metrics.Counter,
 	duration metrics.HistogramVec,
 ) *API {
-	return &API{
+	api := &API{
 		repository: repository,
 		logger:     logger,
 		clients:    clients,
@@ -52,6 +54,15 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 		duration:   duration,
 		errors:     errs.NewError(logger),
 	}
+	{
+		router := mux.NewRouter().StrictSlash(true)
+		router.Methods("POST").Path(APIPathInsertQuery).HandlerFunc(api.handleInsert)
+		router.Methods("PUT").Path(APIPathAppendQuery).HandlerFunc(api.handleAppend)
+		router.NotFoundHandler = http.HandlerFunc(api.errors.NotFound)
+
+		api.handler = router
+	}
+	return api
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,17 +81,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		).Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	// Routing table
-	method, path := r.Method, r.URL.Path
-	switch {
-	case method == "POST" && path == APIPathInsertQuery:
-		a.handleInsert(w, r)
-	case method == "PUT" && path == APIPathAppendQuery:
-		a.handleAppend(w, r)
-	default:
-		// Nothing found
-		a.errors.NotFound(w, r)
-	}
+	a.handler.ServeHTTP(w, r)
 }
 
 func (a *API) handleInsert(w http.ResponseWriter, r *http.Request) {

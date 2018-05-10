@@ -89,6 +89,7 @@ func TestDocumentation_Flow(t *testing.T) {
 	)
 
 	defer func() {
+		server.Close()
 		if err := capture.Output(); err != nil {
 			t.Fatal(err)
 		}

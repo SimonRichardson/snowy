@@ -55,6 +55,7 @@ func TestDocumentation_Flow(t *testing.T) {
 		uid    = uuid.MustNew()
 		source = make([]byte, rand.Intn(100)+50)
 	)
+	defer func() { api.Close(); server.Close() }()
 	if _, err = rand.Read(source); err != nil {
 		t.Fatal(err)
 	}

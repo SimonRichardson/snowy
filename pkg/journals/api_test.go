@@ -46,6 +46,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 			clients.EXPECT().Inc().Times(1)
@@ -87,6 +88,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 
@@ -130,6 +132,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 {
@@ -200,6 +203,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name, authorID string, contentType generators.ASCII, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -270,6 +274,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
@@ -339,6 +344,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -444,6 +450,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -534,6 +541,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -618,6 +626,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 			clients.EXPECT().Inc().Times(1)
@@ -659,6 +668,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 
@@ -702,6 +712,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 {
@@ -772,6 +783,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID, contentType string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -842,6 +854,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
@@ -911,6 +924,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -1016,6 +1030,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -1106,6 +1121,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice, conBytes []byte) bool {
 			if len(name) == 0 || len(authorID) == 0 || len(conBytes) == 0 {
@@ -1191,6 +1207,7 @@ func TestNotFoundAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
