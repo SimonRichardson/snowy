@@ -19,16 +19,15 @@ before_install:
 
 install:
   - make
-  - go get github.com/mattn/goveralls
 
 before_script:
   - docker-compose up --build -d
   - sleep 2
 
 script:
+  - make unit-tests
   - make integration-tests
   - make documentation
-  - make coverage
 
 after_success:
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)

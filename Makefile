@@ -67,25 +67,29 @@ FORCE:
 integration-tests:
 	docker-compose run documents go test -v -tags=integration ./cmd/... ./pkg/...
 
+.PHONY: unit-tests
+unit-tests:
+	docker-compose run documents go test -v ./cmd/... ./pkg/...
+
 .PHONY: documentation
 documentation:
 	go test -v -tags=documentation ./pkg/... -run=TestDocumentation_
 
-.PHONY: coverage-tests
-coverage-tests:
-	docker-compose run documents go test -covermode=count -coverprofile=bin/coverage.out -v -tags=integration ${COVER_PKG}
+.PHONY: coverage-integration-tests
+coverage-integration-tests:
+	docker-compose run documents go test -covermode=count -coverprofile=bin/integration/coverage.out -v -tags=integration ${COVER_PKG}
 
-.PHONY: coverage-view
-coverage-view:
-	go tool cover -html=bin/coverage.out
+.PHONY: coverage-unit-tests
+coverage-unit-tests:
+	docker-compose run documents go test -covermode=count -coverprofile=bin/unit/coverage.out -v ${COVER_PKG}
 
-.PHONY: coverage
-coverage:
-	docker-compose run -e TRAVIS_BRANCH=${TRAVIS_BRANCH} -e GIT_BRANCH=${GIT_BRANCH} \
-		documents \
-		/bin/sh -c 'apk update && apk add make && apk add git && \
-		go get github.com/mattn/goveralls && \
-		/go/bin/goveralls -repotoken=${COVERALLS_REPO_TOKEN} -ignore=pkg/ui/*.go,pkg/*/mocks/*.go -package=./pkg/... -flags=--tags=integration -service=travis-ci'
+.PHONY: coverage-view-integration
+coverage-view-integration:
+	go tool cover -html=bin/integration/coverage.out
+
+.PHONY: coverage-view-unit
+coverage-view-unit:
+	go tool cover -html=bin/unit/coverage.out
 
 .PHONY: build-ui
 build-ui: ui/scripts/snowy.js pkg/ui/static.go
