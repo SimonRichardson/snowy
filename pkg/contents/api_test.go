@@ -41,7 +41,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -79,7 +79,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -126,7 +126,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithBytes(bytes),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -179,7 +179,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithBytes(bytes),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -232,7 +232,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithBytes(bytes),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -284,7 +284,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -322,7 +322,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -369,7 +369,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 					models.WithBytes(bytes),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -417,7 +417,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -475,7 +475,7 @@ func TestPutAPI(t *testing.T) {
 
 			b = make([]byte, defaultMaxContentLength+1)
 		)
-		defer api.Close()
+		defer func() { api.Close(); server.Close() }()
 
 		clients.EXPECT().Inc().Times(1)
 		clients.EXPECT().Dec().Times(1)
@@ -511,7 +511,7 @@ func TestPutAPI(t *testing.T) {
 
 			b = make([]byte, defaultMaxContentLength+1)
 		)
-		defer api.Close()
+		defer func() { api.Close(); server.Close() }()
 
 		clients.EXPECT().Inc().Times(1)
 		clients.EXPECT().Dec().Times(1)
@@ -560,7 +560,7 @@ func TestPutAPI(t *testing.T) {
 					models.WithContentType("plain/text"),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -614,7 +614,7 @@ func TestPutAPI(t *testing.T) {
 					models.WithContentType("plain/text"),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -709,7 +709,7 @@ func TestMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -747,7 +747,7 @@ func TestMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -795,7 +795,7 @@ func TestMultipleAPI(t *testing.T) {
 					models.WithReader(ioutil.NopCloser(bytes.NewReader(b))),
 				)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			if err != nil {
 				t.Fatal(err)
@@ -843,7 +843,7 @@ func TestMultipleAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, writtenBytes, records, duration)
 				server = httptest.NewServer(api)
 			)
-			defer api.Close()
+			defer func() { api.Close(); server.Close() }()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)

@@ -42,6 +42,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -77,6 +78,7 @@ func TestGetAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -120,6 +122,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithResourceID(uid),
 				)
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -168,6 +171,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithResourceID(uid),
 				)
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -221,6 +225,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithResourceID(uid),
 				)
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -269,6 +274,7 @@ func TestGetAPI(t *testing.T) {
 					models.WithResourceID(uid),
 				)
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -316,6 +322,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 			clients.EXPECT().Inc().Times(1)
@@ -355,6 +362,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 
@@ -396,6 +404,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
@@ -452,6 +461,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name, authorID string, contentType generators.ASCII, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -508,6 +518,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -587,6 +598,7 @@ func TestPostAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -657,6 +669,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 			clients.EXPECT().Inc().Times(1)
@@ -696,6 +709,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID generators.ASCII) bool {
 			clients.EXPECT().Inc().Times(1)
@@ -735,6 +749,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 			clients.EXPECT().Inc().Times(1)
@@ -774,6 +789,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 
@@ -815,6 +831,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
@@ -871,6 +888,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -950,6 +968,7 @@ func TestPutAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -1021,6 +1040,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -1056,6 +1076,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -1100,6 +1121,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1149,6 +1171,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1203,6 +1226,7 @@ func TestSelectRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1250,6 +1274,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func() bool {
 			clients.EXPECT().Inc().Times(1)
@@ -1289,6 +1314,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID generators.ASCII) bool {
 			clients.EXPECT().Inc().Times(1)
@@ -1328,6 +1354,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 			clients.EXPECT().Inc().Times(1)
@@ -1367,6 +1394,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID) bool {
 
@@ -1408,6 +1436,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 {
@@ -1464,6 +1493,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -1543,6 +1573,7 @@ func TestForkAPI(t *testing.T) {
 			api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 			server = httptest.NewServer(api)
 		)
+		defer server.Close()
 
 		fn := func(resourceID uuid.UUID, name, authorID string, tags generators.ASCIISlice) bool {
 			if len(name) == 0 || len(authorID) == 0 {
@@ -1614,6 +1645,7 @@ func TestForkRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -1649,6 +1681,7 @@ func TestForkRevisionsAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)
@@ -1693,6 +1726,7 @@ func TestForkRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1742,6 +1776,7 @@ func TestForkRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1791,6 +1826,7 @@ func TestForkRevisionsAPI(t *testing.T) {
 				)
 				docs = []models.Ledger{doc}
 			)
+			defer server.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1839,6 +1875,7 @@ func TestNotFoundAPI(t *testing.T) {
 				api    = NewAPI(repo, log.NewNopLogger(), clients, duration)
 				server = httptest.NewServer(api)
 			)
+			defer server.Close()
 
 			clients.EXPECT().Inc().Times(1)
 			clients.EXPECT().Dec().Times(1)

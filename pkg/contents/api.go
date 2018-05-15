@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/gorilla/mux"
 	errs "github.com/trussle/snowy/pkg/http"
 	"github.com/trussle/snowy/pkg/metrics"
 	"github.com/trussle/snowy/pkg/models"
@@ -25,6 +26,7 @@ const (
 
 // API serves the query API
 type API struct {
+	handler        http.Handler
 	repository     repository.Repository
 	action         chan func()
 	stop           chan chan struct{}
@@ -51,6 +53,17 @@ func NewAPI(repository repository.Repository, logger log.Logger,
 		records:    records,
 		duration:   duration,
 		errors:     errs.NewError(logger),
+	}
+	{
+		router := mux.NewRouter().StrictSlash(true)
+		router.Methods("GET").Path(APIPathSelectQuery).HandlerFunc(api.handleSelect)
+		router.Methods("PUT").Path(APIPathInsertQuery).HandlerFunc(api.handleInsert)
+		router.Methods("POST").Path(APIPathInsertQuery).HandlerFunc(api.handleInsert)
+		router.Methods("GET").Path(APIPathMultipleQuery).HandlerFunc(api.handleMultiple)
+		router.Methods("GET").Path(APIPathSelectRevisionsQuery).HandlerFunc(api.handleSelectRevisions)
+		router.NotFoundHandler = http.HandlerFunc(api.errors.NotFound)
+
+		api.handler = router
 	}
 	go api.run()
 	return api
@@ -81,21 +94,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		).Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	// Routing table
-	method, path := r.Method, r.URL.Path
-	switch {
-	case method == "GET" && path == APIPathSelectQuery:
-		a.handleSelect(w, r)
-	case (method == "PUT" || method == "POST") && path == APIPathInsertQuery:
-		a.handleInsert(w, r)
-	case method == "GET" && path == APIPathMultipleQuery:
-		a.handleMultiple(w, r)
-	case method == "GET" && path == APIPathSelectRevisionsQuery:
-		a.handleSelectRevisions(w, r)
-	default:
-		// Nothing found
-		a.errors.NotFound(w, r)
-	}
+	a.handler.ServeHTTP(w, r)
 }
 
 func (a *API) handleSelect(w http.ResponseWriter, r *http.Request) {
