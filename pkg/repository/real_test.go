@@ -832,6 +832,59 @@ func TestSelectContent(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	t.Run("get same content multiple times", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		fn := func(id, uid uuid.UUID, body []byte) bool {
+			var (
+				fsys = fsys.NewVirtualFilesystem()
+				mock = storeMocks.NewMockStore(ctrl)
+				repo = NewRealRepository(fsys, mock, log.NewNopLogger())
+			)
+
+			file, err := fsys.Create(uid.String())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if _, err = file.Write(body); err != nil {
+				t.Fatal(err)
+			}
+
+			total := 3
+
+			mock.EXPECT().
+				Select(uid, store.Query{}).
+				Return(store.Entity{
+					ResourceID:      uid,
+					ResourceAddress: uid.String(),
+				}, nil).
+				Times(total)
+
+			for i := 0; i < total; i++ {
+				content, err := repo.SelectContent(uid, Query{})
+				if expected, actual := true, err == nil; expected != actual {
+					t.Errorf("expected: %t, actual: %t, for iteration: %d", expected, actual, i)
+				}
+
+				b, err := content.Bytes()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if expected, actual := true, reflect.DeepEqual(b, body); expected != actual {
+					t.Errorf("expected: %t, actual: %t, for iteration: %d", expected, actual, i)
+				}
+			}
+			return true
+		}
+
+		if err := quick.Check(fn, &quick.Config{MaxCount: 1}); err != nil {
+			t.Error(err)
+		}
+	})
 }
 
 func TestSelectContents(t *testing.T) {
